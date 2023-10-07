@@ -54,6 +54,10 @@ namespace NinjaTrader.NinjaScript.Strategies
         private Series<int> direction;
 
         private bool countOnce = false;
+		
+		private readonly TimeSpan MarketOpenTime = new TimeSpan(8, 0, 0);
+		private readonly TimeSpan MarketCloseTime = new TimeSpan(16, 0, 0);
+
 
         protected override void OnStateChange()
         {
@@ -82,6 +86,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 
                 n = Math.Max(k, n_);
                 countOnce = true;
+                
+                AddPlot(new Stroke(Brushes.Red, 1), PlotStyle.Line, "upperBand");
+                AddPlot(new Stroke(Brushes.Green, 1), PlotStyle.Line, "lowerBand");
             }
             else if (State == State.Configure)
             {
@@ -92,6 +99,8 @@ namespace NinjaTrader.NinjaScript.Strategies
                 label_ = new Series<double?>(this);
                 direction = new Series<int>(this);
 
+//                SetStopLoss(CalculationMode.Percent, 2);
+//                SetProfitTarget(CalculationMode.Percent, 5);
             }
             else if (State == State.DataLoaded)
             {
@@ -116,7 +125,7 @@ namespace NinjaTrader.NinjaScript.Strategies
                 weightedCloseVolumeSum += Close[i] * Volume[i] * weight;
                 weightedVolumeSum += Volume[i] * weight;
                 divisor += weight;
-            }
+            }		
 
             return weightedCloseVolumeSum / weightedVolumeSum;
         }
@@ -125,20 +134,14 @@ namespace NinjaTrader.NinjaScript.Strategies
         private double knn_weighted(List<double> data, List<int> labels, int k, double x)
         {
             int n1 = data.Count;
-            // distances = array.new_float(n1) ;
-            // indices   = array.new_int(n1) ;
             List<double> distances = new List<double>(n1);
             List<int> indices = new List<int>(n1);
 
             // Compute distances from the current point to all other points;
             for (int i = 0; i < n1; i++)
             {
-                // x_i = data.get(i);
-                // dist = distance(x, x_i) ;
                 double dist = Math.Abs(x - data[i]);
-                // distances.set(i, dist);
                 distances.Add(dist);
-                // indices.set(i, i);
                 indices.Add(i);
             }
 
@@ -147,7 +150,7 @@ namespace NinjaTrader.NinjaScript.Strategies
             for (int i = 0; i < n1 - 1; i++)
             {
                 for (int j = 0; j < n1 - i - 1; j++)
-                {					
+                {
                     if (distances[j] > distances[j + 1])
                     {
                         // Swap distances
@@ -168,12 +171,11 @@ namespace NinjaTrader.NinjaScript.Strategies
             double total_weight = 0.0;
             for (int i = 0; i < k; i++)
             {
-                // index = indices.get(i);
                 int label_i = labels[indices[i]];
                 double weight_i = 1 / (distances[0] + 1e-6);
                 weighted_sum += weight_i * label_i;
                 total_weight += weight_i;
-            }
+            }            
 
             return weighted_sum / total_weight;
         }
@@ -183,7 +185,7 @@ namespace NinjaTrader.NinjaScript.Strategies
             try
             {
                 if (State == State.Realtime && IsFirstTickOfBar)
-                    return;  // Ignore intrabar ticks            
+                    return;  // Ignore intrabar ticks
 
                 if (BarsInProgress != 0)
                     return;
@@ -203,9 +205,10 @@ namespace NinjaTrader.NinjaScript.Strategies
                     double prevLowerBand = lowerBand[1];
                     double prevUpperBand = upperBand[1];
 
-                    lowerBand[0] = (lowerBand[0] > prevLowerBand || Close[1] < prevLowerBand) ? lowerBand[0] : prevLowerBand;
                     upperBand[0] = (upperBand[0] < prevUpperBand || Close[1] > prevUpperBand) ? upperBand[0] : prevUpperBand;
-                    //int direction = 0;
+//                    Values[0][0] = upperBand[0];
+                    lowerBand[0] = (lowerBand[0] > prevLowerBand || Close[1] < prevLowerBand) ? lowerBand[0] : prevLowerBand;
+//                    Values[1][0] = lowerBand[0];
 
                     double prevSuperTrend = superTrend.Count > 0 ? superTrend[1] : 0;
                     direction[0] = 1;
@@ -214,27 +217,22 @@ namespace NinjaTrader.NinjaScript.Strategies
                     else
                         direction[0] = Close[0] < lowerBand[0] ? 1 : -1;
                     superTrend[0] = direction[0] == -1 ? lowerBand[0] : upperBand[0];
-
-                    // ~~ Collect data points && their corresponding labels;
-                    //double price = ta.wma(Close, KNN_PriceLen);
-                    //double sT = ta.wma(superTrend, KNN_STLen);
-
-                    // data   = array.new_float(n);
-                    // labels = array.new_int(n);
+					if (direction[0] == -1)
+						Values[1][0] = lowerBand[0];
+					else
+						Values[0][0] = upperBand[0];
+                    
                     List<double> data = new List<double>(n);
                     List<int> labels = new List<int>(n);
 
                     for (int i = 0; i < n; i++)
                     {
                         data.Add(superTrend[i]);
-                        // data.set(i, superTrend[i]) ;
                         int label_i = price[i] > sT[i] ? 1 : 0;
-                        // labels.set(i, label_i);
                         labels.Add(label_i);
-                    }
+                    }                    
 
                     // ~~ Classify the current data point;
-                    // current_superTrend = superTrend;
                     label_[0] = knn_weighted(data, labels, k, superTrend[0]);
 
                     // ~~ Plot;
@@ -246,14 +244,14 @@ namespace NinjaTrader.NinjaScript.Strategies
                     // downTrend = plot(superTrend==upperBand?current_superTrend:na, title="Down Volume Super Trend AI", color=col, style=plot.style_linebr);
                     // fill_col  = color.new(col,90);
                     // fill(Middle, upTrend, fill_col, fillgaps=false,title="Up Volume Super Trend AI");
-                    // fill(Middle, downTrend, fill_col, fillgaps=false, title="Down Volume Super Trend AI");
+                    // fill(Middle, downTrend, fill_col, fillgaps=false, title="Down Volume Super Trend AI");                   
                     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~};
 
                     // ~~ Ai Super Trend Signals;
                     bool Start_TrendUp = label_[0] == 1 && (label_[1] != 1 || label_[1] == null) && aisignals;
                     bool Start_TrendDn = label_[0] == 0 && (label_[1] != 0 || label_[1] == null) && aisignals;
                     bool TrendUp = direction[0] == -1 && direction[1] == 1 && label_[0] == 1 && aisignals;
-                    bool TrendDn = direction[0] == 1 && direction[1] == -1 && label_[0] == 0 && aisignals;
+                    bool TrendDn = direction[0] == 1 && direction[1] == -1 && label_[0] == 0 && aisignals;                    
 
                     // plotshape(Start_TrendUp?superTrend:na, location=location.absolute, style= shape.circle, size=size.tiny, color=Bullish_col, title="AI Bullish Trend Start");
                     // plotshape(Start_TrendDn?superTrend:na, location=location.absolute, style= shape.circle,size=size.tiny, color=Bearish_col, title="AI Bearish Trend Start");
@@ -261,14 +259,40 @@ namespace NinjaTrader.NinjaScript.Strategies
                     // plotshape(TrendDn?superTrend:na, location=location.absolute, style= shape.triangledown,size=size.small, color=Bearish_col, title="AI Bearish Trend Signal");
 
                     //ema = ta.ema(Close, 100);
+                    bool isMarketOpen = Time[0].TimeOfDay >= MarketOpenTime && Time[0].TimeOfDay <= MarketCloseTime;
+//					isMarketOpen = true; // set it to true for now
 
-                    if ((Start_TrendUp || TrendUp) && Close[0] > ema[0])
-                        EnterLong("Buy");
+                    if (isMarketOpen && (Start_TrendUp || TrendUp)) // && Close[0] > ema[0])
+                        EnterLong("Long");
 
-                    if ((Start_TrendDn || TrendDn) && Close[0] < ema[0])
-                        EnterShort("Sell");
+                    if (isMarketOpen && (Start_TrendDn || TrendDn)) // && Close[0] < ema[0])
+//					if (Start_TrendDn && Close[0] < superTrend[0])
+                    {
+                        Print("Current bar time: " + Time[0].ToString());
+                        Print(label_[0]);
+                        Print(label_[1]);
+                        Print(Start_TrendUp);
+                        Print(Start_TrendDn);
+                        Print(TrendUp);
+						Print(TrendDn);
+                        Print(direction[0]);                        
 
-                    // countOnce = false;
+//                        EnterShort("Short");
+                    }
+                    
+                    // Adjust stop-loss for long & short position
+				    if (Position.MarketPosition == MarketPosition.Long)
+				    {
+				        double newStopLossPrice = lowerBand[0];
+						ExitLongStopMarket(newStopLossPrice);
+				    }
+				    else if (Position.MarketPosition == MarketPosition.Short)
+				    {
+				        double newStopLossPrice = upperBand[0];
+				        ExitShortStopMarket(newStopLossPrice);
+				    }
+					
+					countOnce = false;
                 }
 
                 if (IsFirstTickOfBar)
@@ -282,5 +306,55 @@ namespace NinjaTrader.NinjaScript.Strategies
                 Print("Stack Trace: " + e.StackTrace);
             }
         }
+
+        protected override void OnOrderUpdate(Cbi.Order order, double limitPrice, double stopPrice,
+                                      int quantity, int filled, double averageFillPrice,
+                                      Cbi.OrderState orderState, DateTime time,
+                                      Cbi.ErrorCode error, string nativeError)
+        {
+            // Check if the order is filled
+            if (order.OrderState == OrderState.Filled)
+            {
+                if (order.Name == "Long")
+                {
+                    // Set stop loss at 1% below the entry price
+//                    double stopLossPrice = averageFillPrice * 0.995;
+                    // SetTrailStop("Long", CalculationMode.Percent, 1, false);
+//					SetProfitTarget("Long", CalculationMode.Price, averageFillPrice * 1.05, false);
+                }
+				
+				if (order.Name == "Short")
+                {
+                    // Set stop loss at 1% below the entry price
+//                    double stopLossPrice = averageFillPrice * 0.995;
+                    // SetTrailStop("Short", CalculationMode.Percent, 1, false);
+//					SetProfitTarget("Short", CalculationMode.Price, averageFillPrice * 1.05, false);
+                }
+            }
+        }
+		
+		public static bool NearlyEqual(double a, double b, double epsilon = 1e-10)
+		{
+		    double absA = Math.Abs(a);
+		    double absB = Math.Abs(b);
+		    double diff = Math.Abs(a - b);
+
+		    if (a == b)
+		    {
+		        return true;
+		    }
+		    else if (a == 0 || b == 0 || diff < double.Epsilon)
+		    {
+		        // a or b is zero or both are extremely close to it relative error is less meaningful here
+		        return diff < epsilon;
+		    }
+		    else
+		    {
+		        // Use relative error
+		        return diff / (absA + absB) < epsilon;
+		    }
+		}
+
+
     }
 }
