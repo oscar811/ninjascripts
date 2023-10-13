@@ -30,6 +30,10 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private MACD MACD1;
 		private SMA SMA1;
 
+        private string  atmStrategyId			= string.Empty;
+		private string  orderId					= string.Empty;
+		private bool	isAtmStrategyCreated	= false;
+
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -92,7 +96,9 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			else if (State == State.Configure)
 			{
-			}
+                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
+                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
+            }
 			else if (State == State.DataLoaded)
 			{				
 				MACD1				= MACD(Close, Convert.ToInt32(Macd_Fast), Convert.ToInt32(Macd_Signal), Convert.ToInt32(Macd_Diff));
@@ -102,9 +108,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				MACD1.Plots[2].Brush = Brushes.DodgerBlue;
 				SMA1.Plots[0].Brush = Brushes.LawnGreen;
 				AddChartIndicator(MACD1);
-				AddChartIndicator(SMA1);
-				SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
-				SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
+				AddChartIndicator(SMA1);				
 			}
 		}
 
@@ -164,7 +168,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 		#region Properties
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(Name="CONTRACTS", Order=1, GroupName="Parameters")]
+		[Display(Name="Contracts", Order=1, GroupName="Parameters")]
 		public int CONTRACTS
 		{ get; set; }
 
