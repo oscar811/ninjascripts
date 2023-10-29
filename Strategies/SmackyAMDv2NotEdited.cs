@@ -30,10 +30,6 @@ namespace NinjaTrader.NinjaScript.Strategies
 		private MACD MACD1;
 		private SMA SMA1;
 
-        private string  atmStrategyId			= string.Empty;
-		private string  orderId					= string.Empty;
-		private bool	isAtmStrategyCreated	= false;
-
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
@@ -86,7 +82,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Stop_Time_7						= DateTime.Parse("02:37", System.Globalization.CultureInfo.InvariantCulture);
 				Time_8					= false;
 				Start_Time_8						= DateTime.Parse("11:00", System.Globalization.CultureInfo.InvariantCulture);
-				Stop_Time_8						= DateTime.Parse("12:00", System.Globalization.CultureInfo.InvariantCulture);
+				Stop_TIme_8						= DateTime.Parse("12:00", System.Globalization.CultureInfo.InvariantCulture);
 				Time_9					= false;
 				Start_Time_9						= DateTime.Parse("05:00", System.Globalization.CultureInfo.InvariantCulture);
 				Stop_Time_9						= DateTime.Parse("06:00", System.Globalization.CultureInfo.InvariantCulture);
@@ -96,9 +92,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			else if (State == State.Configure)
 			{
-                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
-                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
-            }
+			}
 			else if (State == State.DataLoaded)
 			{				
 				MACD1				= MACD(Close, Convert.ToInt32(Macd_Fast), Convert.ToInt32(Macd_Signal), Convert.ToInt32(Macd_Diff));
@@ -108,67 +102,698 @@ namespace NinjaTrader.NinjaScript.Strategies
 				MACD1.Plots[2].Brush = Brushes.DodgerBlue;
 				SMA1.Plots[0].Brush = Brushes.LawnGreen;
 				AddChartIndicator(MACD1);
-				AddChartIndicator(SMA1);				
+				AddChartIndicator(SMA1);
+				SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
+				SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
 			}
 		}
 
-        protected override void OnBarUpdate()
-        {
-            if (BarsInProgress != 0)
-                return;
+		protected override void OnBarUpdate()
+		{
+			if (BarsInProgress != 0) 
+				return;
 
-            if (CurrentBars[0] < 1)
-                return;
+			if (CurrentBars[0] < 1)
+				return;
 
-            DateTime[] startTimes = { Start_Time_2, Start_Time_3, Start_Time_4, Start_Time_5, Start_Time_6, Start_Time_7, Start_Time_8, Start_Time_9, Start_Time_10 };
-            DateTime[] stopTimes = { Stop_Time_2, Stop_Time_3, Stop_Time_4, Stop_Time_5, Stop_Time_6, Stop_Time_7, Stop_Time_8, Stop_Time_9, Stop_Time_10 };
-            bool[] timeFlags = { Time_2, Time_3, Time_4, Time_5, Time_6, Time_7, Time_8, Time_9, Time_10 };
-
-            int contracts = Convert.ToInt32(CONTRACTS);
-
-            for (int i = 0; i < startTimes.Length; i++)
-            {
-                // enter long if macd crossover
-                // enter short if macd crossunder
-                // use sma filter if turned on
-
-                // exit long if macd crossunder
-                // exit short if macd crossover
-
-                bool timeCondition = Times[0][0].TimeOfDay >= startTimes[i].TimeOfDay && Times[0][0].TimeOfDay <= stopTimes[i].TimeOfDay && timeFlags[i];
-                bool longSmaCondition = Enable_SMA_Filter == true ? GetCurrentAsk(0) >= SMA1[0] : true;
-                bool shortSmaCondition = Enable_SMA_Filter == true ? GetCurrentAsk(0) <= SMA1[0] : true;
-
-                if (timeCondition)
-                {
-                    if (CrossAbove(MACD1.Default, MACD1.Avg, 1))
-                    {
-                        ExitShort(CONTRACTS, "", "");
-
-                        if (longSmaCondition)
-                        {
-                            EnterLong(CONTRACTS, "");
-                        }
-                    }
-
-                    if (CrossBelow(MACD1.Default, MACD1.Avg, 1))
-                    {
-                        ExitLong(CONTRACTS, "", "");
-
-                        if (shortSmaCondition)
-                        {
-                            EnterShort(CONTRACTS, "");
-                        }
-                    }
-                }
-
-            }
-        }
+			 // Set 1
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 2
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 3
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 4
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 5
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 6
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 7
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 8
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 9
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 10
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 11
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 12
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 13
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 14
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 15
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 16
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 17
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 18
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 19
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 20
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 21
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 22
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 23
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 24
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 25
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 26
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 27
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 28
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 29
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 30
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 31
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
+				 && (Time_7 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 32
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 33
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 34
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 35
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 36
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 37
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 38
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 39
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 40
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 41
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 42
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 43
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 44
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
+				 && (Time_4 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 45
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
+				 && (Time_3 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 46
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
+				 && (Time_2 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 47
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
+				 && (Time_6 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 48
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
+				 && (Time_5 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 49
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_8.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_TIme_8.TimeOfDay)
+				 && (Time_8 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 50
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_8.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_TIme_8.TimeOfDay)
+				 && (Time_8 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 51
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_8.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_TIme_8.TimeOfDay)
+				 && (Time_8 == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 52
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_8.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_TIme_8.TimeOfDay)
+				 && (Time_8 == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 53
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_8.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_TIme_8.TimeOfDay)
+				 && (Time_8 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 54
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_8.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_TIme_8.TimeOfDay)
+				 && (Time_8 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 55
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_9.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_9.TimeOfDay)
+				 && (Time_9 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 56
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_9.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_9.TimeOfDay)
+				 && (Time_9 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 57
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_9.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_9.TimeOfDay)
+				 && (Time_9 == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 58
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_9.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_9.TimeOfDay)
+				 && (Time_9 == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 59
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_9.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_9.TimeOfDay)
+				 && (Time_9 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 60
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_9.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_9.TimeOfDay)
+				 && (Time_9 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 61
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_10.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_10.TimeOfDay)
+				 && (Time_10 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) <= SMA1[0]))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 62
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_10.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_10.TimeOfDay)
+				 && (Time_10 == true))
+			{
+				ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 63
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_10.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_10.TimeOfDay)
+				 && (Time_10 == true)
+				 && (Enable_SMA_Filter == true)
+				 && (GetCurrentAsk(0) >= SMA1[0]))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 64
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_10.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_10.TimeOfDay)
+				 && (Time_10 == true))
+			{
+				ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+			}
+			
+			 // Set 65
+			if ((CrossAbove(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_10.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_10.TimeOfDay)
+				 && (Time_10 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterLong(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+			 // Set 66
+			if ((CrossBelow(MACD1.Default, MACD1.Avg, 1))
+				 && (Times[0][0].TimeOfDay >= Start_Time_10.TimeOfDay)
+				 && (Times[0][0].TimeOfDay <= Stop_Time_10.TimeOfDay)
+				 && (Time_10 == true)
+				 && (Enable_SMA_Filter == false))
+			{
+				EnterShort(Convert.ToInt32(CONTRACTS), "");
+			}
+			
+		}
 
 		#region Properties
 		[NinjaScriptProperty]
 		[Range(1, int.MaxValue)]
-		[Display(Name="Contracts", Order=1, GroupName="Parameters")]
+		[Display(Name="CONTRACTS", Order=1, GroupName="Parameters")]
 		public int CONTRACTS
 		{ get; set; }
 
@@ -328,8 +953,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 
 		[NinjaScriptProperty]
 		[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-		[Display(Name="Stop_Time_8", Order=29, GroupName="Parameters")]
-		public DateTime Stop_Time_8
+		[Display(Name="Stop_TIme_8", Order=29, GroupName="Parameters")]
+		public DateTime Stop_TIme_8
 		{ get; set; }
 
 		[NinjaScriptProperty]

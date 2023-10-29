@@ -26,12 +26,33 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Strategies
 {
     public class GannSwingStrategy : Strategy
-    {
-        private int Length;
-        private bool reverse;
+    {        
+        #region parameters
+
+        [NinjaScriptProperty]
+        [Display(Name = "Length", Order = 1, GroupName = "Parameters")]
+        public int Length
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Reverse", Order = 2, GroupName = "Parameters")]
+        public bool reverse
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "LongTrailPerc", Order = 3, GroupName = "Parameters")]
+        public double longTrailPerc
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "ShortTrailPerc", Order = 4, GroupName = "Parameters")]
+        public double shortTrailPerc
+        { get; set; }
+
+        #endregion
+
         private double pos, possig;
-        private double longStopPrice, shortStopPrice;
-        private double longTrailPerc, shortTrailPerc;
+        //private double longStopPrice, shortStopPrice;
 
         private Series<double> xHH;
         private Series<double> xLL;
@@ -43,7 +64,7 @@ namespace NinjaTrader.NinjaScript.Strategies
             {
                 Description = @"GannSwingStrategy";
                 Name = "GannSwingStrategy";
-                Calculate = Calculate.OnBarClose;
+                Calculate = Calculate.OnEachTick;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;
                 IsExitOnSessionCloseStrategy = true;
@@ -62,10 +83,10 @@ namespace NinjaTrader.NinjaScript.Strategies
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
-                Length = 20;
+                Length = 29;
                 reverse = true;
-				longTrailPerc = 0.3;
-				shortTrailPerc = 0.3;
+				longTrailPerc = 0.6;
+				shortTrailPerc = 0.1;
             }
             else if (State == State.Configure)
             {
@@ -74,9 +95,12 @@ namespace NinjaTrader.NinjaScript.Strategies
                 xGSO = new Series<double>(this);
 
                 ClearOutputWindow();
+				
+				SetParabolicStop(CalculationMode.Ticks, 50);
 
-                SetTrailStop("Long", CalculationMode.Percent, longTrailPerc, false);
-                SetTrailStop("Short", CalculationMode.Percent, shortTrailPerc, false);
+//                SetParabolicStop("Long", CalculationMode.Ticks, 200, false);
+//                SetParabolicStop("Short", CalculationMode.Ticks, 200, false);
+                SetProfitTarget(CalculationMode.Ticks, 100, true);
             }
         }
 
@@ -84,18 +108,15 @@ namespace NinjaTrader.NinjaScript.Strategies
         {
             try
             {
-                if (CurrentBar < 20)
+                if (CurrentBar < 20 || CurrentBar < Length)
                     return;
 
                 xHH[0] = Highest(Length);
-
-                // xLL = lowest(Length)
                 xLL[0] = Lowest(Length);
 
                 // xGSO = iff(xHH[2] > xHH[1] and xHH[0] > xHH[1], 1,
                 //         iff(xLL[2] < xLL[1] and xLL[0] < xLL[1], -1, nz(xGSO[1],0)))
 
-                //double xGSO;
                 if (xHH[2] > xHH[1] && xHH[0] > xHH[1])
                 {
                     xGSO[0] = 1;
@@ -121,16 +142,12 @@ namespace NinjaTrader.NinjaScript.Strategies
                 
 				if (possig == 1)
                 {
-                    // strategy.entry("Long", strategy.long)
-                    Print("possig" + possig.ToString());
-                    EnterLong("Long");
-                }                    
+                    EnterLong(1, "Long");
+                }
                 else if (possig == -1)
                 {
-                    // strategy.entry("Short", strategy.short)	   	    
-                    EnterShort("Short");
-                }                    
-
+                    EnterShort(1, "Short");
+                }
             }
             catch (Exception e)
             {
@@ -164,6 +181,6 @@ namespace NinjaTrader.NinjaScript.Strategies
                 }
             }
             return lowest;
-        }
+        }        
     }
 }
