@@ -1,8 +1,7 @@
 ﻿# Ignore everything
-*
+/*
 
 # But not these files
 !.gitignore
-!Strategies
-!Strategies/*.*
-
+!/Strategies/
+!/Indicators/
