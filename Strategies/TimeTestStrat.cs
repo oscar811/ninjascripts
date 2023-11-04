@@ -81,7 +81,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			 // Set 1
 			if ((Times[0][0].TimeOfDay >= Start_time.TimeOfDay)
 				 && (Times[0][0].TimeOfDay <= End_time.TimeOfDay)
-				 && (Close[0] <= SessionHighLow1.Session_High[0]))
+				 && (Close[0] <= SessionHighLow1.Session_Low[0]))
 			{
 				EnterLong(Convert.ToInt32(DefaultQuantity), "");
 			}
@@ -349,6 +349,7 @@ namespace NinjaTrader.NinjaScript.Strategies
               <Lookback>1</Lookback>
               <Operator>LessEqual</Operator>
               <RightItem xsi:type="WizardConditionItem">
+                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>true</IsSelected>
                 <Name>SessionHighLow</Name>
@@ -415,7 +416,7 @@ namespace NinjaTrader.NinjaScript.Strategies
                   <PlotOnChart>true</PlotOnChart>
                   <PriceType>Close</PriceType>
                   <SeriesType>Indicator</SeriesType>
-                  <SelectedPlot>Session_High</SelectedPlot>
+                  <SelectedPlot>Session_Low</SelectedPlot>
                 </AssociatedIndicator>
                 <BarsAgo>0</BarsAgo>
                 <CurrencyType>Currency</CurrencyType>
@@ -434,7 +435,7 @@ namespace NinjaTrader.NinjaScript.Strategies
             </WizardCondition>
           </Conditions>
           <IsGroup>false</IsGroup>
-          <DisplayName>Default input[0] &lt;= SessionHighLow(DateTime.Parse("1:30 AM"), DateTime.Parse("3:00 AM")).Session_High[0]</DisplayName>
+          <DisplayName>Default input[0] &lt;= SessionHighLow(DateTime.Parse("1:30 AM"), DateTime.Parse("3:00 AM")).Session_Low[0]</DisplayName>
         </WizardConditionGroup>
       </Conditions>
       <SetName>Set 1</SetName>

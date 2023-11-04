@@ -1,8 +1,14 @@
-/// Day bars and 240 minute bars look good
-
 /* Supply System Automated Trading System Youtube Jacob Amaral
 Original Author Ninjacators - www.ninjacators.com Edited By - Jacob Amaral
 Please test yourself to make it meets your personalized trading goals.
+ES 1 minute bars
+Trading Hours 6m-5pm EST / <Use instrument settings>
+Walk-Forward Optimization Instructions :
+profitTarget : 90;110;10
+stopLoss : 40;60;10
+Optimization period 365
+Test Period 365 days
+Optimize On Max profit factor
 */
 #region Using declarations
 using System;
@@ -23,7 +29,7 @@ using NinjaTrader.NinjaScript.Indicators;
 namespace NinjaTrader.NinjaScript.Strategies
 {
 
-    public class SupplySystemStrat : Strategy
+    public class SupplySystem : Strategy
     {
         #region Properties
 
@@ -147,7 +153,7 @@ namespace NinjaTrader.NinjaScript.Strategies
             if (State == State.SetDefaults)
             {
                 Description = @"In this system, traders look for areas on the price chart where there is a significant amount of supply (sellers) or demand (buyers). These levels are identified by looking for areas where the price has previously reacted or reversed, indicating a significant imbalance between buyers and sellers.";
-                Name = "SupplySystemStrat";
+                Name = "SupplySystem";
                 Calculate = Calculate.OnBarClose;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;

@@ -26,11 +26,12 @@ using NinjaTrader.NinjaScript.DrawingTools;
 namespace NinjaTrader.NinjaScript.Strategies
 {
     public class SmackyWithAtm : Strategy
-    {		
+    {
         private MACD MACD1;
         private SMA SMA1;
-		private string  orderId					= string.Empty;
-		private bool	isAtmStrategyCreated	= false;
+        private string atmStrategyId = string.Empty;
+        private string orderId = string.Empty;
+        private bool isAtmStrategyCreated = false;
 
         protected override void OnStateChange()
         {
@@ -56,6 +57,8 @@ namespace NinjaTrader.NinjaScript.Strategies
                 // Disable this property for performance gains in Strategy Analyzer optimizations
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
+				
+				EnableHistoricalMode = false;
                 CONTRACTS = 2;
                 Macd_Signal = 26;
                 Macd_Fast = 12;
@@ -64,39 +67,39 @@ namespace NinjaTrader.NinjaScript.Strategies
                 Stop_Loss = 10;
                 Enable_SMA_Filter = true;
                 SMA_Filter = 100;
-				AtmStrategyId = "your atm";
-				
-                Time_2 = false;
+                AtmStrategyTemplateId = "your atm";
+
+                Time_2 = true;
                 Start_Time_2 = DateTime.Parse("03:22", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_2 = DateTime.Parse("04:07", System.Globalization.CultureInfo.InvariantCulture);
-                Time_3 = false;
+                Time_3 = true;
                 Start_Time_3 = DateTime.Parse("07:52", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_3 = DateTime.Parse("08:37", System.Globalization.CultureInfo.InvariantCulture);
-                Time_4 = false;
+                Time_4 = true;
                 Start_Time_4 = DateTime.Parse("09:22", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_4 = DateTime.Parse("10:07", System.Globalization.CultureInfo.InvariantCulture);
-                Time_5 = false;
+                Time_5 = true;
                 Start_Time_5 = DateTime.Parse("13:52", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_5 = DateTime.Parse("14:37", System.Globalization.CultureInfo.InvariantCulture);
-                Time_6 = false;
+                Time_6 = true;
                 Start_Time_6 = DateTime.Parse("15:22", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_6 = DateTime.Parse("15:55", System.Globalization.CultureInfo.InvariantCulture);
-                Time_7 = false;
+                Time_7 = true;
                 Start_Time_7 = DateTime.Parse("01:52", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_7 = DateTime.Parse("02:37", System.Globalization.CultureInfo.InvariantCulture);
-                Time_8 = false;
+                Time_8 = true;
                 Start_Time_8 = DateTime.Parse("11:00", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_8 = DateTime.Parse("12:00", System.Globalization.CultureInfo.InvariantCulture);
-                Time_9 = false;
+                Time_9 = true;
                 Start_Time_9 = DateTime.Parse("05:00", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_9 = DateTime.Parse("06:00", System.Globalization.CultureInfo.InvariantCulture);
-                Time_10 = false;
+                Time_10 = true;
                 Start_Time_10 = DateTime.Parse("00:00", System.Globalization.CultureInfo.InvariantCulture);
                 Stop_Time_10 = DateTime.Parse("00:30", System.Globalization.CultureInfo.InvariantCulture);
             }
             else if (State == State.Configure)
             {
-				ClearOutputWindow();
+                ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
             {
@@ -110,157 +113,153 @@ namespace NinjaTrader.NinjaScript.Strategies
                 AddChartIndicator(SMA1);
                 SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
                 SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
-				
             }
         }
 
         protected override void OnBarUpdate()
         {
-			if (CurrentBar < BarsRequiredToTrade)
-				return;
-			
+            if (CurrentBar < BarsRequiredToTrade)
+                return;
+
             if (BarsInProgress != 0 || CurrentBars[0] < 1)
                 return;
-			
-//			// Submits an entry limit order at the current low price to initiate an ATM Strategy if both order id and strategy id are in a reset state
-//			// **** YOU MUST HAVE AN ATM STRATEGY TEMPLATE NAMED 'AtmStrategyTemplate' CREATED IN NINJATRADER (SUPERDOM FOR EXAMPLE) FOR THIS TO WORK ****
-//			if (orderId.Length == 0 && AtmStrategyId.Length == 0 && Close[0] > Open[0])
-//			{
-//				isAtmStrategyCreated = false;  // reset atm strategy created check to false
-//				AtmStrategyId = GetAtmStrategyUniqueId();
-//				orderId = GetAtmStrategyUniqueId();
-//				AtmStrategyCreate(OrderAction.Buy, OrderType.Limit, Low[0], 0, TimeInForce.Day, orderId, "AtmStrategyTemplate", AtmStrategyId, (atmCallbackErrorCode, atmCallBackId) => {
-//					//check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
-//					if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == AtmStrategyId)
-//						isAtmStrategyCreated = true;
-//				});
-//			}
 
-//			// Check that atm strategy was created before checking other properties
-//			if (!isAtmStrategyCreated)
-//				return;
-
-            List<ConditionSet> conditionSets = new List<ConditionSet>
+            List<TimePeriod> timePeriods = new List<TimePeriod>
             {
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_2, Stop_Time_2, Time_2, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_3, Stop_Time_3, Time_3, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_4, Stop_Time_4, Time_4, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_5, Stop_Time_5, Time_5, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_6, Stop_Time_6, Time_6, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_7, Stop_Time_7, Time_7, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_8, Stop_Time_8, Time_8, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_9, Stop_Time_9, Time_9, Enable_SMA_Filter, SMA1[0], Direction.Short),
-                new ConditionSet(GetCurrentAsk(0), () => CrossBelow(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_10, Stop_Time_10, Time_10, Enable_SMA_Filter, SMA1[0], Direction.Short),
-
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_2, Stop_Time_2, Time_2, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_3, Stop_Time_3, Time_3, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_4, Stop_Time_4, Time_4, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_5, Stop_Time_5, Time_5, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_6, Stop_Time_6, Time_6, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_7, Stop_Time_7, Time_7, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_8, Stop_Time_8, Time_8, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_9, Stop_Time_9, Time_9, Enable_SMA_Filter, SMA1[0], Direction.Long),
-                new ConditionSet(GetCurrentAsk(0), () => CrossAbove(MACD1.Default, MACD1.Avg, 1), Times[0][0], Start_Time_10, Stop_Time_10, Time_10, Enable_SMA_Filter, SMA1[0], Direction.Long),
+                new TimePeriod(Time_2, Start_Time_2, Stop_Time_2),
+                new TimePeriod(Time_3, Start_Time_3, Stop_Time_3),
+                new TimePeriod(Time_4, Start_Time_4, Stop_Time_4),
+                new TimePeriod(Time_5, Start_Time_5, Stop_Time_5),
+                new TimePeriod(Time_6, Start_Time_6, Stop_Time_6),
+                new TimePeriod(Time_7, Start_Time_7, Stop_Time_7),
+                new TimePeriod(Time_8, Start_Time_8, Stop_Time_8),
+                new TimePeriod(Time_9, Start_Time_9, Stop_Time_9),
+                new TimePeriod(Time_10, Start_Time_10, Stop_Time_10),
             };
-			
-			if (GetCurrentAsk(0) < SMA1[0])
-			{
-				Print("Enable_SMA_Filter: " + Enable_SMA_Filter);
-				Print("GetCurrentAsk(0) < SMA1[0]: " + (GetCurrentAsk(0) <= SMA1[0]));
-			}
-			
-			foreach (ConditionSet conditionSet in conditionSets)
-            {				
-                if (conditionSet.CheckCondition())
+
+            foreach (var timePeriod in timePeriods)
+            {
+                if (timePeriod.isTimeConditionMet(Time[0]))
                 {
-                    if (conditionSet.EntryDirection == Direction.Short)
-                    {						
-						ExitLong(Convert.ToInt32(CONTRACTS), "", "");
-                        EnterShort(Convert.ToInt32(CONTRACTS), "");
-                    }
-                    else if (conditionSet.EntryDirection == Direction.Long)
+                    if (CrossAbove(MACD1.Default, MACD1.Avg, 1))
                     {
-                        ExitShort(Convert.ToInt32(CONTRACTS), "", "");
-                        EnterLong(Convert.ToInt32(CONTRACTS), "");
+                        if (Position.MarketPosition == MarketPosition.Short)
+                            ExitShort(Convert.ToInt32(CONTRACTS), "", "");
+
+                        if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) >= SMA1[0]))
+                        {
+                            // Submits an entry limit order at the current low price to initiate an ATM Strategy if both order id and strategy id are in a reset state
+                            // **** YOU MUST HAVE AN ATM STRATEGY TEMPLATE NAMED 'AtmStrategyTemplate' CREATED IN NINJATRADER (SUPERDOM FOR EXAMPLE) FOR THIS TO WORK ****
+                            if (State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
+                            {								
+                                isAtmStrategyCreated = false;  // reset atm strategy created check to false
+                                atmStrategyId = GetAtmStrategyUniqueId();
+                                orderId = GetAtmStrategyUniqueId();								
+								
+                                AtmStrategyCreate(OrderAction.Buy, OrderType.Market, Low[0], 0, TimeInForce.Day, orderId, AtmStrategyTemplateId, atmStrategyId, (atmCallbackErrorCode, atmCallBackId) =>
+                                {
+                                    //check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
+                                    if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == atmStrategyId)
+                                        isAtmStrategyCreated = true;
+                                });
+                            }
+                            else
+                            {
+								if(EnableHistoricalMode)
+                                	EnterLong(Convert.ToInt32(CONTRACTS), "");
+                            }
+                        }
+                    }
+
+                    if (CrossBelow(MACD1.Default, MACD1.Avg, 1))
+                    {
+                        if (Position.MarketPosition == MarketPosition.Long)
+                            ExitLong(Convert.ToInt32(CONTRACTS), "", "");
+						
+						if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) <= SMA1[0]))
+						{
+							if (State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
+                            {								
+                                isAtmStrategyCreated = false;  // reset atm strategy created check to false
+                                atmStrategyId = GetAtmStrategyUniqueId();
+                                orderId = GetAtmStrategyUniqueId();
+								
+                                AtmStrategyCreate(OrderAction.Sell, OrderType.Market, High[0], 0, TimeInForce.Day, orderId, AtmStrategyTemplateId, atmStrategyId, (atmCallbackErrorCode, atmCallBackId) =>
+                                {
+                                    //check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
+									Print("atmCallbackErrorCode: " + atmCallbackErrorCode);
+									
+                                    if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == atmStrategyId)
+                                        isAtmStrategyCreated = true;
+                                });
+                            }
+                            else
+                            {
+								if (EnableHistoricalMode)
+									EnterShort(Convert.ToInt32(CONTRACTS), "");
+                            }
+						}
                     }
                 }
-            }
-			
-//			// Check for a pending entry order
-//			if (orderId.Length > 0)
-//			{
-//				string[] status = GetAtmStrategyEntryOrderStatus(orderId);
+            }			
 
-//				// If the status call can't find the order specified, the return array length will be zero otherwise it will hold elements
-//				if (status.GetLength(0) > 0)
-//				{
-//					// Print out some information about the order to the output window
-//					Print("The entry order average fill price is: " + status[0]);
-//					Print("The entry order filled amount is: " + status[1]);
-//					Print("The entry order order state is: " + status[2]);
+			// Check that atm strategy was created before checking other properties
+			if (!isAtmStrategyCreated)
+				return;
 
-//					// If the order state is terminal, reset the order id value
-//					if (status[2] == "Filled" || status[2] == "Cancelled" || status[2] == "Rejected")
-//						orderId = string.Empty;
-//				}
-//			} // If the strategy has terminated reset the strategy id
-//			else if (AtmStrategyId.Length > 0 && GetAtmStrategyMarketPosition(AtmStrategyId) == Cbi.MarketPosition.Flat)
-//				AtmStrategyId = string.Empty;
+			// Check for a pending entry order
+			if (orderId.Length > 0)
+			{
+				string[] status = GetAtmStrategyEntryOrderStatus(orderId);
 
-//			if (AtmStrategyId.Length > 0)
-//			{
-//				// You can change the stop price
-//				if (GetAtmStrategyMarketPosition(AtmStrategyId) != MarketPosition.Flat)
-//					AtmStrategyChangeStopTarget(0, Low[0] - 3 * TickSize, "STOP1", AtmStrategyId);
+				// If the status call can't find the order specified, the return array length will be zero otherwise it will hold elements
+				if (status.GetLength(0) > 0)
+				{
+					// Print out some information about the order to the output window
+					Print("The entry order average fill price is: " + status[0]);
+					Print("The entry order filled amount is: " + status[1]);
+					Print("The entry order order state is: " + status[2]);
 
-//				// Print some information about the strategy to the output window, please note you access the ATM strategy specific position object here
-//				// the ATM would run self contained and would not have an impact on your NinjaScript strategy position and PnL
-//				Print("The current ATM Strategy market position is: " + GetAtmStrategyMarketPosition(AtmStrategyId));
-//				Print("The current ATM Strategy position quantity is: " + GetAtmStrategyPositionQuantity(AtmStrategyId));
-//				Print("The current ATM Strategy average price is: " + GetAtmStrategyPositionAveragePrice(AtmStrategyId));
-//				Print("The current ATM Strategy Unrealized PnL is: " + GetAtmStrategyUnrealizedProfitLoss(AtmStrategyId));
-//			}
+					// If the order state is terminal, reset the order id value
+					if (status[2] == "Filled" || status[2] == "Cancelled" || status[2] == "Rejected")
+						orderId = string.Empty;
+				}
+			} // If the strategy has terminated reset the strategy id
+			else if (atmStrategyId.Length > 0 && GetAtmStrategyMarketPosition(atmStrategyId) == Cbi.MarketPosition.Flat)
+				atmStrategyId = string.Empty;
+
+			if (atmStrategyId.Length > 0)
+			{
+				// You can change the stop price
+				if (GetAtmStrategyMarketPosition(atmStrategyId) != MarketPosition.Flat)
+					AtmStrategyChangeStopTarget(0, Low[0] - 3 * TickSize, "STOP1", atmStrategyId);
+
+				// Print some information about the strategy to the output window, please note you access the ATM strategy specific position object here
+				// the ATM would run self contained and would not have an impact on your NinjaScript strategy position and PnL
+				Print("The current ATM Strategy market position is: " + GetAtmStrategyMarketPosition(atmStrategyId));
+				Print("The current ATM Strategy position quantity is: " + GetAtmStrategyPositionQuantity(atmStrategyId));
+				Print("The current ATM Strategy average price is: " + GetAtmStrategyPositionAveragePrice(atmStrategyId));
+				Print("The current ATM Strategy Unrealized PnL is: " + GetAtmStrategyUnrealizedProfitLoss(atmStrategyId));
+			}
         }
 
-        private class ConditionSet
+        private class TimePeriod
         {
-            private double currentValue;
-            private Func<bool> condition;
-            private DateTime currentTime;
+            private bool useTimePeriod;
             private DateTime startTime;
             private DateTime stopTime;
-            private bool timeCondition;
-            private bool smaFilter;
-            private double smaValue;
-            public Direction EntryDirection;
 
-            public ConditionSet(double currentValue, Func<bool> condition, DateTime currentTime, DateTime startTime, DateTime stopTime, bool timeCondition, bool smaFilter, double smaValue, Direction direction)
+            public TimePeriod(bool useTimePeriod, DateTime startTime, DateTime stopTime)
             {
-                this.currentValue = currentValue;
-                this.condition = condition;
-                this.currentTime = currentTime;
+                this.useTimePeriod = useTimePeriod;
                 this.startTime = startTime;
                 this.stopTime = stopTime;
-                this.timeCondition = timeCondition;
-                this.smaFilter = smaFilter;
-                this.smaValue = smaValue;
-                EntryDirection = direction;
             }
 
-            public bool CheckCondition()
+            public bool isTimeConditionMet(DateTime currentTime)
             {
-				bool smaFilterResult = !smaFilter || (EntryDirection == Direction.Short && currentValue <= smaValue) || (EntryDirection == Direction.Long && currentValue >= smaValue);
-                
-				return condition() &&
-                       (timeCondition && (currentTime.TimeOfDay >= startTime.TimeOfDay && currentTime.TimeOfDay <= stopTime.TimeOfDay)) 
-						&& smaFilterResult;
+                return useTimePeriod && (currentTime.TimeOfDay >= startTime.TimeOfDay && currentTime.TimeOfDay <= stopTime.TimeOfDay);
             }
-        }
-        
-        private enum Direction
-        {
-            Long,
-            Short
         }
 
         #region Properties
@@ -269,10 +268,15 @@ namespace NinjaTrader.NinjaScript.Strategies
         [Display(Name = "CONTRACTS", Order = 1, GroupName = "Parameters")]
         public int CONTRACTS
         { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "ATM Strategy", Description = "Turn on or off", Order = 1, GroupName = "Parameters")]
+        public string AtmStrategyTemplateId
+        { get; set; }
 		
 		[NinjaScriptProperty]
-        [Display(Name = "ATM Strategy", Description = "Turn on or off", Order = 1, GroupName = "Parameters")]
-        public string AtmStrategyId
+        [Display(Name = "Enable Historical Mode", Order = 1, GroupName = "Parameters")]
+        public bool EnableHistoricalMode
         { get; set; }
 
         [NinjaScriptProperty]
@@ -314,7 +318,7 @@ namespace NinjaTrader.NinjaScript.Strategies
         [Range(1, int.MaxValue)]
         [Display(Name = "SMA_Filter", Description = "Turn on or off", Order = 8, GroupName = "Parameters")]
         public int SMA_Filter
-        { get; set; }		
+        { get; set; }
 
         [NinjaScriptProperty]
         [Display(Name = "Time_2", Order = 9, GroupName = "Parameters")]
