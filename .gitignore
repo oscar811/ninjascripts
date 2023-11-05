@@ -5,3 +5,5 @@
 !.gitignore
 !/Strategies/
 !/Indicators/
+!NinjaTrader.Custom.sln
+!NinjaTrader.Custom.csproj

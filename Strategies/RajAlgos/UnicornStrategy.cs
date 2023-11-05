@@ -1,4 +1,4 @@
-#region Using declarations
+﻿#region Using declarations
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -96,7 +96,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 Print("bearishCandleLow: " + bearishCandleLow);
                 //Print("sslSweptBar: " + sslSweptBar);
 
-                FvgType? fvgType = isFVGPresent(CurrentBar - sslSweptBar);                
+                FvgType? fvgType = isFVGPresent(CurrentBar - sslSweptBar);
 
                 if (fvgType.HasValue && fvgType.Value == FvgType.Bearish)
                 {
