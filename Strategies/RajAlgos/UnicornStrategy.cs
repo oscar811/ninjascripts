@@ -34,6 +34,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private int sslSweptBar;
         private List<SwingPoint> swingHighs = new List<SwingPoint>();
         private List<SwingPoint> swingLows = new List<SwingPoint>();
+        private List<int> usedUnicorns = new List<int>();
+        private List<TimePeriod> timePeriods;
 
         protected override void OnStateChange()
         {
@@ -61,13 +63,31 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
+                Profit_Target = 800;
+                Stop_Loss = 500;
                 swingSize = 10;
+                gapSizeThreshold = 5;
+
+                Time_2 = true;
+                Start_Time_2 = DateTime.Parse("08:00", System.Globalization.CultureInfo.InvariantCulture);
+                Stop_Time_2 = DateTime.Parse("17:00", System.Globalization.CultureInfo.InvariantCulture);
             }
             else if (State == State.Configure)
             {
                 ClearOutputWindow();
 
-                swingIndicator = Swing(swingSize);
+                swingIndicator = Swing(1);
+
+                timePeriods = new List<TimePeriod>
+                {
+                    new TimePeriod(Time_2, Start_Time_2, Stop_Time_2)
+                };
+            }
+            else if (State == State.DataLoaded)
+            {
+                AddChartIndicator(swingIndicator);
+                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
+                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
             }
         }
 
@@ -75,40 +95,61 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         {
             if (CurrentBar < swingSize || CurrentBar < BarsRequiredToTrade) return;
 
-            //Draw.Text(this, "CurrentBarText" + CurrentBar, CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Black);
-            //Print("CurrentBar: " + CurrentBar);
+            Draw.Text(this, "CurrentBarText" + CurrentBar, CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Black);
+           
 
             AddSwingPoints();
 
-            if (CheckIfSwingHighIsTaken(High[0]))
+            if (High[0] >= swingIndicator.SwingHigh[swingSize] && !CheckIfSwingHighIsTaken(High[0]))
             {
+                Print("CurrentBar: " + CurrentBar);
+                Print("High[0]:" + High[0]);
+                Print("swingIndicator.SwingHigh[0]:" + swingIndicator.SwingHigh[swingSize]);
+            }
+
+            if (CheckIfSwingHighIsTaken(High[0]))
+            //if (High[0] >= swingIndicator.High[0])
+            {
+                
+
                 sslSweptBar = CurrentBar;
 
-                int bearishCandleBarAgo = FindBearishCandleBefore(CurrentBar);
+                int bearishCandleBarAgo = FindBearishCandleBefore(CurrentBar - 1);
                 bearishCandleBar = CurrentBar - bearishCandleBarAgo;
                 bearishCandleLow = Low[bearishCandleBarAgo];
             }
 
-            //            if (Close[0] < bearishCandleLow && (CurrentBar - bearishCandleBar) < 10 && sslSwept && (CurrentBar - sslSweptBar) < 5)
-            if (Close[0] < bearishCandleLow && (CurrentBar - bearishCandleBar) < 20)
+            if (CurrentBar > 110)
             {
-                //Print("bearishCandleBar: " + bearishCandleBar);
+                Print("bearishCandleBar: " + bearishCandleBar);
                 Print("bearishCandleLow: " + bearishCandleLow);
-                //Print("sslSweptBar: " + sslSweptBar);
+                Print("sslSweptBar: " + sslSweptBar);
+            }
 
+            //            if (Close[0] < bearishCandleLow && (CurrentBar - bearishCandleBar) < 10 && sslSwept && (CurrentBar - sslSweptBar) < 5)
+            if (Close[0] < bearishCandleLow && (CurrentBar - bearishCandleBar) < 20 && (CurrentBar - sslSweptBar) < 5
+                && Position.MarketPosition == MarketPosition.Flat
+                && !usedUnicorns.Contains(bearishCandleBar))
+            {                
                 FvgType? fvgType = isFVGPresent(CurrentBar - sslSweptBar);
 
                 if (fvgType.HasValue && fvgType.Value == FvgType.Bearish)
                 {
-                    // This is where you could place a short entry
-                    EnterShort("Bearish Unicorn Entry");
-
-                    string tag = "BB" + bearishCandleLow;
+                    string tag = "BB" + bearishCandleBar;
 
                     if (DrawObjects.FirstOrDefault(o => o.Tag == tag) == null)
                     {
                         Draw.Line(this, tag, false, CurrentBar - bearishCandleBar, bearishCandleLow, -20, bearishCandleLow, Brushes.Red, DashStyleHelper.Solid, 2);
-                        Draw.Text(this, tag + "Text", "-Uni", -22, bearishCandleLow, Brushes.Red);
+                        Draw.Text(this, tag + "Text", "-🦄", -22, bearishCandleLow, Brushes.Red);
+                    }
+
+                    foreach (var timePeriod in timePeriods)
+                    {
+                        if (timePeriod.isTimeConditionMet(Time[0]))
+                        {
+                            EnterShort("Bearish Unicorn Entry");
+                            usedUnicorns.Add(bearishCandleBar);
+                        }
                     }
                 }
             }
@@ -118,7 +159,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         private FvgType? isFVGPresent(int barsAgo)
         {
-            double gapSizeThreshold = 5;
             for (int i = 0; i <= barsAgo; i++)
             {
                 if (High[i] < Low[i + 2] && (Low[i + 2] - High[i]) >= gapSizeThreshold * TickSize)
@@ -141,12 +181,12 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         private void AddSwingPoints()
         {
-            if (High[0] >= swingIndicator.SwingHigh[0])
+            if (High[0] >= swingIndicator.SwingHigh[swingSize])
             {
                 swingHighs.Add(new SwingPoint { Price = High[0], BarIndex = CurrentBar, IsSwept = false });
             }
 
-            if (Low[0] <= swingIndicator.SwingLow[0])
+            if (Low[0] <= swingIndicator.SwingLow[swingSize])
             {
                 swingLows.Add(new SwingPoint { Price = Low[0], BarIndex = CurrentBar, IsSwept = false });
             }
@@ -207,14 +247,67 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             public bool IsSwept { get; set; }
         }
 
+        private class TimePeriod
+        {
+            private bool useTimePeriod;
+            private DateTime startTime;
+            private DateTime stopTime;
+
+            public TimePeriod(bool useTimePeriod, DateTime startTime, DateTime stopTime)
+            {
+                this.useTimePeriod = useTimePeriod;
+                this.startTime = startTime;
+                this.stopTime = stopTime;
+            }
+
+            public bool isTimeConditionMet(DateTime currentTime)
+            {
+                return useTimePeriod && (currentTime.TimeOfDay >= startTime.TimeOfDay && currentTime.TimeOfDay <= stopTime.TimeOfDay);
+            }
+        }
+
         #region Properties
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Swing Size", Order = 1, GroupName = "Parameters")]
+        [Display(Name = "Swing Size", Order = 1, GroupName = "Strategy")]
         public int swingSize
         { get; set; }
 
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "FVG Gap Size Threshold", Order = 1, GroupName = "Strategy")]
+        public int gapSizeThreshold
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Profit Target (ticks)", Order = 12, GroupName = "Atm")]
+        public int Profit_Target
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Stop Loss (ticks)", Order = 13, GroupName = "Atm")]
+        public int Stop_Loss
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Time_2", Order = 9, GroupName = "Time")]
+        public bool Time_2
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+        [Display(Name = "Start_Time_2", Description = "Start Time", Order = 10, GroupName = "Time")]
+        public DateTime Start_Time_2
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+        [Display(Name = "Stop_Time_2", Description = "End Time", Order = 11, GroupName = "Time")]
+        public DateTime Stop_Time_2
+        { get; set; }
         #endregion
     }
 }

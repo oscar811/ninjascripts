@@ -27,8 +27,6 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
     public class LiquidityLevels : Indicator
     {
         private Swing swingIndicator;
-        private List<SwingPoint> swingHighs = new List<SwingPoint>();
-        private List<SwingPoint> swingLows = new List<SwingPoint>();
 
         protected override void OnStateChange()
         {
@@ -45,111 +43,114 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             }
             else if (State == State.Configure)
             {
+                ClearOutputWindow();
+
                 swingIndicator = Swing(PivotLength);
+                SwingHighs = new List<SwingPoint>();
+                SwingLows = new List<SwingPoint>();
             }
         }
 
         protected override void OnBarUpdate()
         {
             if (CurrentBar < PivotLength) return;
-
-            // Update our lists of swing highs and lows
-            //if (swingIndicator.SwingHigh[0] > 0)
+            
             if (High[0] >= swingIndicator.SwingHigh[0])
             {
-                swingHighs.Add(new SwingPoint { Price = swingIndicator.SwingHigh[0], BarIndex = CurrentBar, IsSwept = false });
+                SwingHighs.Add(new SwingPoint { Tag = "SwingHigh-" + CurrentBar, Price = swingIndicator.SwingHigh[0], BarIndex = CurrentBar, IsSwept = false });
             }
 
-            //if (swingIndicator.SwingLow[0] > 0)
             if (Low[0] <= swingIndicator.SwingLow[0])
             {
-                swingLows.Add(new SwingPoint { Price = swingIndicator.SwingLow[0], BarIndex = CurrentBar, IsSwept = false });
+                SwingLows.Add(new SwingPoint { Tag = "SwingLow-" + CurrentBar, Price = swingIndicator.SwingLow[0], BarIndex = CurrentBar, IsSwept = false });
             }
 
-            // Check for sweep
             CheckForSweep();
 
             RemoveSweptSwingPoints();
 
-            // Plot remaining unswept swings
             PlotSwings();
-
-            Print("swingHighs.Count:" + swingHighs.Count);
-            Print("swingLows.Count:" + swingLows.Count);
         }
 
         private void CheckForSweep()
         {
-            // Logic to mark swept swing points
-            for (int i = 0; i < swingHighs.Count - 1; i++)
+            for (int i = 0; i < SwingHighs.Count - 1; i++)
             {
-                if (!swingHighs[i].IsSwept && High[0] >= swingHighs[i].Price)
-                {
-                    swingHighs[i].IsSwept = true;
-                }
+                if (!SwingHighs[i].IsSwept && High[0] >= SwingHighs[i].Price)                
+                    SwingHighs[i].IsSwept = true;                
             }
-
-            //Print("IsSwept: " + swingHighs.Count(s => s.IsSwept));
-            //Print("UnSwept: " + swingHighs.Count(s => !s.IsSwept));
-
-            for (int i = 0; i < swingLows.Count - 1; i++)
+            
+            for (int i = 0; i < SwingLows.Count - 1; i++)
             {
-                if (!swingLows[i].IsSwept && Low[0] <= swingLows[i].Price)
-                    swingLows[i].IsSwept = true;
-            }
-
-            // Remove swept swing points
-            swingHighs.RemoveAll(swingHigh => swingHigh.IsSwept);
-            swingLows.RemoveAll(swingLow => swingLow.IsSwept);
+                if (!SwingLows[i].IsSwept && Low[0] <= SwingLows[i].Price)
+                    SwingLows[i].IsSwept = true;
+            }            
         }
 
         private void PlotSwings()
         {
-            // Logic to plot unswept swing points on the chart
-            foreach (var swingHigh in swingHighs)
+            foreach (var swingHigh in SwingHighs)
             {
-                if (!swingHigh.IsSwept)
-                    Draw.Dot(this, "SwingHigh" + CurrentBar, false, 0, swingHigh.Price, Brushes.Green);
+                if (!swingHigh.IsSwept && !swingHigh.IsPainted)
+                {
+                    Draw.Line(this, swingHigh.Tag, false, 0, swingHigh.Price, -20, swingHigh.Price, Brushes.Green, DashStyleHelper.Solid, 1);
+                    swingHigh.IsPainted = true;
+                }
             }
 
-            foreach (var swingLow in swingLows)
+            foreach (var swingLow in SwingLows)
             {
-                if (!swingLow.IsSwept)
-                    Draw.Dot(this, "SwingLow" + CurrentBar, false, 0, swingLow.Price, Brushes.Red);
+                if (!swingLow.IsSwept && !swingLow.IsPainted)
+                {
+                    Draw.Line(this, swingLow.Tag, false, 0, swingLow.Price, -20, swingLow.Price, Brushes.Red, DashStyleHelper.Solid, 1);
+                    swingLow.IsPainted = true;
+                }
             }
         }
 
         private void RemoveSweptSwingPoints()
         {
-            for (int i = swingHighs.Count - 1; i >= 0; i--)
+            for (int i = SwingHighs.Count - 1; i >= 0; i--)
             {
-                if (swingHighs[i].IsSwept)
+                if (SwingHighs[i].IsSwept)
                 {
-                    // Swing high has been swept, remove the plot and the point from the list
-                    RemoveDrawObject("SwingHigh" + swingHighs[i].BarIndex);
-                    swingHighs.RemoveAt(i);
+                    RemoveDrawObject(SwingHighs[i].Tag);
+                    SwingHighs.RemoveAt(i);
 
-                    Print("SwingHigh" + swingHighs[i].BarIndex + " removed.");
+                    Print(SwingHighs[i].Tag + " removed.");
                 }
             }
 
-            for (int i = swingLows.Count - 1; i >= 0; i--)
+            for (int i = SwingLows.Count - 1; i >= 0; i--)
             {
-                if (swingLows[i].IsSwept)
+                if (SwingLows[i].IsSwept)
                 {
-                    // Swing low has been swept, remove the plot and the point from the list
-                    RemoveDrawObject("SwingLow" + swingLows[i].BarIndex);
-                    swingLows.RemoveAt(i);
+                    RemoveDrawObject(SwingLows[i].Tag);
+                    SwingLows.RemoveAt(i);
                 }
             }
         }
 
         public class SwingPoint
         {
+            public string Tag { get; set; }
             public double Price { get; set; }
             public int BarIndex { get; set; }
             public bool IsSwept { get; set; }
-        }    
+            public bool IsPainted { get; set; }
+        }
+
+        #region output
+
+        [Browsable(false)]
+        [XmlIgnore()]
+        public List<SwingPoint> SwingHighs { get; set; }
+
+        [Browsable(false)]
+        [XmlIgnore()]
+        public List<SwingPoint> SwingLows { get; set; }
+
+        #endregion
 
         #region Properties
 

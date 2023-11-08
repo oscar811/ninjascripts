@@ -53,7 +53,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             {
                 Description = @"Peace Bringer";
                 Name = "PeaceBringer";
-                Calculate = Calculate.OnBarClose;
+                Calculate = Calculate.OnEachTick;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;
                 IsExitOnSessionCloseStrategy = true;
