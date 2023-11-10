@@ -59,6 +59,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
             //if (CurrentBar < 150)
             //    return;
+            
             // Check to make sure the end time is not earlier than the start time
             if (EndHour < StartHour)
                 return;

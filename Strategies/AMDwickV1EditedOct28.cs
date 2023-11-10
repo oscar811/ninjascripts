@@ -19,6 +19,7 @@ using NinjaTrader.Data;
 using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.Indicators;
+using NinjaTrader.NinjaScript.Indicators.RajIndicators;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 

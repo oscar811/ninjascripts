@@ -93,6 +93,7 @@ namespace NinjaTrader.NinjaScript.Strategies
     <ConditionalAction>
       <Actions>
         <WizardAction>
+          <Children />
           <IsExpanded>false</IsExpanded>
           <IsSelected>true</IsSelected>
           <Name>Enter long position</Name>
@@ -114,6 +115,7 @@ namespace NinjaTrader.NinjaScript.Strategies
               <IsInt>true</IsInt>
               <BindingValue xsi:type="xsd:string">DefaultQuantity</BindingValue>
               <DynamicValue>
+                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>false</IsSelected>
                 <Name>Default order quantity</Name>
@@ -172,6 +174,7 @@ namespace NinjaTrader.NinjaScript.Strategies
           <Conditions>
             <WizardCondition>
               <LeftItem xsi:type="WizardConditionItem">
+                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>true</IsSelected>
                 <Name>Close</Name>
@@ -201,6 +204,7 @@ namespace NinjaTrader.NinjaScript.Strategies
               <Lookback>1</Lookback>
               <Operator>GreaterEqual</Operator>
               <RightItem xsi:type="WizardConditionItem">
+                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>true</IsSelected>
                 <Name>Swing</Name>

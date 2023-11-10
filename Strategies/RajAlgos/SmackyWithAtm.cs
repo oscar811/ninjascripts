@@ -23,7 +23,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
 //This namespace holds Strategies in this folder and is required. Do not change it. 
-namespace NinjaTrader.NinjaScript.Strategies
+namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class SmackyWithAtm : Strategy
     {
@@ -57,9 +57,9 @@ namespace NinjaTrader.NinjaScript.Strategies
                 // Disable this property for performance gains in Strategy Analyzer optimizations
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
-				
-				EnableHistoricalMode = false;
-                CONTRACTS = 2;
+
+                EnableHistoricalMode = false;
+                Contracts = 2;
                 Macd_Signal = 26;
                 Macd_Fast = 12;
                 Macd_Diff = 9;
@@ -118,13 +118,15 @@ namespace NinjaTrader.NinjaScript.Strategies
 
         protected override void OnBarUpdate()
         {
-            if (CurrentBar < BarsRequiredToTrade)
-                return;
+            try
+            {
+                if (CurrentBar < BarsRequiredToTrade)
+                    return;
 
-            if (BarsInProgress != 0 || CurrentBars[0] < 1)
-                return;
+                if (BarsInProgress != 0 || CurrentBars[0] < 1)
+                    return;
 
-            List<TimePeriod> timePeriods = new List<TimePeriod>
+                List<TimePeriod> timePeriods = new List<TimePeriod>
             {
                 new TimePeriod(Time_2, Start_Time_2, Stop_Time_2),
                 new TimePeriod(Time_3, Start_Time_3, Stop_Time_3),
@@ -137,110 +139,116 @@ namespace NinjaTrader.NinjaScript.Strategies
                 new TimePeriod(Time_10, Start_Time_10, Stop_Time_10),
             };
 
-            foreach (var timePeriod in timePeriods)
-            {
-                if (timePeriod.isTimeConditionMet(Time[0]))
+                foreach (var timePeriod in timePeriods)
                 {
-                    if (CrossAbove(MACD1.Default, MACD1.Avg, 1))
+                    if (timePeriod.isTimeConditionMet(Time[0]))
                     {
-                        if (Position.MarketPosition == MarketPosition.Short)
-                            ExitShort(Convert.ToInt32(CONTRACTS), "", "");
-
-                        if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) >= SMA1[0]))
+                        if (CrossAbove(MACD1.Default, MACD1.Avg, 1))
                         {
-                            // Submits an entry limit order at the current low price to initiate an ATM Strategy if both order id and strategy id are in a reset state
-                            // **** YOU MUST HAVE AN ATM STRATEGY TEMPLATE NAMED 'AtmStrategyTemplate' CREATED IN NINJATRADER (SUPERDOM FOR EXAMPLE) FOR THIS TO WORK ****
-                            if (State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
-                            {								
-                                isAtmStrategyCreated = false;  // reset atm strategy created check to false
-                                atmStrategyId = GetAtmStrategyUniqueId();
-                                orderId = GetAtmStrategyUniqueId();								
-								
-                                AtmStrategyCreate(OrderAction.Buy, OrderType.Market, Low[0], 0, TimeInForce.Day, orderId, AtmStrategyTemplateId, atmStrategyId, (atmCallbackErrorCode, atmCallBackId) =>
-                                {
-                                    //check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
-                                    if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == atmStrategyId)
-                                        isAtmStrategyCreated = true;
-                                });
-                            }
-                            else
+                            if (Position.MarketPosition == MarketPosition.Short)
+                                ExitShort(Convert.ToInt32(Contracts), "", "");
+
+                            if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) >= SMA1[0]))
                             {
-								if(EnableHistoricalMode)
-                                	EnterLong(Convert.ToInt32(CONTRACTS), "");
+                                // Submits an entry limit order at the current low price to initiate an ATM Strategy if both order id and strategy id are in a reset state
+                                // **** YOU MUST HAVE AN ATM STRATEGY TEMPLATE NAMED 'AtmStrategyTemplate' CREATED IN NINJATRADER (SUPERDOM FOR EXAMPLE) FOR THIS TO WORK ****
+                                if (!EnableHistoricalMode && State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
+                                {
+                                    isAtmStrategyCreated = false;  // reset atm strategy created check to false
+                                    atmStrategyId = GetAtmStrategyUniqueId();
+                                    orderId = GetAtmStrategyUniqueId();
+
+                                    AtmStrategyCreate(OrderAction.Buy, OrderType.Market, Low[0], 0, TimeInForce.Day, orderId, AtmStrategyTemplateId, atmStrategyId, (atmCallbackErrorCode, atmCallBackId) =>
+                                    {
+                                        //check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
+                                        if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == atmStrategyId)
+                                            isAtmStrategyCreated = true;
+                                    });
+                                }
+                                else
+                                {
+                                    if (EnableHistoricalMode)
+                                        EnterLong(Convert.ToInt32(Contracts), "");
+                                }
+                            }
+                        }
+
+                        if (CrossBelow(MACD1.Default, MACD1.Avg, 1))
+                        {
+                            if (Position.MarketPosition == MarketPosition.Long)
+                                ExitLong(Convert.ToInt32(Contracts), "", "");
+
+                            if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) <= SMA1[0]))
+                            {
+                                if (!EnableHistoricalMode && State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
+                                {
+                                    isAtmStrategyCreated = false;  // reset atm strategy created check to false
+                                    atmStrategyId = GetAtmStrategyUniqueId();
+                                    orderId = GetAtmStrategyUniqueId();
+
+                                    AtmStrategyCreate(OrderAction.Sell, OrderType.Market, High[0], 0, TimeInForce.Day, orderId, AtmStrategyTemplateId, atmStrategyId, (atmCallbackErrorCode, atmCallBackId) =>
+                                    {
+                                        //check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
+                                        Print("atmCallbackErrorCode: " + atmCallbackErrorCode);
+
+                                        if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == atmStrategyId)
+                                            isAtmStrategyCreated = true;
+                                    });
+                                }
+                                else
+                                {
+                                    if (EnableHistoricalMode)
+                                        EnterShort(Convert.ToInt32(Contracts), "");
+                                }
                             }
                         }
                     }
-
-                    if (CrossBelow(MACD1.Default, MACD1.Avg, 1))
-                    {
-                        if (Position.MarketPosition == MarketPosition.Long)
-                            ExitLong(Convert.ToInt32(CONTRACTS), "", "");
-						
-						if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) <= SMA1[0]))
-						{
-							if (State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
-                            {								
-                                isAtmStrategyCreated = false;  // reset atm strategy created check to false
-                                atmStrategyId = GetAtmStrategyUniqueId();
-                                orderId = GetAtmStrategyUniqueId();
-								
-                                AtmStrategyCreate(OrderAction.Sell, OrderType.Market, High[0], 0, TimeInForce.Day, orderId, AtmStrategyTemplateId, atmStrategyId, (atmCallbackErrorCode, atmCallBackId) =>
-                                {
-                                    //check that the atm strategy create did not result in error, and that the requested atm strategy matches the id in callback
-									Print("atmCallbackErrorCode: " + atmCallbackErrorCode);
-									
-                                    if (atmCallbackErrorCode == ErrorCode.NoError && atmCallBackId == atmStrategyId)
-                                        isAtmStrategyCreated = true;
-                                });
-                            }
-                            else
-                            {
-								if (EnableHistoricalMode)
-									EnterShort(Convert.ToInt32(CONTRACTS), "");
-                            }
-						}
-                    }
                 }
-            }			
 
-			// Check that atm strategy was created before checking other properties
-			if (!isAtmStrategyCreated)
-				return;
+                // Check that atm strategy was created before checking other properties
+                if (!isAtmStrategyCreated)
+                    return;
 
-			// Check for a pending entry order
-			if (orderId.Length > 0)
-			{
-				string[] status = GetAtmStrategyEntryOrderStatus(orderId);
+                // Check for a pending entry order
+                if (orderId.Length > 0)
+                {
+                    string[] status = GetAtmStrategyEntryOrderStatus(orderId);
 
-				// If the status call can't find the order specified, the return array length will be zero otherwise it will hold elements
-				if (status.GetLength(0) > 0)
-				{
-					// Print out some information about the order to the output window
-					Print("The entry order average fill price is: " + status[0]);
-					Print("The entry order filled amount is: " + status[1]);
-					Print("The entry order order state is: " + status[2]);
+                    // If the status call can't find the order specified, the return array length will be zero otherwise it will hold elements
+                    if (status.GetLength(0) > 0)
+                    {
+                        // Print out some information about the order to the output window
+                        Print("The entry order average fill price is: " + status[0]);
+                        Print("The entry order filled amount is: " + status[1]);
+                        Print("The entry order order state is: " + status[2]);
 
-					// If the order state is terminal, reset the order id value
-					if (status[2] == "Filled" || status[2] == "Cancelled" || status[2] == "Rejected")
-						orderId = string.Empty;
-				}
-			} // If the strategy has terminated reset the strategy id
-			else if (atmStrategyId.Length > 0 && GetAtmStrategyMarketPosition(atmStrategyId) == Cbi.MarketPosition.Flat)
-				atmStrategyId = string.Empty;
+                        // If the order state is terminal, reset the order id value
+                        if (status[2] == "Filled" || status[2] == "Cancelled" || status[2] == "Rejected")
+                            orderId = string.Empty;
+                    }
+                } // If the strategy has terminated reset the strategy id
+                else if (atmStrategyId.Length > 0 && GetAtmStrategyMarketPosition(atmStrategyId) == Cbi.MarketPosition.Flat)
+                    atmStrategyId = string.Empty;
 
-			if (atmStrategyId.Length > 0)
-			{
-				// You can change the stop price
-				if (GetAtmStrategyMarketPosition(atmStrategyId) != MarketPosition.Flat)
-					AtmStrategyChangeStopTarget(0, Low[0] - 3 * TickSize, "STOP1", atmStrategyId);
+                if (atmStrategyId.Length > 0)
+                {
+                    // You can change the stop price
+                    if (GetAtmStrategyMarketPosition(atmStrategyId) != MarketPosition.Flat)
+                        AtmStrategyChangeStopTarget(0, Low[0] - 3 * TickSize, "STOP1", atmStrategyId);
 
-				// Print some information about the strategy to the output window, please note you access the ATM strategy specific position object here
-				// the ATM would run self contained and would not have an impact on your NinjaScript strategy position and PnL
-				Print("The current ATM Strategy market position is: " + GetAtmStrategyMarketPosition(atmStrategyId));
-				Print("The current ATM Strategy position quantity is: " + GetAtmStrategyPositionQuantity(atmStrategyId));
-				Print("The current ATM Strategy average price is: " + GetAtmStrategyPositionAveragePrice(atmStrategyId));
-				Print("The current ATM Strategy Unrealized PnL is: " + GetAtmStrategyUnrealizedProfitLoss(atmStrategyId));
-			}
+                    // Print some information about the strategy to the output window, please note you access the ATM strategy specific position object here
+                    // the ATM would run self contained and would not have an impact on your NinjaScript strategy position and PnL
+                    Print("The current ATM Strategy market position is: " + GetAtmStrategyMarketPosition(atmStrategyId));
+                    Print("The current ATM Strategy position quantity is: " + GetAtmStrategyPositionQuantity(atmStrategyId));
+                    Print("The current ATM Strategy average price is: " + GetAtmStrategyPositionAveragePrice(atmStrategyId));
+                    Print("The current ATM Strategy Unrealized PnL is: " + GetAtmStrategyUnrealizedProfitLoss(atmStrategyId));
+                }
+            }
+            catch (Exception e)
+            {
+                Print("Exception caught: " + e.Message);
+                Print("Stack Trace: " + e.StackTrace);
+            }
         }
 
         private class TimePeriod
@@ -263,213 +271,214 @@ namespace NinjaTrader.NinjaScript.Strategies
         }
 
         #region Properties
+
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "CONTRACTS", Order = 1, GroupName = "Parameters")]
-        public int CONTRACTS
+        [Display(Name = "Contracts", Order = 1, GroupName = "ATM")]
+        public int Contracts
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "ATM Strategy", Description = "Turn on or off", Order = 1, GroupName = "Parameters")]
-        public string AtmStrategyTemplateId
-        { get; set; }
-		
-		[NinjaScriptProperty]
-        [Display(Name = "Enable Historical Mode", Order = 1, GroupName = "Parameters")]
+        [Display(Name = "Enable Historical Mode", Order = 2, GroupName = "ATM")]
         public bool EnableHistoricalMode
         { get; set; }
-
+        
         [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Macd_Signal", Description = "Macd Signal", Order = 2, GroupName = "Parameters")]
-        public int Macd_Signal
+        [Display(Name = "ATM Strategy (Only real time)", Order = 3, GroupName = "ATM")]
+        public string AtmStrategyTemplateId
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Macd_Fast", Description = "Macd 12,26,9 Default", Order = 3, GroupName = "Parameters")]
-        public int Macd_Fast
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Macd_Diff", Description = "Macd Default 12,26,9", Order = 4, GroupName = "Parameters")]
-        public int Macd_Diff
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Profit_Target", Order = 5, GroupName = "Parameters")]
+        [Display(Name = "Profit_Target", Order = 4, GroupName = "ATM")]
         public int Profit_Target
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Stop_Loss", Order = 6, GroupName = "Parameters")]
+        [Display(Name = "Stop_Loss", Order = 5, GroupName = "ATM")]
         public int Stop_Loss
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Enable_SMA_Filter", Description = "Filter out long and shorts based on if price is below or above the choosed MA", Order = 7, GroupName = "Parameters")]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Macd_Signal", Order = 2, GroupName = "Signal")]
+        public int Macd_Signal
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Macd_Fast", Order = 3, GroupName = "Signal")]
+        public int Macd_Fast
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Macd_Diff", Order = 4, GroupName = "Signal")]
+        public int Macd_Diff
+        { get; set; }        
+
+        [NinjaScriptProperty]
+        [Display(Name = "Enable_SMA_Filter", Description = "Filter out long and shorts based on if price is below or above the choosed MA", Order = 7, GroupName = "Signal")]
         public bool Enable_SMA_Filter
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "SMA_Filter", Description = "Turn on or off", Order = 8, GroupName = "Parameters")]
+        [Display(Name = "SMA_Filter", Description = "Turn on or off", Order = 8, GroupName = "Signal")]
         public int SMA_Filter
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_2", Order = 9, GroupName = "Parameters")]
+        [Display(Name = "Time_2", Order = 9, GroupName = "Time")]
         public bool Time_2
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_2", Description = "3:22am-London", Order = 10, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_2", Description = "3:22am-London", Order = 10, GroupName = "Time")]
         public DateTime Start_Time_2
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_2", Description = "4:07am London", Order = 11, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_2", Description = "4:07am London", Order = 11, GroupName = "Time")]
         public DateTime Stop_Time_2
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_3", Order = 12, GroupName = "Parameters")]
+        [Display(Name = "Time_3", Order = 12, GroupName = "Time")]
         public bool Time_3
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_3", Description = "New York 7:52am", Order = 13, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_3", Description = "New York 7:52am", Order = 13, GroupName = "Time")]
         public DateTime Start_Time_3
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_3", Description = "New York  08:37am", Order = 14, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_3", Description = "New York  08:37am", Order = 14, GroupName = "Time")]
         public DateTime Stop_Time_3
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_4", Order = 15, GroupName = "Parameters")]
+        [Display(Name = "Time_4", Order = 15, GroupName = "Time")]
         public bool Time_4
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_4", Description = "9:22am", Order = 16, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_4", Description = "9:22am", Order = 16, GroupName = "Time")]
         public DateTime Start_Time_4
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_4", Description = "10:07am", Order = 17, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_4", Description = "10:07am", Order = 17, GroupName = "Time")]
         public DateTime Stop_Time_4
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_5", Order = 18, GroupName = "Parameters")]
+        [Display(Name = "Time_5", Order = 18, GroupName = "Time")]
         public bool Time_5
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_5", Order = 19, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_5", Order = 19, GroupName = "Time")]
         public DateTime Start_Time_5
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_5", Description = "2:37pm", Order = 20, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_5", Description = "2:37pm", Order = 20, GroupName = "Time")]
         public DateTime Stop_Time_5
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_6", Order = 21, GroupName = "Parameters")]
+        [Display(Name = "Time_6", Order = 21, GroupName = "Time")]
         public bool Time_6
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_6", Description = "3:22pm", Order = 22, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_6", Description = "3:22pm", Order = 22, GroupName = "Time")]
         public DateTime Start_Time_6
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_6", Description = "AMD sayd 4:07 but that is usually and exit time so we have this programmed to stop trading at 3:55pm", Order = 23, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_6", Order = 23, GroupName = "Time")]
         public DateTime Stop_Time_6
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_7", Order = 24, GroupName = "Parameters")]
+        [Display(Name = "Time_7", Order = 24, GroupName = "Time")]
         public bool Time_7
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_7", Description = "1:52am  Asia AMD entry time", Order = 25, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_7", Description = "1:52am  Asia AMD entry time", Order = 25, GroupName = "Time")]
         public DateTime Start_Time_7
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_7", Description = "2:37am", Order = 26, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_7", Description = "2:37am", Order = 26, GroupName = "Time")]
         public DateTime Stop_Time_7
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_8", Order = 27, GroupName = "Parameters")]
+        [Display(Name = "Time_8", Order = 27, GroupName = "Time")]
         public bool Time_8
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_8", Order = 28, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_8", Order = 28, GroupName = "Time")]
         public DateTime Start_Time_8
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_8", Order = 29, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_8", Order = 29, GroupName = "Time")]
         public DateTime Stop_Time_8
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_9", Order = 30, GroupName = "Parameters")]
+        [Display(Name = "Time_9", Order = 30, GroupName = "Time")]
         public bool Time_9
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_9", Order = 31, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_9", Order = 31, GroupName = "Time")]
         public DateTime Start_Time_9
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_9", Order = 32, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_9", Order = 32, GroupName = "Time")]
         public DateTime Stop_Time_9
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Time_10", Order = 33, GroupName = "Parameters")]
+        [Display(Name = "Time_10", Order = 33, GroupName = "Time")]
         public bool Time_10
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Start_Time_10", Description = "12:00am", Order = 34, GroupName = "Parameters")]
+        [Display(Name = "Start_Time_10", Description = "12:00am", Order = 34, GroupName = "Time")]
         public DateTime Start_Time_10
         { get; set; }
 
         [NinjaScriptProperty]
         [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Stop_Time_10", Order = 35, GroupName = "Parameters")]
+        [Display(Name = "Stop_Time_10", Order = 35, GroupName = "Time")]
         public DateTime Stop_Time_10
         { get; set; }
         #endregion

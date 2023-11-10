@@ -220,7 +220,6 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
-    <Compile Include="Indicators\RajIndicators\SessionLevels.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartNetChange.cs" />
     <Compile Include="MarketAnalyzerColumns\%40DaysUntilRollover.cs" />
@@ -501,8 +500,6 @@
     <Compile Include="Indicators\%40CurrentDayOHL.cs" />
     <Compile Include="Indicators\ICTFVG.cs" />
     <Compile Include="Indicators\AMDCyclesIndicator.cs" />
-    <Compile Include="Indicators\SessionHighLow.cs" />
-    <Compile Include="Indicators\SampleGetHighLowByTimeRange.cs" />
     <Compile Include="Indicators\%40MAX.cs" />
     <Compile Include="Indicators\%40MIN.cs" />
     <Compile Include="Indicators\RajIndicators\RMA.cs" />
@@ -542,6 +539,13 @@
     <Compile Include="Indicators\AuZeroLagTEMA.cs" />
     <Compile Include="Indicators\AuZLEMA.cs" />
     <Compile Include="Strategies\WickyAMDNYopen.cs" />
+    <Compile Include="Strategies\MyCustomStrategy.cs" />
+    <Compile Include="Strategies\RajAlgos\JudasStrategy.cs" />
+    <Compile Include="Strategies\RajAlgos\SmackyWithAtm.cs" />
+    <Compile Include="Indicators\RajIndicators\SessionHighLow.cs" />
+    <Compile Include="Indicators\SessionLevels.cs" />
+    <Compile Include="Indicators\RajIndicators\SessionLevels.cs" />
+    <Compile Include="Indicators\RajIndicators\AMDCyclesIndicator.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
