@@ -20,6 +20,7 @@ using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
+using NinjaTrader.NinjaScript.Indicators.RajIndicators;
 #endregion
 
 //This namespace holds Strategies in this folder and is required. Do not change it. 
@@ -27,6 +28,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class JudasStrategy : Strategy
     {
+        private SessionLevels sessionLevels;
+        
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
@@ -55,44 +58,30 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 EnableAtm = false;
                 AtmStrategyTemplateId = "your atm";
-                Profit_Target = 200;
-                Stop_Loss = 100;
-
-                Start_Time_1 = DateTime.Parse("20:00", System.Globalization.CultureInfo.InvariantCulture);
-                Stop_Time_1 = DateTime.Parse("22:00", System.Globalization.CultureInfo.InvariantCulture);
+                Profit_Target = 2000;
+                Stop_Loss = 1000;                
             }
             else if (State == State.Configure)
             {
                 ClearOutputWindow();
 
+                //sessionLevels = SessionLevels(true, true)
                 AddPlot(Brushes.Green, "HighestHigh");
                 AddPlot(Brushes.Red, "LowestLow");
             }
             else if (State == State.DataLoaded)
             {
+                sessionLevels = SessionLevels(Close, true, true, true, true, DateTime.Parse("6:00 PM"), DateTime.Parse("11:59 PM"), true, DateTime.Parse("12:00 AM"), DateTime.Parse("6:00 AM"), true, DateTime.Parse("6:00 AM"), DateTime.Parse("12:00 PM"), true, DateTime.Parse("12:00 PM"), DateTime.Parse("6:00 PM"));
+
                 SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
                 SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
             }
         }
 
-        private DateTime startDateTime;
-        private DateTime endDateTime;
-
-        #region Properties
-        [Browsable(false)]
-        [XmlIgnore]
-        public Series<double> HighestHigh
-        {
-            get { return Values[0]; }
-        }
-
-        [Browsable(false)]
-        [XmlIgnore]
-        public Series<double> LowestLow
-        {
-            get { return Values[1]; }
-        }
-        #endregion
+        private bool isHighTaken;
+        private bool isLowTaken;
+        private bool isHighTakenFirst;
+        private bool isLowTakenFirst;
 
         protected override void OnBarUpdate()
         {
@@ -112,39 +101,32 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     return;
 
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
-                    return;                
+                    return;
 
-                DateTime StartTime1 = new DateTime(Time[0].Year, Time[0].Month, Time[0].Day, Start_Time_1.Hour, Start_Time_1.Minute, 0);
-                DateTime EndTime1 = new DateTime(Time[0].Year, Time[0].Month, Time[0].Day, Stop_Time_1.Hour, Stop_Time_1.Minute, 0);
-                if (StartTime1.Hour == 0) StartTime1 = StartTime1.AddDays(1);
-                if (EndTime1.Hour == 0) EndTime1 = EndTime1.AddDays(1);
-
-                if (Time[0].TimeOfDay < new TimeSpan(StartTime1.Hour, EndTime1.Minute, 0))
+                if (sessionLevels.Asian_High[0] == 0)
                 {
-                    StartTime1 = StartTime1.AddDays(-1);
-                    EndTime1 = EndTime1.AddDays(-1);
+                    isHighTaken = false;
+                    isLowTaken = false;
                 }
-                          
+                
+                if (High[0] > sessionLevels.Asian_High[0] && sessionLevels.London_High[0] == 0)
+                {
+                    isHighTaken = true;
+                    if (isLowTaken)
+                    {
+                        isLowTakenFirst = true;  
+                    }
+                }
 
-                if (Time[0] > EndTime1)
-                {                    
-                    int startBarsAgo = Bars.GetBar(StartTime1);
-                    int endBarsAgo = Bars.GetBar(EndTime1);                    
+                if (Low[0] < sessionLevels.Asian_Low[0] && sessionLevels.London_High[0] == 0)
+                {
+                    isLowTaken = true;
+                    if (isHighTaken)
+                    {
+                        isHighTakenFirst = true;
+                    }
+                }
 
-                    /* Now that we have the start and end bars ago values for the specified time range we can calculate the highest high for this range
-
-                    Note: We add 1 to the period range for MAX and MIN to compensate for the difference between "period" logic and "bars ago" logic.
-                    "Period" logic means exactly how many bars you want to check including the current bar.
-                    "Bars ago" logic means how many bars we are going to go backwards. The current bar is not counted because on that bar we aren't going back any bars so it would be "bars ago = 0" */
-                    double highestHigh = MAX(High, endBarsAgo - startBarsAgo + 1)[CurrentBar - endBarsAgo];
-
-                    // Now that we have the start and end bars ago values for the specified time range we can calculate the lowest low for this range
-                    double lowestLow = MIN(Low, endBarsAgo - startBarsAgo + 1)[CurrentBar - endBarsAgo];
-
-                    // Set the plot values
-                    HighestHigh[0] = highestHigh;
-                    LowestLow[0] = lowestLow;
-                }                
             }
             catch (Exception e)
             {

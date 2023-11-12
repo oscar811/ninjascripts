@@ -27,7 +27,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public class MyCustomStrategy : Strategy
 	{
-		private Swing Swing1;
+		private NinjaTrader.NinjaScript.Indicators.RajIndicators.SessionLevels SessionLevels1;
 
 		protected override void OnStateChange()
 		{
@@ -59,10 +59,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 			}
 			else if (State == State.DataLoaded)
 			{				
-				Swing1				= Swing(Close, 5);
-				Swing1.Plots[0].Brush = Brushes.DarkCyan;
-				Swing1.Plots[1].Brush = Brushes.Goldenrod;
-				AddChartIndicator(Swing1);
+				SessionLevels1 = SessionLevels(Close, true, true, true, true, DateTime.Parse("6:00 PM"), DateTime.Parse("11:59 PM"), true, DateTime.Parse("12:00 AM"), DateTime.Parse("6:00 AM"), true, DateTime.Parse("6:00 AM"), DateTime.Parse("12:00 PM"), true, DateTime.Parse("12:00 PM"), DateTime.Parse("6:00 PM"));
 			}
 		}
 
@@ -75,7 +72,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				return;
 
 			 // Set 1
-			if (Close[0] >= Swing1.SwingHigh[0])
+			if (Open[0] > SessionLevels1.Asian_High[0])
 			{
 				EnterLong(Convert.ToInt32(DefaultQuantity), "");
 			}
@@ -93,7 +90,6 @@ namespace NinjaTrader.NinjaScript.Strategies
     <ConditionalAction>
       <Actions>
         <WizardAction>
-          <Children />
           <IsExpanded>false</IsExpanded>
           <IsSelected>true</IsSelected>
           <Name>Enter long position</Name>
@@ -115,7 +111,6 @@ namespace NinjaTrader.NinjaScript.Strategies
               <IsInt>true</IsInt>
               <BindingValue xsi:type="xsd:string">DefaultQuantity</BindingValue>
               <DynamicValue>
-                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>false</IsSelected>
                 <Name>Default order quantity</Name>
@@ -126,7 +121,7 @@ namespace NinjaTrader.NinjaScript.Strategies
                 </AssignedCommand>
                 <BarsAgo>0</BarsAgo>
                 <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-04T19:05:25.2938367</Date>
+                <Date>2023-11-09T22:37:02.4998967</Date>
                 <DayOfWeek>Sunday</DayOfWeek>
                 <EndBar>0</EndBar>
                 <ForceSeriesIndex>false</ForceSeriesIndex>
@@ -154,7 +149,7 @@ namespace NinjaTrader.NinjaScript.Strategies
               </Strings>
             </Tag>
             <TextPosition>BottomLeft</TextPosition>
-            <VariableDateTime>2023-11-04T19:05:25.2938367</VariableDateTime>
+            <VariableDateTime>2023-11-09T22:37:02.4998967</VariableDateTime>
             <VariableBool>false</VariableBool>
           </ActionProperties>
           <ActionType>Enter</ActionType>
@@ -174,10 +169,9 @@ namespace NinjaTrader.NinjaScript.Strategies
           <Conditions>
             <WizardCondition>
               <LeftItem xsi:type="WizardConditionItem">
-                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>true</IsSelected>
-                <Name>Close</Name>
+                <Name>Open</Name>
                 <OffsetType>Arithmetic</OffsetType>
                 <AssignedCommand>
                   <Command>{0}</Command>
@@ -189,7 +183,7 @@ namespace NinjaTrader.NinjaScript.Strategies
                 </AssignedCommand>
                 <BarsAgo>0</BarsAgo>
                 <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-04T19:04:08.0451669</Date>
+                <Date>2023-11-09T22:36:25.8284434</Date>
                 <DayOfWeek>Sunday</DayOfWeek>
                 <EndBar>0</EndBar>
                 <ForceSeriesIndex>false</ForceSeriesIndex>
@@ -197,20 +191,28 @@ namespace NinjaTrader.NinjaScript.Strategies
                 <MarketPosition>Long</MarketPosition>
                 <Period>0</Period>
                 <ReturnType>Series</ReturnType>
+                <Series1>
+                  <AcceptableSeries>DataSeries DefaultSeries</AcceptableSeries>
+                  <CustomProperties />
+                  <IsExplicitlyNamed>false</IsExplicitlyNamed>
+                  <IsPriceTypeLocked>true</IsPriceTypeLocked>
+                  <PlotOnChart>false</PlotOnChart>
+                  <PriceType>Open</PriceType>
+                  <SeriesType>DefaultSeries</SeriesType>
+                </Series1>
                 <StartBar>0</StartBar>
                 <State>Undefined</State>
                 <Time>0001-01-01T00:00:00</Time>
               </LeftItem>
               <Lookback>1</Lookback>
-              <Operator>GreaterEqual</Operator>
+              <Operator>Greater</Operator>
               <RightItem xsi:type="WizardConditionItem">
-                <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>true</IsSelected>
-                <Name>Swing</Name>
+                <Name>SessionLevels</Name>
                 <OffsetType>Arithmetic</OffsetType>
                 <AssignedCommand>
-                  <Command>Swing</Command>
+                  <Command>SessionLevels</Command>
                   <Parameters>
                     <string>AssociatedIndicator</string>
                     <string>BarsAgo</string>
@@ -222,58 +224,272 @@ namespace NinjaTrader.NinjaScript.Strategies
                   <CustomProperties>
                     <item>
                       <key>
-                        <string>Strength</string>
+                        <string>ShowMidnight_Open</string>
                       </key>
                       <value>
-                        <anyType xsi:type="NumberBuilder">
-                          <LiveValue xsi:type="xsd:string">5</LiveValue>
-                          <BindingValue xsi:type="xsd:string">5</BindingValue>
-                          <DefaultValue>0</DefaultValue>
-                          <IsInt>true</IsInt>
-                          <IsLiteral>true</IsLiteral>
-                        </anyType>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>ShowDay_Open</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>ShowEight_Thirty_Open</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EnableAsian</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>StartTime1</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T18:00:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EndTime1</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T23:59:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EnableLondon</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>StartTime2</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T00:00:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EndTime2</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T06:00:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EnableNyAm</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>StartTime3</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T06:00:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EndTime3</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T12:00:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EnableNyPm</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:boolean">true</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>StartTime4</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T12:00:00</anyType>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <string>EndTime4</string>
+                      </key>
+                      <value>
+                        <anyType xsi:type="xsd:dateTime">2023-11-09T18:00:00</anyType>
                       </value>
                     </item>
                   </CustomProperties>
                   <IndicatorHolder>
-                    <IndicatorName>Swing</IndicatorName>
+                    <IndicatorName>SessionLevels</IndicatorName>
                     <Plots>
                       <Plot>
                         <IsOpacityVisible>false</IsOpacityVisible>
-                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF008B8B&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FFFF0000&lt;/SolidColorBrush&gt;</BrushSerialize>
                         <DashStyleHelper>Solid</DashStyleHelper>
                         <Opacity>100</Opacity>
-                        <Width>2</Width>
+                        <Width>1</Width>
                         <AutoWidth>false</AutoWidth>
                         <Max>1.7976931348623157E+308</Max>
                         <Min>-1.7976931348623157E+308</Min>
-                        <Name>Swing high</Name>
-                        <PlotStyle>Dot</PlotStyle>
+                        <Name>Asian_High</Name>
+                        <PlotStyle>Line</PlotStyle>
                       </Plot>
                       <Plot>
                         <IsOpacityVisible>false</IsOpacityVisible>
-                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FFDAA520&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FFFF0000&lt;/SolidColorBrush&gt;</BrushSerialize>
                         <DashStyleHelper>Solid</DashStyleHelper>
                         <Opacity>100</Opacity>
-                        <Width>2</Width>
+                        <Width>1</Width>
                         <AutoWidth>false</AutoWidth>
                         <Max>1.7976931348623157E+308</Max>
                         <Min>-1.7976931348623157E+308</Min>
-                        <Name>Swing low</Name>
-                        <PlotStyle>Dot</PlotStyle>
+                        <Name>Asian_Low</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF0000FF&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>London_High</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF0000FF&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>London_Low</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF008000&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Ny_Am_High</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF008000&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Ny_Am_Low</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FFFF69B4&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Ny_Pm_High</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FFFF69B4&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Ny_Pm_Low</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FFFF0000&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Midnight_Open</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF0000FF&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Day_Open_at_18</Name>
+                        <PlotStyle>Line</PlotStyle>
+                      </Plot>
+                      <Plot>
+                        <IsOpacityVisible>false</IsOpacityVisible>
+                        <BrushSerialize>&lt;SolidColorBrush xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"&gt;#FF0000FF&lt;/SolidColorBrush&gt;</BrushSerialize>
+                        <DashStyleHelper>Solid</DashStyleHelper>
+                        <Opacity>100</Opacity>
+                        <Width>1</Width>
+                        <AutoWidth>false</AutoWidth>
+                        <Max>1.7976931348623157E+308</Max>
+                        <Min>-1.7976931348623157E+308</Min>
+                        <Name>Day_Open_at_22</Name>
+                        <PlotStyle>Line</PlotStyle>
                       </Plot>
                     </Plots>
                   </IndicatorHolder>
                   <IsExplicitlyNamed>false</IsExplicitlyNamed>
                   <IsPriceTypeLocked>false</IsPriceTypeLocked>
-                  <PlotOnChart>true</PlotOnChart>
+                  <PlotOnChart>false</PlotOnChart>
                   <PriceType>Close</PriceType>
                   <SeriesType>Indicator</SeriesType>
-                  <SelectedPlot>SwingHigh</SelectedPlot>
+                  <SelectedPlot>Asian_High</SelectedPlot>
                 </AssociatedIndicator>
                 <BarsAgo>0</BarsAgo>
                 <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-04T19:04:08.0531459</Date>
+                <Date>2023-11-09T22:36:25.8573659</Date>
                 <DayOfWeek>Sunday</DayOfWeek>
                 <EndBar>0</EndBar>
                 <ForceSeriesIndex>false</ForceSeriesIndex>
@@ -288,7 +504,7 @@ namespace NinjaTrader.NinjaScript.Strategies
             </WizardCondition>
           </Conditions>
           <IsGroup>false</IsGroup>
-          <DisplayName>Default input[0] &gt;= Swing(5).SwingHigh[0]</DisplayName>
+          <DisplayName>Open[0] &gt; SessionLevels(true, true, true, true, DateTime.Parse("6:00 PM"), DateTime.Parse("11:59 PM"), true, DateTime.Parse("12:00 AM"), DateTime.Parse("6:00 AM"), true, DateTime.Parse("6:00 AM"), DateTime.Parse("12:00 PM"), true, DateTime.Parse("12:00 PM"), DateTime.Parse("6:00 PM")).Asian_High[0]</DisplayName>
         </WizardConditionGroup>
       </Conditions>
       <SetName>Set 1</SetName>

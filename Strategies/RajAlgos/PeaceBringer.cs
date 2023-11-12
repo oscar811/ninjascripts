@@ -235,6 +235,18 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
         }
 
+//        protected override void OnOrderUpdate(Order order, double limitPrice, double stopPrice,
+//                                      int quantity, int filled, double averageFillPrice,
+//                                      OrderState orderState, DateTime time, ErrorCode error,
+//                                      string nativeError)
+//        {
+//            if (orderState == OrderState.Filled)
+//            {
+//                // Force a recalculation of the strategy or indicator
+//                ForceRefresh();
+//            }
+//        }
+
         private class TimePeriod
         {
             private bool useTimePeriod;

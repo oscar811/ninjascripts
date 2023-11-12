@@ -158,22 +158,22 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 {
                     DateTime midnight = new DateTime(Time[0].Year, Time[0].Month, Time[0].Day, 0, 0, 0);
                     int midnightBarsAgo = Bars.GetBar(midnight);
-                    Midnight_Open[0] = Close[CurrentBar - midnightBarsAgo];
+                    Midnight_Open[0] = Open[CurrentBar - midnightBarsAgo];
                 }
 
                 if (ShowDay_Open)
                 {
                     DateTime dayOpen = GetPreviousDate(new DateTime(Time[0].Year, Time[0].Month, Time[0].Day, 18, 0, 0));
                     int dayOpenBarsAgo = Bars.GetBar(dayOpen);
-                    Day_Open_at_18[0] = Close[CurrentBar - dayOpenBarsAgo];
+                    Day_Open_at_18[0] = Open[CurrentBar - dayOpenBarsAgo];
                 }
                 
                 if (ShowEight_Thirty_Open)
                 {
                     DateTime eightOpen = GetPreviousDate(new DateTime(Time[0].Year, Time[0].Month, Time[0].Day, 8, 30, 0));
                     int eightOpenBarsAgo = Bars.GetBar(eightOpen);
-                    Eight_Thirty_Open[0] = Close[CurrentBar - eightOpenBarsAgo];
-                }                
+                    Eight_Thirty_Open[0] = Open[CurrentBar - eightOpenBarsAgo];
+                }
             }
             catch (Exception e)
             {

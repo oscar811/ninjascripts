@@ -143,6 +143,9 @@
     <Reference Include="FVGBACKTESTV2">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\FVGBACKTESTV2.dll</HintPath>
     </Reference>
+    <Reference Include="PJSQQE">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\PJSQQE.dll</HintPath>
+    </Reference>
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
@@ -421,6 +424,7 @@
     <Compile Include="Strategies\%40SampleMultiInstrument.cs" />
     <Compile Include="Strategies\%40SampleMultiTimeFrame.cs" />
     <Compile Include="Strategies\%40Strategy.cs" />
+    <Compile Include="Strategies\RajAlgos\Squeeze.cs" />
     <Compile Include="Strategies\RajAlgos\UnicornStrategy.cs" />
     <Compile Include="SuperDomColumns\%40APQ.cs" />
     <Compile Include="SuperDomColumns\%40Notes.cs" />
@@ -499,7 +503,6 @@
     <Compile Include="Strategies\SupplySystem.cs" />
     <Compile Include="Indicators\%40CurrentDayOHL.cs" />
     <Compile Include="Indicators\ICTFVG.cs" />
-    <Compile Include="Indicators\AMDCyclesIndicator.cs" />
     <Compile Include="Indicators\%40MAX.cs" />
     <Compile Include="Indicators\%40MIN.cs" />
     <Compile Include="Indicators\RajIndicators\RMA.cs" />
@@ -539,13 +542,20 @@
     <Compile Include="Indicators\AuZeroLagTEMA.cs" />
     <Compile Include="Indicators\AuZLEMA.cs" />
     <Compile Include="Strategies\WickyAMDNYopen.cs" />
-    <Compile Include="Strategies\MyCustomStrategy.cs" />
     <Compile Include="Strategies\RajAlgos\JudasStrategy.cs" />
     <Compile Include="Strategies\RajAlgos\SmackyWithAtm.cs" />
     <Compile Include="Indicators\RajIndicators\SessionHighLow.cs" />
-    <Compile Include="Indicators\SessionLevels.cs" />
     <Compile Include="Indicators\RajIndicators\SessionLevels.cs" />
     <Compile Include="Indicators\RajIndicators\AMDCyclesIndicator.cs" />
+    <Compile Include="Strategies\MyCustomStrategy.cs" />
+    <Compile Include="PJSQQE.cs" />
+    <Compile Include="Indicators\SampleGetHighLowByTimeRange.cs" />
+    <Compile Include="Indicators\RGaussianFilter.cs" />
+    <Compile Include="Indicators\RSqueeze.cs" />
+    <Compile Include="Indicators\AntoQQE.cs" />
+    <Compile Include="Indicators\AntoSSLQQEHybrid.cs" />
+    <Compile Include="Indicators\JMA.cs" />
+    <Compile Include="Strategies\MyCustomStrategy1.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
