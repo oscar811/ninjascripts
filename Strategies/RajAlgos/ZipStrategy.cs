@@ -105,16 +105,25 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 atr = ATR(AtrLength);
 
                 RsiBuyConditionSeries = new Series<bool>(this);
-                RsiSellConditionSeries = new Series<bool>(this);
+                RsiSellConditionSeries = new Series<bool>(this);                
 
-                AddPlot(Brushes.Red, "ShortSMA");
-                AddPlot(Brushes.Green, "MediumSMA");
-                AddPlot(Brushes.Yellow, "LongSMA");
+                if (EnableSMAFilter)
+                {
+                    shortSMA.Plots[0].Brush = Brushes.Red;
+                    mediumSMA.Plots[0].Brush = Brushes.Green;
+                    longSMA.Plots[0].Brush = Brushes.Yellow;
+                    AddChartIndicator(shortSMA);
+                    AddChartIndicator(mediumSMA);
+                    AddChartIndicator(longSMA);
+                }                
             }
             else if (State == State.DataLoaded)
             {
-                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
-                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
+                if (EnableTicksTpSl)
+                {
+                    SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
+                    SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
+                }
             }
         }
 
@@ -122,7 +131,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         {
             try
             {
-                if (CurrentBar < BarsRequiredToTrade || CurrentBar < longSMA || CurrentBar < RsiLength)
+                if (CurrentBar < BarsRequiredToTrade || CurrentBar < LongSMALength || CurrentBar < RsiLength)
                     return;
 
                 if (BarsInProgress != 0)
@@ -143,13 +152,13 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                         // adxCondtion = adxValue > adxFilter
                         bool adxCondtion = adx[0] > AdxThreshold;
 
-                        bool smaBuyCondition = shortSMA > mediumSMA && mediumSMA > longSMA;
+                        bool smaBuyCondition = shortSMA[0] > mediumSMA[0] && mediumSMA[0] > longSMA[0];
                         // rsiBuyCondition := (rsiBuyCondition[1] or rsiValue < rsiOversold) and rsiValue < rsiOverbought
                         RsiBuyConditionSeries[0] = (RsiBuyConditionSeries[1] || rsi[0] < RsiOversold) && rsi[0] < RsiOverbought;
                         // bool buyCondition = (not enableSmaFilter or smaBuyCondition) and (not enableRsiFilter or rsiBuyCondition) and (not enableAdxFilter or adxCondtion)
                         bool buyCondition = (!EnableSMAFilter || smaBuyCondition) && (!EnableRSIFilter || RsiBuyConditionSeries[0]) && (!EnableADXFilter || adxCondtion);
 
-                        bool smaSellCondition = shortSMA < mediumSMA && mediumSMA < longSMA;
+                        bool smaSellCondition = shortSMA[0] < mediumSMA[0] && mediumSMA[0] < longSMA[0];
                         // rsiSellCondition := (rsiSellCondition[1] or rsiValue > rsiOverbought) and rsiValue > rsiOversold
                         RsiSellConditionSeries[0] = (RsiSellConditionSeries[1] || rsi[0] > RsiOverbought) && rsi[0] > RsiOversold;
                         // bool sellCondition = (not enableSmaFilter or smaSellCondition) and (not enableRsiFilter or rsiSellCondition) and (not enableAdxFilter or adxCondtion)
@@ -353,37 +362,42 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         { get; set; }
 
         [NinjaScriptProperty]
+        [Display(Name = "Enable ticks TP/SL", Order = 12, GroupName = "Atm")]
+        public bool EnableTicksTpSl
+        { get; set; }
+
+        [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Profit_Target", Order = 12, GroupName = "Atm")]
+        [Display(Name = "Profit_Target", Order = 13, GroupName = "Atm")]
         public int Profit_Target
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "Stop_Loss", Order = 13, GroupName = "Atm")]
+        [Display(Name = "Stop_Loss", Order = 14, GroupName = "Atm")]
         public int Stop_Loss
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Enable ATR TP/SL", Order = 14, GroupName = "Atm")]
+        [Display(Name = "Enable ATR TP/SL", Order = 15, GroupName = "Atm")]
         public bool EnableAtrTpSl
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "AtrLength", Order = 14, GroupName = "Atm")]
+        [Display(Name = "AtrLength", Order = 16, GroupName = "Atm")]
         public int AtrLength
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "AtrTP multiplier", Order = 15, GroupName = "Atm")]
+        [Display(Name = "AtrTP multiplier", Order = 17, GroupName = "Atm")]
         public int AtrTpMultiplier
         { get; set; }
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
-        [Display(Name = "AtrSL  multiplier", Order = 16, GroupName = "Atm")]
+        [Display(Name = "AtrSL  multiplier", Order = 18, GroupName = "Atm")]
         public int AtrSlMultiplier
         { get; set; }
 
