@@ -148,9 +148,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     double down2RmaValue = Down2Rma[0];
 
                     // rsi = down == 0 ? 100 : up == 0 ? 0 : 100 - 100 / (1 + up / down)
-                    MaRsiSeries[0] = downRmaValue == 0 ? 100 : upRmaValue == 0 ? 0 : 100 - 100 / (1 + upRmaValue / downRmaValue);
+                    MaRsiSeries[0] = downRmaValue == 0 ? 100 : upRmaValue == 0 ? 0 : (100 - 100 / (1 + upRmaValue / downRmaValue));
                     //rsi2 = down2 == 0 ? 100 : up2 == 0 ? 0 : 100 - 100 / (1 + up2 / down2)
-                    MaRsiSeries2[0] = down2RmaValue == 0 ? 100 : up2RmaValue == 0 ? 0 : 100 - 100 / (1 + up2RmaValue / down2RmaValue);
+                    MaRsiSeries2[0] = down2RmaValue == 0 ? 100 : up2RmaValue == 0 ? 0 : (100 - 100 / (1 + up2RmaValue / down2RmaValue));
 
                     //// MA(=Moving Average) of RSI(close, ="MARSI") and RSI(Volume, ="MAVRSI")
                     //len3 = input.int(5, minval=1, title='Length MARSI')

@@ -101,18 +101,18 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     ExitLong();
                 }
 
-                if (antoQQE.hist[0] < 0
-                    && rSqueeze.PlotBrushes[1][0] == rSqueeze.NormalDotBrush && rSqueeze.PlotBrushes[0][0] == rSqueeze.HistBelowZeroFalling)
-                {
-                    EnterShort(Convert.ToInt32(DefaultQuantity), "");
-                }
+                //if (antoQQE.hist[0] < 0
+                //    && rSqueeze.PlotBrushes[1][0] == rSqueeze.NormalDotBrush && rSqueeze.PlotBrushes[0][0] == rSqueeze.HistBelowZeroFalling)
+                //{
+                //    EnterShort(Convert.ToInt32(DefaultQuantity), "");
+                //}
 
-                if (Position.MarketPosition == MarketPosition.Short
-                    && rSqueeze.PlotBrushes[0][0] == rSqueeze.HistBelowZeroRising && rSqueeze.PlotBrushes[0][1] == rSqueeze.HistBelowZeroRising
-                    && rSqueeze.PlotBrushes[0][2] == rSqueeze.HistBelowZeroRising)
-                {
-                    ExitShort();
-                }
+                //if (Position.MarketPosition == MarketPosition.Short
+                //    && rSqueeze.PlotBrushes[0][0] == rSqueeze.HistBelowZeroRising && rSqueeze.PlotBrushes[0][1] == rSqueeze.HistBelowZeroRising
+                //    && rSqueeze.PlotBrushes[0][2] == rSqueeze.HistBelowZeroRising)
+                //{
+                //    ExitShort();
+                //}
             }
             catch (Exception e)
             {

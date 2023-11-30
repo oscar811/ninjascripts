@@ -146,6 +146,9 @@
     <Reference Include="PJSQQE">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\PJSQQE.dll</HintPath>
     </Reference>
+    <Reference Include="GemsTraderLadder_bin_v0.3.7">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\GemsTraderLadder_bin_v0.3.7.dll</HintPath>
+    </Reference>
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
@@ -556,6 +559,11 @@
     <Compile Include="Indicators\AntoSSLQQEHybrid.cs" />
     <Compile Include="Indicators\JMA.cs" />
     <Compile Include="Strategies\MyCustomStrategy1.cs" />
+    <Compile Include="GemsTraderLadder_bin_v0.3.7.cs" />
+    <Compile Include="Strategies\RajAlgos\ZipStrategy.cs" />
+    <Compile Include="Strategies\ProfitableLoserBacktestStratAsia.cs" />
+    <Compile Include="Strategies\DailyRangeAMDxScalper.cs" />
+    <Compile Include="Strategies\ProfitableLoserBacktestStrat.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
