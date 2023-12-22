@@ -58,13 +58,11 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
-                EnableHistoricalMode = false;
+                EnableAtmStrategyMode = false;
                 Contracts = 2;
                 Macd_Signal = 26;
                 Macd_Fast = 12;
                 Macd_Diff = 9;
-                Profit_Target = 20;
-                Stop_Loss = 10;
                 Enable_SMA_Filter = true;
                 SMA_Filter = 100;
                 AtmStrategyTemplateId = "your atm";
@@ -111,8 +109,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 SMA1.Plots[0].Brush = Brushes.LawnGreen;
                 AddChartIndicator(MACD1);
                 AddChartIndicator(SMA1);
-                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
-                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
             }
         }
 
@@ -152,7 +148,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                             {
                                 // Submits an entry limit order at the current low price to initiate an ATM Strategy if both order id and strategy id are in a reset state
                                 // **** YOU MUST HAVE AN ATM STRATEGY TEMPLATE NAMED 'AtmStrategyTemplate' CREATED IN NINJATRADER (SUPERDOM FOR EXAMPLE) FOR THIS TO WORK ****
-                                if (!EnableHistoricalMode && State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
+                                if (EnableAtmStrategyMode && State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
                                 {
                                     isAtmStrategyCreated = false;  // reset atm strategy created check to false
                                     atmStrategyId = GetAtmStrategyUniqueId();
@@ -167,7 +163,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                                 }
                                 else
                                 {
-                                    if (EnableHistoricalMode)
+                                    if (!EnableAtmStrategyMode)
                                         EnterLong(Convert.ToInt32(Contracts), "");
                                 }
                             }
@@ -180,7 +176,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                             if (!Enable_SMA_Filter || (Enable_SMA_Filter == true && GetCurrentAsk(0) <= SMA1[0]))
                             {
-                                if (!EnableHistoricalMode && State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
+                                if (EnableAtmStrategyMode && State == State.Realtime && orderId.Length == 0 && atmStrategyId.Length == 0)
                                 {
                                     isAtmStrategyCreated = false;  // reset atm strategy created check to false
                                     atmStrategyId = GetAtmStrategyUniqueId();
@@ -197,7 +193,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                                 }
                                 else
                                 {
-                                    if (EnableHistoricalMode)
+                                    if (!EnableAtmStrategyMode)
                                         EnterShort(Convert.ToInt32(Contracts), "");
                                 }
                             }
@@ -279,25 +275,13 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Enable Historical Mode", Order = 2, GroupName = "ATM")]
-        public bool EnableHistoricalMode
+        [Display(Name = "Enable Atm Strategy", Order = 2, GroupName = "ATM")]
+        public bool EnableAtmStrategyMode
         { get; set; }
         
         [NinjaScriptProperty]
         [Display(Name = "ATM Strategy (Only real time)", Order = 3, GroupName = "ATM")]
         public string AtmStrategyTemplateId
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Profit_Target", Order = 4, GroupName = "ATM")]
-        public int Profit_Target
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Stop_Loss", Order = 5, GroupName = "ATM")]
-        public int Stop_Loss
         { get; set; }
 
         [NinjaScriptProperty]

@@ -75,6 +75,7 @@ namespace NinjaTrader.NinjaScript.Strategies
 				Stop_5						= DateTime.Parse("17:09", System.Globalization.CultureInfo.InvariantCulture);
 				Bollinger_SD					= 2;
 				Bollinger_MA					= 14;
+				Good_Luck					= 1;
 			}
 			else if (State == State.Configure)
 			{
@@ -160,11 +161,13 @@ namespace NinjaTrader.NinjaScript.Strategies
 				 && (Additional_Time_3 == true)
 				 && (Times[0][0].TimeOfDay > Start_3.TimeOfDay)
 				 && (Times[0][0].TimeOfDay < Stop_3.TimeOfDay)
+				 && (CrossAbove(High, Bollinger1.Upper, 1))
 				 // Condition group 1
 				 && ((Times[0][0].DayOfWeek == DayOfWeek.Monday)
 				 || (Times[0][0].DayOfWeek == DayOfWeek.Tuesday)
-				 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday))
-				 && (CrossAbove(High, Bollinger1.Upper, 1)))
+				 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)
+				 || (Times[0][0].DayOfWeek == DayOfWeek.Friday)
+				 || (Times[0][0].DayOfWeek == DayOfWeek.Sunday)))
 			{
 				EnterShort(Convert.ToInt32(CONTRACTS), "");
 			}
@@ -178,7 +181,8 @@ namespace NinjaTrader.NinjaScript.Strategies
 				 // Condition group 1
 				 && ((Times[0][0].DayOfWeek == DayOfWeek.Monday)
 				 || (Times[0][0].DayOfWeek == DayOfWeek.Tuesday)
-				 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)))
+				 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)
+				 || (Times[0][0].DayOfWeek == DayOfWeek.Friday)))
 			{
 				EnterLong(Convert.ToInt32(CONTRACTS), "");
 			}
@@ -339,6 +343,12 @@ namespace NinjaTrader.NinjaScript.Strategies
 		[Range(1, int.MaxValue)]
 		[Display(Name="Bollinger_MA", Order=20, GroupName="Parameters")]
 		public int Bollinger_MA
+		{ get; set; }
+
+		[NinjaScriptProperty]
+		[Range(1, int.MaxValue)]
+		[Display(Name="Good_Luck", Order=21, GroupName="Parameters")]
+		public int Good_Luck
 		{ get; set; }
 		#endregion
 
@@ -3534,184 +3544,6 @@ namespace NinjaTrader.NinjaScript.Strategies
                 <Children />
                 <IsExpanded>false</IsExpanded>
                 <IsSelected>true</IsSelected>
-                <Name>Date series</Name>
-                <OffsetType>Arithmetic</OffsetType>
-                <AssignedCommand>
-                  <Command>Times[{0}][{1}]</Command>
-                  <Parameters>
-                    <string>Series1</string>
-                    <string>BarsAgo</string>
-                  </Parameters>
-                </AssignedCommand>
-                <BarsAgo>0</BarsAgo>
-                <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-25T17:20:52.851243</Date>
-                <DayOfWeek>Sunday</DayOfWeek>
-                <EndBar>0</EndBar>
-                <ForceSeriesIndex>true</ForceSeriesIndex>
-                <LookBackPeriod>0</LookBackPeriod>
-                <MarketPosition>Long</MarketPosition>
-                <Period>0</Period>
-                <ReturnType>Date</ReturnType>
-                <StartBar>0</StartBar>
-                <State>Undefined</State>
-                <Time>0001-01-01T00:00:00</Time>
-              </LeftItem>
-              <Lookback>1</Lookback>
-              <Operator>Equals</Operator>
-              <RightItem xsi:type="WizardConditionItem">
-                <Children />
-                <IsExpanded>false</IsExpanded>
-                <IsSelected>true</IsSelected>
-                <Name>Day of week</Name>
-                <OffsetType>Arithmetic</OffsetType>
-                <AssignedCommand>
-                  <Command>DayOfWeek.{0}</Command>
-                  <Parameters>
-                    <string>DayOfWeek</string>
-                  </Parameters>
-                </AssignedCommand>
-                <BarsAgo>0</BarsAgo>
-                <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-25T17:20:52.8717548</Date>
-                <DayOfWeek>Monday</DayOfWeek>
-                <EndBar>0</EndBar>
-                <ForceSeriesIndex>false</ForceSeriesIndex>
-                <LookBackPeriod>0</LookBackPeriod>
-                <MarketPosition>Long</MarketPosition>
-                <Period>0</Period>
-                <ReturnType>Date</ReturnType>
-                <StartBar>0</StartBar>
-                <State>Undefined</State>
-                <Time>0001-01-01T00:00:00</Time>
-              </RightItem>
-            </WizardCondition>
-            <WizardCondition>
-              <LeftItem xsi:type="WizardConditionItem">
-                <Children />
-                <IsExpanded>false</IsExpanded>
-                <IsSelected>true</IsSelected>
-                <Name>Date series</Name>
-                <OffsetType>Arithmetic</OffsetType>
-                <AssignedCommand>
-                  <Command>Times[{0}][{1}]</Command>
-                  <Parameters>
-                    <string>Series1</string>
-                    <string>BarsAgo</string>
-                  </Parameters>
-                </AssignedCommand>
-                <BarsAgo>0</BarsAgo>
-                <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-25T17:21:06.3785804</Date>
-                <DayOfWeek>Sunday</DayOfWeek>
-                <EndBar>0</EndBar>
-                <ForceSeriesIndex>true</ForceSeriesIndex>
-                <LookBackPeriod>0</LookBackPeriod>
-                <MarketPosition>Long</MarketPosition>
-                <Period>0</Period>
-                <ReturnType>Date</ReturnType>
-                <StartBar>0</StartBar>
-                <State>Undefined</State>
-                <Time>0001-01-01T00:00:00</Time>
-              </LeftItem>
-              <Lookback>1</Lookback>
-              <Operator>Equals</Operator>
-              <RightItem xsi:type="WizardConditionItem">
-                <Children />
-                <IsExpanded>false</IsExpanded>
-                <IsSelected>true</IsSelected>
-                <Name>Day of week</Name>
-                <OffsetType>Arithmetic</OffsetType>
-                <AssignedCommand>
-                  <Command>DayOfWeek.{0}</Command>
-                  <Parameters>
-                    <string>DayOfWeek</string>
-                  </Parameters>
-                </AssignedCommand>
-                <BarsAgo>0</BarsAgo>
-                <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-25T17:21:06.3971319</Date>
-                <DayOfWeek>Tuesday</DayOfWeek>
-                <EndBar>0</EndBar>
-                <ForceSeriesIndex>false</ForceSeriesIndex>
-                <LookBackPeriod>0</LookBackPeriod>
-                <MarketPosition>Long</MarketPosition>
-                <Period>0</Period>
-                <ReturnType>Date</ReturnType>
-                <StartBar>0</StartBar>
-                <State>Undefined</State>
-                <Time>0001-01-01T00:00:00</Time>
-              </RightItem>
-            </WizardCondition>
-            <WizardCondition>
-              <LeftItem xsi:type="WizardConditionItem">
-                <Children />
-                <IsExpanded>false</IsExpanded>
-                <IsSelected>true</IsSelected>
-                <Name>Date series</Name>
-                <OffsetType>Arithmetic</OffsetType>
-                <AssignedCommand>
-                  <Command>Times[{0}][{1}]</Command>
-                  <Parameters>
-                    <string>Series1</string>
-                    <string>BarsAgo</string>
-                  </Parameters>
-                </AssignedCommand>
-                <BarsAgo>0</BarsAgo>
-                <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-25T17:21:33.5748699</Date>
-                <DayOfWeek>Sunday</DayOfWeek>
-                <EndBar>0</EndBar>
-                <ForceSeriesIndex>true</ForceSeriesIndex>
-                <LookBackPeriod>0</LookBackPeriod>
-                <MarketPosition>Long</MarketPosition>
-                <Period>0</Period>
-                <ReturnType>Date</ReturnType>
-                <StartBar>0</StartBar>
-                <State>Undefined</State>
-                <Time>0001-01-01T00:00:00</Time>
-              </LeftItem>
-              <Lookback>1</Lookback>
-              <Operator>Equals</Operator>
-              <RightItem xsi:type="WizardConditionItem">
-                <Children />
-                <IsExpanded>false</IsExpanded>
-                <IsSelected>true</IsSelected>
-                <Name>Day of week</Name>
-                <OffsetType>Arithmetic</OffsetType>
-                <AssignedCommand>
-                  <Command>DayOfWeek.{0}</Command>
-                  <Parameters>
-                    <string>DayOfWeek</string>
-                  </Parameters>
-                </AssignedCommand>
-                <BarsAgo>0</BarsAgo>
-                <CurrencyType>Currency</CurrencyType>
-                <Date>2023-11-25T17:21:33.5875673</Date>
-                <DayOfWeek>Thursday</DayOfWeek>
-                <EndBar>0</EndBar>
-                <ForceSeriesIndex>false</ForceSeriesIndex>
-                <LookBackPeriod>0</LookBackPeriod>
-                <MarketPosition>Long</MarketPosition>
-                <Period>0</Period>
-                <ReturnType>Date</ReturnType>
-                <StartBar>0</StartBar>
-                <State>Undefined</State>
-                <Time>0001-01-01T00:00:00</Time>
-              </RightItem>
-            </WizardCondition>
-          </Conditions>
-          <IsGroup>true</IsGroup>
-          <DisplayName>Condition group 1</DisplayName>
-        </WizardConditionGroup>
-        <WizardConditionGroup>
-          <AnyOrAll>Any</AnyOrAll>
-          <Conditions>
-            <WizardCondition>
-              <LeftItem xsi:type="WizardConditionItem">
-                <Children />
-                <IsExpanded>false</IsExpanded>
-                <IsSelected>true</IsSelected>
                 <Name>High</Name>
                 <OffsetType>Arithmetic</OffsetType>
                 <AssignedCommand>
@@ -3907,6 +3739,296 @@ namespace NinjaTrader.NinjaScript.Strategies
           </Conditions>
           <IsGroup>false</IsGroup>
           <DisplayName>CrossAbove(High, Bollinger(Close, Bollinger_SD, Convert.ToInt32(Bollinger_MA)).Upper, 1)</DisplayName>
+        </WizardConditionGroup>
+        <WizardConditionGroup>
+          <AnyOrAll>Any</AnyOrAll>
+          <Conditions>
+            <WizardCondition>
+              <LeftItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Date series</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>Times[{0}][{1}]</Command>
+                  <Parameters>
+                    <string>Series1</string>
+                    <string>BarsAgo</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-25T17:20:52.851243</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>true</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </LeftItem>
+              <Lookback>1</Lookback>
+              <Operator>Equals</Operator>
+              <RightItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Day of week</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>DayOfWeek.{0}</Command>
+                  <Parameters>
+                    <string>DayOfWeek</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-25T17:20:52.8717548</Date>
+                <DayOfWeek>Monday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>false</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </RightItem>
+            </WizardCondition>
+            <WizardCondition>
+              <LeftItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Date series</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>Times[{0}][{1}]</Command>
+                  <Parameters>
+                    <string>Series1</string>
+                    <string>BarsAgo</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-25T17:21:06.3785804</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>true</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </LeftItem>
+              <Lookback>1</Lookback>
+              <Operator>Equals</Operator>
+              <RightItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Day of week</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>DayOfWeek.{0}</Command>
+                  <Parameters>
+                    <string>DayOfWeek</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-25T17:21:06.3971319</Date>
+                <DayOfWeek>Tuesday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>false</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </RightItem>
+            </WizardCondition>
+            <WizardCondition>
+              <LeftItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Date series</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>Times[{0}][{1}]</Command>
+                  <Parameters>
+                    <string>Series1</string>
+                    <string>BarsAgo</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-25T17:21:33.5748699</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>true</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </LeftItem>
+              <Lookback>1</Lookback>
+              <Operator>Equals</Operator>
+              <RightItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Day of week</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>DayOfWeek.{0}</Command>
+                  <Parameters>
+                    <string>DayOfWeek</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-25T17:21:33.5875673</Date>
+                <DayOfWeek>Thursday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>false</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </RightItem>
+            </WizardCondition>
+            <WizardCondition>
+              <LeftItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Date series</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>Times[{0}][{1}]</Command>
+                  <Parameters>
+                    <string>Series1</string>
+                    <string>BarsAgo</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-29T12:37:25.9136741</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>true</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </LeftItem>
+              <Lookback>1</Lookback>
+              <Operator>Equals</Operator>
+              <RightItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Day of week</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>DayOfWeek.{0}</Command>
+                  <Parameters>
+                    <string>DayOfWeek</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-29T12:37:25.919536</Date>
+                <DayOfWeek>Friday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>false</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </RightItem>
+            </WizardCondition>
+            <WizardCondition>
+              <LeftItem xsi:type="WizardConditionItem">
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Date series</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>Times[{0}][{1}]</Command>
+                  <Parameters>
+                    <string>Series1</string>
+                    <string>BarsAgo</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-29T12:38:58.6076262</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>true</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </LeftItem>
+              <Lookback>1</Lookback>
+              <Operator>Equals</Operator>
+              <RightItem xsi:type="WizardConditionItem">
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Day of week</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>DayOfWeek.{0}</Command>
+                  <Parameters>
+                    <string>DayOfWeek</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-29T12:38:58.6252127</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>false</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </RightItem>
+            </WizardCondition>
+          </Conditions>
+          <IsGroup>true</IsGroup>
+          <DisplayName>Condition group 1</DisplayName>
         </WizardConditionGroup>
       </Conditions>
       <SetName>Set 5</SetName>
@@ -4659,6 +4781,63 @@ namespace NinjaTrader.NinjaScript.Strategies
                 <CurrencyType>Currency</CurrencyType>
                 <Date>2023-11-25T17:21:33.5875673</Date>
                 <DayOfWeek>Thursday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>false</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </RightItem>
+            </WizardCondition>
+            <WizardCondition>
+              <LeftItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Date series</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>Times[{0}][{1}]</Command>
+                  <Parameters>
+                    <string>Series1</string>
+                    <string>BarsAgo</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-29T12:37:25.9136741</Date>
+                <DayOfWeek>Sunday</DayOfWeek>
+                <EndBar>0</EndBar>
+                <ForceSeriesIndex>true</ForceSeriesIndex>
+                <LookBackPeriod>0</LookBackPeriod>
+                <MarketPosition>Long</MarketPosition>
+                <Period>0</Period>
+                <ReturnType>Date</ReturnType>
+                <StartBar>0</StartBar>
+                <State>Undefined</State>
+                <Time>0001-01-01T00:00:00</Time>
+              </LeftItem>
+              <Lookback>1</Lookback>
+              <Operator>Equals</Operator>
+              <RightItem xsi:type="WizardConditionItem">
+                <Children />
+                <IsExpanded>false</IsExpanded>
+                <IsSelected>true</IsSelected>
+                <Name>Day of week</Name>
+                <OffsetType>Arithmetic</OffsetType>
+                <AssignedCommand>
+                  <Command>DayOfWeek.{0}</Command>
+                  <Parameters>
+                    <string>DayOfWeek</string>
+                  </Parameters>
+                </AssignedCommand>
+                <BarsAgo>0</BarsAgo>
+                <CurrencyType>Currency</CurrencyType>
+                <Date>2023-11-29T12:37:25.919536</Date>
+                <DayOfWeek>Friday</DayOfWeek>
                 <EndBar>0</EndBar>
                 <ForceSeriesIndex>false</ForceSeriesIndex>
                 <LookBackPeriod>0</LookBackPeriod>
@@ -7163,6 +7342,13 @@ namespace NinjaTrader.NinjaScript.Strategies
       <Default>14</Default>
       <Description />
       <Name>Bollinger_MA</Name>
+      <Minimum>1</Minimum>
+      <Type>int</Type>
+    </InputParameter>
+    <InputParameter>
+      <Default>1</Default>
+      <Description />
+      <Name>Good_Luck</Name>
       <Minimum>1</Minimum>
       <Type>int</Type>
     </InputParameter>
