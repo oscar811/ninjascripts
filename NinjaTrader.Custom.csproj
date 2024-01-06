@@ -152,6 +152,9 @@
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
+    <Reference Include="LuxAlgo - LiquiditySwings">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - LiquiditySwings.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BarsTypes\%40DayBarsType.cs" />
@@ -550,7 +553,6 @@
     <Compile Include="Indicators\RajIndicators\SessionHighLow.cs" />
     <Compile Include="Indicators\RajIndicators\SessionLevels.cs" />
     <Compile Include="Indicators\RajIndicators\AMDCyclesIndicator.cs" />
-    <Compile Include="Strategies\MyCustomStrategy.cs" />
     <Compile Include="PJSQQE.cs" />
     <Compile Include="Indicators\SampleGetHighLowByTimeRange.cs" />
     <Compile Include="Indicators\RGaussianFilter.cs" />
@@ -558,12 +560,15 @@
     <Compile Include="Indicators\AntoQQE.cs" />
     <Compile Include="Indicators\AntoSSLQQEHybrid.cs" />
     <Compile Include="Indicators\JMA.cs" />
-    <Compile Include="Strategies\MyCustomStrategy1.cs" />
     <Compile Include="GemsTraderLadder_bin_v0.3.7.cs" />
     <Compile Include="Strategies\RajAlgos\ZipStrategy.cs" />
     <Compile Include="Strategies\ProfitableLoserBacktestStratAsia.cs" />
     <Compile Include="Strategies\DailyRangeAMDxScalper.cs" />
     <Compile Include="Strategies\ProfitableLoserBacktestStrat.cs" />
+    <Compile Include="LuxAlgo - LiquiditySwings.cs" />
+    <Compile Include="Indicators\RajIndicators\SwingLevels.cs" />
+    <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
+    <Compile Include="Strategies\RajAlgos\PossibleStrat - Copy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
