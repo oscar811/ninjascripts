@@ -149,11 +149,11 @@
     <Reference Include="GemsTraderLadder_bin_v0.3.7">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\GemsTraderLadder_bin_v0.3.7.dll</HintPath>
     </Reference>
-    <Reference Include="NinjaTrader.Vendor">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
-    </Reference>
     <Reference Include="LuxAlgo - LiquiditySwings">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - LiquiditySwings.dll</HintPath>
+    </Reference>
+    <Reference Include="NinjaTrader.Vendor">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -430,6 +430,7 @@
     <Compile Include="Strategies\%40SampleMultiInstrument.cs" />
     <Compile Include="Strategies\%40SampleMultiTimeFrame.cs" />
     <Compile Include="Strategies\%40Strategy.cs" />
+    <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
     <Compile Include="Strategies\RajAlgos\Squeeze.cs" />
     <Compile Include="Strategies\RajAlgos\UnicornStrategy.cs" />
     <Compile Include="SuperDomColumns\%40APQ.cs" />
@@ -567,8 +568,8 @@
     <Compile Include="Strategies\ProfitableLoserBacktestStrat.cs" />
     <Compile Include="LuxAlgo - LiquiditySwings.cs" />
     <Compile Include="Indicators\RajIndicators\SwingLevels.cs" />
-    <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
-    <Compile Include="Strategies\RajAlgos\PossibleStrat - Copy.cs" />
+    <Compile Include="Strategies\RajAlgos\UniqueStack.cs" />
+    <Compile Include="Strategies\RajAlgos\BarCloseStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">

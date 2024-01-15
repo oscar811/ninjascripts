@@ -22,6 +22,7 @@ using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
 using NinjaTrader.NinjaScript.Indicators.RajIndicators;
 using System.Collections;
+using NinjaTrader.Custom.Strategies.RajAlgos;
 #endregion
 
 //This namespace holds Strategies in this folder and is required. Do not change it. 
@@ -29,13 +30,11 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class PossibleStrat : Strategy
     {
-        private Stack swingHighRays;        /*	Last Entry represents the most recent swing, i.e. 				*/
-        private Stack swingLowRays;         /*	swingHighRays are sorted descedingly by price and vice versa	*/
+        private UniqueStack<Ray> swingHighRays;        /*	Last Entry represents the most recent swing, i.e. 				*/
+        private UniqueStack<Ray> swingLowRays;         /*	swingHighRays are sorted descedingly by price and vice versa	*/
         private int soundBar = 0;		// to prevent multiple sounds when Calculate = OnEachTick or OnPriceChange, so one sound per bar only.	
 
         private Series<double> secondarySeries;
-        private SwingLevels swingLevels;
-        private MACD MACD1;
         private int htf_mult;
 
         protected override void OnStateChange()
@@ -63,8 +62,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
                 
-                Strength = 3;
-                EnableAlerts = true;
+                Strength = 4;
+                TakeProfit = 80;
+                StopLoss = 50;
                 KeepBrokenLines = true; // defaulted to false to reduce overhead
                 SwingHighColor = Brushes.DodgerBlue;
                 SwingLowColor = Brushes.Fuchsia;
@@ -75,20 +75,17 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             {
                 AddDataSeries(Data.BarsPeriodType.Minute, 5);
 
-                swingHighRays = new Stack();
-                swingLowRays = new Stack();
+                swingHighRays = new UniqueStack<Ray>();
+                swingLowRays = new UniqueStack<Ray>();
 
-                SetStopLoss(CalculationMode.Ticks, 50);
-                SetProfitTarget(CalculationMode.Ticks, 80);
+                SetStopLoss(CalculationMode.Ticks, TakeProfit);
+                SetProfitTarget(CalculationMode.Ticks, StopLoss);
 
                 ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
             {
-                secondarySeries = new Series<double>(this);
-                //Swing1 = Swing(Highs[1], 5);
-                //swingLevels = SwingLevels(Close, 5, false, true, 1);
-                //AddChartIndicator(swingLevels);                
+                secondarySeries = new Series<double>(this);   
             }
         }
 
@@ -142,8 +139,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 if (bIsSwingHigh)
                 {
-                    Ray newRay = Draw.Ray(this, "highRay" + (CurrentBar - Strength - 1), false, Strength * htf_mult + 1, Highs[1][Strength + 1], 0, Highs[1][Strength + 1], SwingHighColor, DashStyleHelper.Dash, LineWidth);
-                    swingHighRays.Push(newRay);
+                    double sh = Highs[1][Strength + 1];
+                    Ray newRay = Draw.Ray(this, "highRay" + sh, false, (Strength + 2) * htf_mult, sh, 0, sh, SwingHighColor, DashStyleHelper.Dash, LineWidth);
+                    swingHighRays.Push(sh, newRay);                    
                 }
 
                 /*	Low - Check whether we have a new swing with a bottom at CurrentBar - Strength - 1	*/
@@ -165,84 +163,73 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 if (bIsSwingLow)
                 {
-                    Ray newRay = Draw.Ray(this, "lowRay" + (CurrentBar - Strength - 1), false, Strength + 1, Lows[1][Strength + 1], 0, Lows[1][Strength + 1], SwingLowColor, DashStyleHelper.Dash, LineWidth);
-                    swingLowRays.Push(newRay);                      /*	Store Ray for future removal	*/
+                    double sl = Lows[1][Strength + 1];
+                    Ray newRay = Draw.Ray(this, "lowRay" + sl, false, (Strength + 2) * htf_mult, sl, 0, sl, SwingLowColor, DashStyleHelper.Dash, LineWidth);
+                    swingLowRays.Push(sl, newRay);
                 }
             }
 
 
             /*	Check the break of some swing	*/
             /*	High swings first...	*/
-            Ray tmpRay = null;
-
-            if (swingHighRays.Count != 0)
+            Ray tmpRay = null;            
+            if (swingHighRays.Count() != 0)
             {
                 tmpRay = (Ray)swingHighRays.Peek();
             }
 
-            while (swingHighRays.Count != 0 && Highs[0][1] > tmpRay.StartAnchor.Price)
+            while (swingHighRays.Count() != 0 && Highs[0][1] > tmpRay.StartAnchor.Price)
             {
                 RemoveDrawObject(tmpRay.Tag);
-
-                Print("high taken");
-
+                
                 if (Closes[0][1] < tmpRay.StartAnchor.Price)
                 {
-                    //EnterShort(Convert.ToInt32(DefaultQuantity), @"Short");
+                    EnterShort(Convert.ToInt32(DefaultQuantity), @"Short");
                 }
 
                 if (KeepBrokenLines)
                 {   /*	Draw a line for the broken swing */
-                    int uiBarsAgo = CurrentBar - tmpRay.StartAnchor.DrawnOnBar + Strength + 1;          /*	When did the ray being removed start?  Had to account for strength */
+                    int uiBarsAgo = CurrentBar - tmpRay.StartAnchor.DrawnOnBar + (Strength + 2) * htf_mult;          /*	When did the ray being removed start?  Had to account for strength */
                     Draw.Line(this, "highLine" + (CurrentBar - uiBarsAgo), false, uiBarsAgo, tmpRay.StartAnchor.Price, 0, tmpRay.StartAnchor.Price, SwingHighColor, DashStyleHelper.Dot, LineWidth);
                 }
 
                 swingHighRays.Pop();
-
-                if (swingHighRays.Count != 0)
+                
+                if (swingHighRays.Count() != 0)
                 {
                     tmpRay = (Ray)swingHighRays.Peek();
                 }
             }
 
             /*		Low swings follow...	*/
-            if (swingLowRays.Count != 0)
+            if (swingLowRays.Count() != 0)
             {
                 tmpRay = (Ray)swingLowRays.Peek();
             }
 
-            while (swingLowRays.Count != 0 && Lows[0][1] < tmpRay.StartAnchor.Price)
+            while (swingLowRays.Count() != 0 && Lows[0][1] < tmpRay.StartAnchor.Price)
             {
                 RemoveDrawObject(tmpRay.Tag);
                 
                 if (Closes[0][1] > tmpRay.StartAnchor.Price)
                 {
+                    Print("tmpRay.StartAnchor.Price: " + tmpRay.StartAnchor.Price);
                     EnterLong(Convert.ToInt32(DefaultQuantity), @"Long");
                 }
 
                 if (KeepBrokenLines)
                 {   /*	Draw a line for the broken swing */
-                    int uiBarsAgo = CurrentBar - tmpRay.StartAnchor.DrawnOnBar + Strength + 1;          /*	When did the ray being removed start?  Had to account for strength	*/
+                    int uiBarsAgo = CurrentBar - tmpRay.StartAnchor.DrawnOnBar + (Strength + 2) * htf_mult;          /*	When did the ray being removed start?  Had to account for strength	*/
                     Draw.Line(this, "lowLine" + (CurrentBar - uiBarsAgo), false, uiBarsAgo, tmpRay.StartAnchor.Price, 0, tmpRay.StartAnchor.Price, SwingLowColor, DashStyleHelper.Dot, LineWidth);
                 }
 
                 swingLowRays.Pop();
 
-                if (swingLowRays.Count != 0)
+                if (swingLowRays.Count() != 0)
                 {
                     tmpRay = (Ray)swingLowRays.Peek();
                 }
             }
-
-            // Set 1
-            //         if (
-            //	 // Condition group 1
-            //	((Close[0] <= Swing1.SwingHigh[0])
-            //	 && (CrossAbove(High, Swing1.SwingHigh, 1))))
-            //{
-            //	EnterLong(Convert.ToInt32(DefaultQuantity), @"Long");
-            //}
-
         }
 
         #region Properties
@@ -253,8 +240,13 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Enable Alert log msgs", Description = "Prints alert messages in the (New>Alert log) window when swings are broken", Order = 2, GroupName = "Parameters")]
-        public bool EnableAlerts
+        [Display(Name = "Take Profit (ticks)", Description = "", Order = 1, GroupName = "ATM")]
+        public int TakeProfit
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Stop Loss (ticks)", Description = "", Order = 1, GroupName = "ATM")]
+        public int StopLoss
         { get; set; }
 
         [NinjaScriptProperty]
