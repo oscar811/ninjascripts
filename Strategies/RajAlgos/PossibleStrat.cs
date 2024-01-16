@@ -43,7 +43,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             {
                 Description = @"PossibleStrat";
                 Name = "PossibleStrat";
-                Calculate = Calculate.OnBarClose;
+                Calculate = Calculate.OnEachTick;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;
                 IsExitOnSessionCloseStrategy = true;
@@ -63,7 +63,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 IsInstantiatedOnEachOptimizationIteration = true;
                 
                 Strength = 4;
-                TakeProfit = 80;
+                TakeProfit = 100;
                 StopLoss = 50;
                 KeepBrokenLines = true; // defaulted to false to reduce overhead
                 SwingHighColor = Brushes.DodgerBlue;

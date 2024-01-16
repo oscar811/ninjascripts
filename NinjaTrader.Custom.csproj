@@ -570,6 +570,9 @@
     <Compile Include="Indicators\RajIndicators\SwingLevels.cs" />
     <Compile Include="Strategies\RajAlgos\UniqueStack.cs" />
     <Compile Include="Strategies\RajAlgos\BarCloseStrategy.cs" />
+    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.1.AssemblyAttributes.cs" />
+    <Compile Include="Strategies\RajAlgos\CaptainBacktest.cs" />
+    <Compile Include="Strategies\RajAlgos\CaptainBacktest2.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">

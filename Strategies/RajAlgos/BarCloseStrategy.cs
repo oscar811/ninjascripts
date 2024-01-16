@@ -1,8 +1,13 @@
 #region Using declarations
-using NinjaTrader.Cbi;
-using NinjaTrader.NinjaScript.Indicators;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using NinjaTrader.Cbi;
+using NinjaTrader.Data;
+using NinjaTrader.NinjaScript;
+using NinjaTrader.Core.FloatingPoint;
+using NinjaTrader.NinjaScript.Indicators;
 #endregion
 
 //This namespace holds Strategies in this folder and is required. Do not change it. 
@@ -19,7 +24,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             {
                 Description = @"Count candles";
                 Name = "BarCloseStrategy";
-                Calculate = Calculate.OnBarClose;
+                Calculate = Calculate.OnPriceChange;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;
                 IsExitOnSessionCloseStrategy = true;
@@ -38,22 +43,28 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
-                UseRsiFilter = false;
-                EmaPeriod = 20;
-                ConsecutiveClosesNeeded = 3;
+                UseRsiFilter = true;
+                RsiPeriod = 10;
+                RsiUpper = 70;
+                RsiLower = 30;
+                ConsecutiveClosesNeeded = 4;
+                LongTP = 160;
+                LongSL = 70;
+                ShortTP = 120;
+                ShortSL = 70;
             }
             else if (State == State.Configure)
             {
                 ClearOutputWindow();
 
-                //SetProfitTarget("", CalculationMode.Ticks, 100);
-                //SetStopLoss("", CalculationMode.Ticks, 80, false);
+                //SetProfitTarget("", CalculationMode.Ticks, LongTP);
+                //SetStopLoss("", CalculationMode.Ticks, LongSL, false);
             }
             else if (State == State.DataLoaded)
             {
                 //ema1 = EMA(Close, Convert.ToInt32(EmaPeriod));
                 //AddChartIndicator(ema1);
-                rsi = RSI(14, 3);
+                rsi = RSI(RsiPeriod, 2);
                 AddChartIndicator(rsi);
             }
         }
@@ -88,17 +99,17 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     }
                 }
 
-                ExitIfTpOrSL();
+                ExitIfTpOrSl();
+                ExitIfOppositeDisplacement();
 
-                if (shouldEnterShort && (!UseRsiFilter || rsi[0] > 70))
+                if (shouldEnterShort && (!UseRsiFilter || rsi[0] > RsiUpper))
                 {
                     EnterShort();
                 }
-                else if (shouldEnterLong && (!UseRsiFilter || rsi[0] < 30))
+                else if (shouldEnterLong && (!UseRsiFilter || rsi[0] < RsiLower))
                 {
                     EnterLong();
                 }
-
             }
             catch (Exception e)
             {
@@ -107,25 +118,94 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
         }
 
-        private void ExitIfTpOrSL()
-        {
-            if (Position.Quantity != 0)
+        private void ExitIfTpOrSl()
+        {            
+            if (Position.MarketPosition == MarketPosition.Long)
             {
-                double profitOrLoss = Position.GetUnrealizedProfitLoss(PerformanceUnit.Ticks);
-                Print("Position.MarketPosition: " + Position.MarketPosition);
-                Print("profitOrLoss: " + profitOrLoss);
+                double profitLoss = (Close[0] - Position.AveragePrice) * Position.Quantity;
+                if (profitLoss > LongTP)
+                    ExitLong();
+                else if (profitLoss < LongSL)
+                    ExitShort();
+            }
+            else if (Position.MarketPosition == MarketPosition.Short)
+            {
+                double profitLoss = -1 * (Close[0] - Position.AveragePrice) * Position.Quantity;
+                if (profitLoss > ShortTP)
+                    ExitLong();
+                else if (profitLoss < ShortSL)
+                    ExitShort();
+            }
+        }
 
-                if (Position.MarketPosition == MarketPosition.Long)
+        private void ExitIfOppositeDisplacement()
+        {
+            if (Position.Quantity > 0)
+            {
+                double averageBodySize = CalculateAverageBodySize(20);
+
+                if (Position.MarketPosition == MarketPosition.Long && (Open[0] - Close[0]) > 2 * averageBodySize)
                 {
-                    if (profitOrLoss > 100 || profitOrLoss < -80)
-                        ExitLong();
+                    Print("averageBodySize: " + averageBodySize); 
+                    ExitLong();
                 }
-                else if (Position.MarketPosition == MarketPosition.Short)
+
+                if (Position.MarketPosition == MarketPosition.Short && (Close[0] - Open[0]) > 2 * averageBodySize)
                 {
-                    if (profitOrLoss > 100 || profitOrLoss < -80)
-                        ExitShort();
+                    Print("averageBodySize: " + averageBodySize);
+                    ExitShort();
                 }
             }
+        }
+
+        private double GetUnRealizedProfitOrLoss()
+        {
+            return (Position.MarketPosition == MarketPosition.Long ? 1 : -1 ) * (Close[0] - Position.AveragePrice) * Position.Quantity;
+        }
+
+        //private double realizedPnL = 0;
+
+        ////protected override void OnExecutionUpdate(Execution execution, string executionId, Order order, Position position)
+        //protected override void OnExecutionUpdate(Execution execution, string executionId, double price, int quantity, MarketPosition marketPosition, string orderId, DateTime time)        
+        //{
+        //    if (execution.Order != null && execution.Order.OrderState == OrderState.Filled)
+        //    {
+        //        double pnlForExecution = 0;
+        //        if (execution.Order.OrderAction == OrderAction.Buy)
+        //        {
+        //            pnlForExecution = (execution.Price - Position.AveragePrice) * execution.Quantity;
+        //        }
+        //        else if (execution.Order.OrderAction == OrderAction.Sell)
+        //        {
+        //            pnlForExecution = (Position.AveragePrice - execution.Price) * execution.Quantity;
+        //        }
+
+        //        // Adjust for Buy/Sell and Long/Short
+        //        if (Position.MarketPosition == MarketPosition.Short)
+        //        {
+        //            pnlForExecution = -pnlForExecution;
+        //        }
+
+        //        realizedPnL += pnlForExecution;
+
+        //        // Print or handle the realized PnL
+        //        Print("Realized PnL: " + realizedPnL);
+        //    }
+
+        //    //base.OnExecutionUpdate(execution, executionId, price, quantity, marketPosition, orderId, time);
+        //}
+
+        private double CalculateAverageBodySize(int period)
+        {
+            double totalBodySize = 0;
+
+            for (int i = 0; i < period; i++)
+            {
+                double bodySize = Math.Abs(Close[i] - Open[i]);
+                totalBodySize += bodySize;
+            }
+
+            return totalBodySize / period;
         }
 
         #region Properties
@@ -141,12 +221,47 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         public bool UseRsiFilter
         { get; set; }
 
-        [Range(20, int.MaxValue)]
+        [Range(6, int.MaxValue)]
         [NinjaScriptProperty]
-        [Display(Name = "Ema Period", Order = 3, GroupName = "Strategy")]
-        public int EmaPeriod
+        [Display(Name = "Rsi Period", Order = 3, GroupName = "Strategy")]
+        public int RsiPeriod
         { get; set; }
 
+        [Range(60, int.MaxValue)]
+        [NinjaScriptProperty]
+        [Display(Name = "Rsi Upper", Order = 4, GroupName = "Strategy")]
+        public int RsiUpper
+        { get; set; }
+
+        [Range(15, 30)]
+        [NinjaScriptProperty]
+        [Display(Name = "Rsi Lower", Order = 4, GroupName = "Strategy")]
+        public int RsiLower
+        { get; set; }
+
+        [Range(60, int.MaxValue)]
+        [NinjaScriptProperty]
+        [Display(Name = "Long TP (ticks)", Order = 4, GroupName = "ATM")]
+        public int LongTP
+        { get; set; }
+
+        [Range(30, int.MaxValue)]
+        [NinjaScriptProperty]
+        [Display(Name = "Long SL (ticks)", Order = 5, GroupName = "ATM")]
+        public int LongSL
+        { get; set; }
+
+        [Range(60, int.MaxValue)]
+        [NinjaScriptProperty]
+        [Display(Name = "Short TP (ticks)", Order = 4, GroupName = "ATM")]
+        public int ShortTP
+        { get; set; }
+
+        [Range(30, int.MaxValue)]
+        [NinjaScriptProperty]
+        [Display(Name = "Short SL (ticks)", Order = 5, GroupName = "ATM")]
+        public int ShortSL
+        { get; set; }
 
         #endregion
     }

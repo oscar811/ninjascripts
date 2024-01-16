@@ -24,7 +24,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 //This namespace holds Indicators in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.Indicators
 {
-	public class AuZeroLagTEMA : Indicator
+    public class AuZeroLagTEMA : Indicator
 	{
         #region Variables
         private int period = 14;
