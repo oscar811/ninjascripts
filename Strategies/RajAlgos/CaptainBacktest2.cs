@@ -112,15 +112,101 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             t_trade[0] = check_time(trade_start, trade_end);
 
             bias[0] = bias[1];
+            opp_close[0] = opp_close[1];
+            took_hl[0] = took_hl[1];
+            is_short[0] = is_short[1];
+            is_long[0] = is_long[1];
 
             bool can_trade = took_trade() == false;
 
-            SetProfitTarget("", CalculationMode.Ticks, reward / TickSize);
-            SetStopLoss("", CalculationMode.Ticks, risk/ TickSize, false);
+            if (fixed_rr)
+            {
+                SetProfitTarget("", CalculationMode.Ticks, reward / TickSize);
+                SetStopLoss("", CalculationMode.Ticks, risk / TickSize, false);
+            }            
 
             prev_range();
             reset();
             take_range();
+
+            if (can_trade)
+            {
+                trade_range();
+            }
+            else if (!t_trade[0] && t_trade[1])
+            {
+                ExitLong();
+                ExitShort();
+            }
+        }
+
+        private void trade_range()
+        {
+            opp_close[0] = opp_close[1];
+            took_hl[0] = took_hl[1];
+
+            if (t_trade[0])
+            {
+                if(!retrace_1)
+                {
+                    opp_close[0] = true;
+                }
+                else
+                {
+                    if (bias[0] == 1 && Close[0] < Open[0])
+                    {
+                        opp_close[0] = true;
+                    }
+                    if (bias[0] == -1 && Close[0] > Open[0])
+                    {
+                        opp_close[0] = true;
+                    }
+                }
+
+                if (!retrace_2)
+                {
+                    took_hl[0] = true;
+                }
+                else
+                {
+                    if (bias[0] == 1 && Low[0] < Low[1])
+                    {
+                        took_hl[0] = true;
+                    }
+                    if (bias[0] == -1 && High[0] > High[1])
+                    {
+                        took_hl[0] = true;
+                    }
+                }
+            }
+
+            if (CurrentBar > 3)
+            {
+                if (bias[1] == 1 && Close[0] > High[1] && opp_close[0] && took_hl[0] && !is_long[1])
+                {
+                    is_long[0] = true;
+                    if (stop_orders)
+                    {
+                        EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
+                    }
+                    else
+                    {
+                        EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
+                    }
+                }
+                if (bias[1] == 11 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[1])
+                {
+                    is_short[0] = true;
+                    if (stop_orders)
+                    {
+                        EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
+                    }
+                    else
+                    {
+                        EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
+                    }
+                }
+            }
         }
 
         private void take_range()
@@ -132,13 +218,13 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 {
                     bias[0] = 1;
                     draw = true;
-                    Draw.ArrowUp(this, Convert.ToString(CurrentBar) + " ArrowUp", true, 0, High[0], Brushes.White);
+                    Draw.ArrowUp(this, Convert.ToString(CurrentBar) + " ArrowUp", true, 0, High[0], Brushes.Black);
                 }
                 if (Low[0] < range_low[0] && bias[0] == 0)
                 {
                     bias[0] = 11;
                     draw = true;
-                    Draw.ArrowDown(this, Convert.ToString(CurrentBar) + " ArrowDown", true, 0, Low[0], Brushes.White);
+                    Draw.ArrowDown(this, Convert.ToString(CurrentBar) + " ArrowDown", true, 0, Low[0], Brushes.Black);
                 }
             }
             else if (!t_take[0] && t_take[1] && bias[0] == 0)
@@ -149,8 +235,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
             if (draw)
             {
-                Draw.Line(this, Convert.ToString(CurrentBar) + " Range High", 20, range_high[0], 0, range_high[0], Brushes.Yellow);
-                Draw.Line(this, Convert.ToString(CurrentBar) + " Range Low", 20, range_low[0], 0, range_low[0], Brushes.Yellow);
+                Draw.Line(this, Convert.ToString(CurrentBar) + " Range High", 20, range_high[0], 0, range_high[0], Brushes.Red);
+                Draw.Line(this, Convert.ToString(CurrentBar) + " Range Low", 20, range_low[0], 0, range_low[0], Brushes.Red);
             }
         }
 
@@ -223,37 +309,51 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         #region Properties
 
-        public int prev_start
-        { get; set; }
+        [NinjaScriptProperty]
+        [Display(Name = "Price Range Start", Order = 1, GroupName = "Time")]
+        public int prev_start { get; set; }
 
-        public int prev_end
-        { get; set; }
+        [NinjaScriptProperty]
+        [Display(Name = "Price Range End", Order = 2, GroupName = "Time")]
+        public int prev_end { get; set; }
 
-        public int take_start
-        { set; get; }
+        [NinjaScriptProperty]
+        [Display(Name = "Bias Window Start", Order = 3, GroupName = "Time")]
+        public int take_start { set; get; }
 
-        public int take_end
-        { set; get; }
+        [NinjaScriptProperty]
+        [Display(Name = "Bias Window End", Order = 4, GroupName = "Time")]
+        public int take_end { set; get; }
 
-        public int trade_start
-        { set; get; }
+        [NinjaScriptProperty]
+        [Display(Name = "Trade Window Start", Order = 5, GroupName = "Time")]
+        public int trade_start { set; get; }
 
-        public int trade_end
-        { set; get; }
+        [NinjaScriptProperty]
+        [Display(Name = "Trade Window End", Order = 6, GroupName = "Time")]
+        public int trade_end { set; get; }
 
 
         //
+        [NinjaScriptProperty]
+        [Display(Name = "Retrace - Opposite close candle", Order = 3, GroupName = "Strategy")]
         public bool retrace_1 { get; set; }
 
+        [NinjaScriptProperty]
+        [Display(Name = "Retrace - Took previous high/low", Order = 3, GroupName = "Strategy")]
         public bool retrace_2 { get; set; }
 
         public bool stop_orders { get; set; }
 
-        public bool fixed_rr { get; set; }
+        private bool fixed_rr = true;
 
         //
+        [NinjaScriptProperty]
+        [Display(Name = "Risk", Order = 3, GroupName = "Risk")]
         public double risk {  get; set; }
 
+        [NinjaScriptProperty]
+        [Display(Name = "Reward", Order = 3, GroupName = "Risk")]
         public double reward { get; set; }
         #endregion
     }

@@ -39,9 +39,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private bool retracenOppCandleClose = true;
         private bool retraceNPrevHighLowTaken = true;
         private bool useStopOrder = false;
-        private bool useFixedRR = true;
-        private double riskPoints = 25;
-        private double rewardPoints = 50;
 
         private TimeWindow priceRangeWindow;
         private TimeWindow biasWindow;
@@ -72,19 +69,15 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
-                //TimeSpan priceRangeStart = new TimeSpan(6, 0, 0);
-                //TimeSpan priceRangeEnd = new TimeSpan(10, 0, 0);
-                //TimeSpan biasWindowStart = new TimeSpan(10, 0, 0);
-                //TimeSpan biasWindowEnd = new TimeSpan(11, 15, 0);
-                //TimeSpan tradeWindowStart = new TimeSpan(10, 0, 0);
-                //TimeSpan tradeWindowEnd = new TimeSpan(16, 0, 0);
+                riskPoints = 25;
+                rewardPoints = 50;
             }
             else if (State == State.Configure)
             {
                 ClearOutputWindow();
 
-                SetStopLoss(CalculationMode.Ticks, 4 * riskPoints);
-                SetProfitTarget(CalculationMode.Ticks, 4 * rewardPoints);
+                SetProfitTarget(CalculationMode.Ticks, rewardPoints / TickSize);
+                SetStopLoss(CalculationMode.Ticks, riskPoints / TickSize);
             }
             else if (State == State.DataLoaded)
             {
@@ -246,5 +239,17 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             public DateTime StartTime { get; set; }
             public DateTime EndTime { get; set; }
         }
+
+        #region Properties
+
+        [NinjaScriptProperty]
+        [Display(Name = "Risk", Order = 3, GroupName = "Risk")]
+        public double riskPoints { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Reward", Order = 3, GroupName = "Risk")]
+        public double rewardPoints { get; set; }
+
+        #endregion
     }
 }
