@@ -45,6 +45,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private int prior_num_trades = 0;
         private int prior_session_trades = 0;
 
+        private ATR atrIndicator;
+
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
@@ -77,15 +79,22 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 trade_start = 100000;
                 trade_end = 16000000;
 
-                retrace_1 = true; 
+                retrace_1 = true;
                 retrace_2 = true;
                 stop_orders = false;
                 fixed_rr = true;
-                risk = 25;
-                reward = 50;
+
+                //risk = 0.75;
+                //reward = 3.5;
+
+                atrPeriod = 14;
+                atrMultiplierForStopLoss = 0.5;
+                atrMultiplierForTakeProfit = 2;
             }
             else if (State == State.Configure)
             {
+                ClearOutputWindow();
+
                 range_high = new Series<double>(this);
                 range_low = new Series<double>(this);
 
@@ -99,6 +108,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 t_prev = new Series<bool>(this);
                 t_take = new Series<bool>(this);
                 t_trade = new Series<bool>(this);
+
+                atrIndicator = ATR(atrPeriod);
             }
         }
 
@@ -121,9 +132,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
             if (fixed_rr)
             {
-                SetProfitTarget("", CalculationMode.Ticks, reward / TickSize);
-                SetStopLoss("", CalculationMode.Ticks, risk / TickSize, false);
-            }            
+                //SetProfitTarget("", CalculationMode.Ticks, reward / TickSize);
+                //SetStopLoss("", CalculationMode.Ticks, risk / TickSize, false);
+            }
 
             prev_range();
             reset();
@@ -147,7 +158,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
             if (t_trade[0])
             {
-                if(!retrace_1)
+                if (!retrace_1)
                 {
                     opp_close[0] = true;
                 }
@@ -191,6 +202,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     }
                     else
                     {
+                        double atrValue = atrIndicator[0];
+                        SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
+                        SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
+
                         EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
                     }
                 }
@@ -203,6 +218,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     }
                     else
                     {
+                        double atrValue = atrIndicator[0];
+                        SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
+                        SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
                         EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
                     }
                 }
@@ -348,13 +366,26 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private bool fixed_rr = true;
 
         //
-        [NinjaScriptProperty]
-        [Display(Name = "Risk", Order = 3, GroupName = "Risk")]
-        public double risk {  get; set; }
+        //[NinjaScriptProperty]
+        //[Display(Name = "Risk", Order = 3, GroupName = "Risk")]
+        //public double risk {  get; set; }
+
+        //[NinjaScriptProperty]
+        //[Display(Name = "Reward", Order = 3, GroupName = "Risk")]
+        //public double reward { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Reward", Order = 3, GroupName = "Risk")]
-        public double reward { get; set; }
+        [Display(Name = "Atr Period", Order = 3, GroupName = "Risk")]
+        public int atrPeriod { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Atr mult for SL", Order = 3, GroupName = "Risk")]
+        public double atrMultiplierForStopLoss { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Atr mult for TP", Order = 3, GroupName = "Risk")]
+        public double atrMultiplierForTakeProfit { get; set; }
+
         #endregion
     }
 }
