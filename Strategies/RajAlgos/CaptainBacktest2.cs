@@ -158,6 +158,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
             if (t_trade[0])
             {
+                Print("time" + Time[0]);
+                Print("opp_close[0]: " + opp_close[0].ToString());
+                Print("took_hl[0]: " + took_hl[0].ToString());
+
                 if (!retrace_1)
                 {
                     opp_close[0] = true;
@@ -240,7 +244,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 }
                 if (Low[0] < range_low[0] && bias[0] == 0)
                 {
-                    bias[0] = 11;
+                    bias[0] = -1;
                     draw = true;
                     Draw.ArrowDown(this, Convert.ToString(CurrentBar) + " ArrowDown", true, 0, Low[0], Brushes.Black);
                 }
@@ -260,16 +264,15 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         private void reset()
         {
-            if (CurrentBar > 3)
+            if (!t_trade[0] && t_trade[1])
             {
-                if (!t_trade[0] && t_trade[1])
-                {
-                    bias[0] = 0;
-                    is_long[0] = false;
-                    is_short[0] = false;
-                    opp_close[0] = false;
-                    took_hl[0] = false;
-                }
+                Print("vars resetting: ");
+
+                bias[0] = 0;
+                is_long[0] = false;
+                is_short[0] = false;
+                opp_close[0] = false;
+                took_hl[0] = false;
             }
         }
 
