@@ -20,12 +20,13 @@ using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
+using NTRes.NinjaTrader.Gui.Tools.Account;
 #endregion
 
-//This namespace holds Strategies in this folder and is required. Do not change it. 
+//This namespace holds Strategies in this folder and is required. Do not change it.
 namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
-    public class CaptainBacktest2 : Strategy
+    public class CaptainBacktest3 : Strategy
     {
         private Series<double> range_high;
         private Series<double> range_low;
@@ -51,9 +52,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         {
             if (State == State.SetDefaults)
             {
-                Description = @"CaptainBacktest2";
-                Name = "CaptainBacktest2";
-                Calculate = Calculate.OnPriceChange;
+                Description = @"CaptainBacktest3";
+                Name = "CaptainBacktest3";
+                Calculate = Calculate.OnBarClose;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;
                 IsExitOnSessionCloseStrategy = true;
@@ -68,24 +69,24 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 RealtimeErrorHandling = RealtimeErrorHandling.StopCancelClose;
                 StopTargetHandling = StopTargetHandling.PerEntryExecution;
                 BarsRequiredToTrade = 20;
-                // Disable this property for performance gains in Strategy Analyzer optimizations
+                // Disable this property for gains in Strategy Analyzer optimizations
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
-                prev_start = 060000;
+                prev_start = 060000; // HHMMSS - 06:00:00
                 prev_end = 100000;
                 take_start = 100000;
                 take_end = 111500;
                 trade_start = 100000;
-                trade_end = 16000000;
+                trade_end = 160000;
 
                 retrace_1 = true;
                 retrace_2 = true;
                 stop_orders = false;
                 fixed_rr = true;
 
-                //risk = 0.75;
-                //reward = 3.5;
+                //risk = 25;
+                //reward = 75;
 
                 atrPeriod = 14;
                 atrMultiplierForStopLoss = 0.5;
@@ -93,7 +94,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.Configure)
             {
-                ClearOutputWindow();
+				ClearOutputWindow();
 
                 range_high = new Series<double>(this);
                 range_low = new Series<double>(this);
@@ -130,24 +131,20 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
             bool can_trade = took_trade() == false;
 
-            if (fixed_rr)
-            {
-                //SetProfitTarget("", CalculationMode.Ticks, reward / TickSize);
-                //SetStopLoss("", CalculationMode.Ticks, risk / TickSize, false);
-            }
+            // if (fixed_rr)
+            // {
+            //     SetProfitTarget("", CalculationMode.Ticks, reward / TickSize);
+            //     SetStopLoss("", CalculationMode.Ticks, risk / TickSize, false);
+            // }
+
+//			Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
 
             prev_range();
             reset();
             take_range();
-
             if (can_trade)
             {
                 trade_range();
-            }
-            else if (!t_trade[0] && t_trade[1])
-            {
-                ExitLong();
-                ExitShort();
             }
         }
 
@@ -187,42 +184,48 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     }
                 }
 
-                Print("Time[0]: " + Time[0].ToString());
-                Print("bias[0]: " + bias[0].ToString());
-                Print("opp_close[0]: " + opp_close[0].ToString());
-                Print("took_hl[0]: " + took_hl[0].ToString());
-            }
+//				Print("Time[0]: " + Time[0].ToString());
+//			    Print("CurrentBar: " + CurrentBar);
+//                Print("bias[0]: " + bias[0].ToString());
+//                Print("opp_close[0]: " + opp_close[0].ToString());
+//                Print("took_hl[0]: " + took_hl[0].ToString());
 
-            if (bias[1] == 1 && Close[0] > High[1] && opp_close[0] && took_hl[0] && !is_long[1])
-            {
-                is_long[0] = true;
-                if (stop_orders)
-                {
-                    EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
-                }
-                else
-                {
-                    double atrValue = atrIndicator[0];
-                    SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
-                    SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
 
-                    EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
-                }
+                if (bias[1] == 1 && Close[0] > High[1] && opp_close[0] && took_hl[0] && !is_long[0])
+                    {
+                        is_long[0] = true;
+                        if (stop_orders)
+                        {
+                            EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
+                        }
+                        else
+                        {
+                            double atrValue = atrIndicator[0];
+                            SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
+                            SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
+                            EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
+                        }
+                    }
+                    if (bias[1] == -1 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[0])
+                    {
+                        is_short[0] = true;
+                        if (stop_orders)
+                        {
+                            EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
+                        }
+                        else
+                        {
+                            double atrValue = atrIndicator[0];
+                            SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
+                            SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
+                            EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
+                        }
+                    }
             }
-            if (bias[1] == -1 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[1])
+            else if (!t_trade[0] && t_trade[1])
             {
-                is_short[0] = true;
-                if (stop_orders)
-                {
-                    EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
-                }
-                else
-                {
-                    double atrValue = atrIndicator[0];
-                    SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
-                    SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
-                    EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
-                }
+                ExitLong();
+                ExitShort();
             }
         }
 
@@ -233,33 +236,32 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             {
                 if (High[0] > range_high[0] && bias[0] == 0)
                 {
-                    bias[0] = 1;
+                    bias[0] = 1; // long
                     draw = true;
                     Draw.ArrowUp(this, Convert.ToString(CurrentBar) + " ArrowUp", true, 0, High[0], Brushes.Black);
                 }
                 if (Low[0] < range_low[0] && bias[0] == 0)
                 {
-                    bias[0] = -1;
+                    bias[0] = -1; // short
                     draw = true;
                     Draw.ArrowDown(this, Convert.ToString(CurrentBar) + " ArrowDown", true, 0, Low[0], Brushes.Black);
                 }
             }
             else if (!t_take[0] && t_take[1] && bias[0] == 0)
             {
-                Draw.Text(this, Convert.ToString(CurrentBar) + " NoTrade", "No Trades", 0, High[0]);
+                Draw.Text(this, Convert.ToString(CurrentBar) + " NoTrades", "No Trades", 0, High[0]);
                 draw = true;
             }
-
             if (draw)
             {
-                Draw.Line(this, Convert.ToString(CurrentBar) + " Range High", 20, range_high[0], 0, range_high[0], Brushes.Red);
-                Draw.Line(this, Convert.ToString(CurrentBar) + " Range Low", 20, range_low[0], 0, range_low[0], Brushes.Red);
+                Draw.Line(this, Convert.ToString(CurrentBar) + " RangeHigh", 20, range_high[0], 0, range_high[0], Brushes.Black);
+                Draw.Line(this, Convert.ToString(CurrentBar) + " RangeLow", 20, range_low[0], 0, range_low[0], Brushes.Black);
             }
         }
 
         private void reset()
         {
-            if (!t_trade[0] && t_trade[1])
+            if (t_trade[0] && !t_trade[1])
             {
                 bias[0] = 0;
                 is_long[0] = false;
@@ -292,12 +294,14 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private bool took_trade()
         {
             bool trade = false;
+            // Reset the trade profitability counter every day and get the number of trades taken in total.
             if (Bars.IsFirstBarOfSession && IsFirstTickOfBar)
             {
                 prior_session_trades = SystemPerformance.AllTrades.Count;
             }
 
-            if (SystemPerformance.AllTrades.Count - prior_session_trades > 0)
+            /* Here, SystemPerformance.AllTrades.Count - prior_session_trades checks if there have been any trades today. */
+            if ((SystemPerformance.AllTrades.Count - prior_session_trades) > 0)
             {
                 trade = true;
             }
@@ -308,10 +312,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private bool check_time(int T1, int T2)
         {
             bool result = false;
-            int T = ToTime(Time[0]);
+            int T = ToTime(Time[0]); // ex. 080000
             if (T1 > T2)
             {
-                result = T >= T1 || T <= T2;
+                result = T >= T1 || T <= T2; // ex. T1 = 220000, T2 = 020000
             }
             else
             {
@@ -362,13 +366,13 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private bool fixed_rr = true;
 
         //
-        //[NinjaScriptProperty]
-        //[Display(Name = "Risk", Order = 3, GroupName = "Risk")]
-        //public double risk {  get; set; }
+        // [NinjaScriptProperty]
+        // [Display(Name = "Risk", Order = 3, GroupName = "Risk")]
+        // public double risk { get; set; }
 
-        //[NinjaScriptProperty]
-        //[Display(Name = "Reward", Order = 3, GroupName = "Risk")]
-        //public double reward { get; set; }
+        // [NinjaScriptProperty]
+        // [Display(Name = "Reward", Order = 3, GroupName = "Risk")]
+        // public double reward { get; set; }
 
         [NinjaScriptProperty]
         [Display(Name = "Atr Period", Order = 3, GroupName = "Risk")]

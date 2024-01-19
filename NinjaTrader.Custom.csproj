@@ -573,6 +573,7 @@
     <Compile Include="obj\Debug\.NETFramework,Version=v4.8.1.AssemblyAttributes.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest2.cs" />
+    <Compile Include="Strategies\RajAlgos\CaptainBacktest3.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
