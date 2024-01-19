@@ -158,9 +158,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
             if (t_trade[0])
             {
-                Print("time" + Time[0]);
-                Print("opp_close[0]: " + opp_close[0].ToString());
-                Print("took_hl[0]: " + took_hl[0].ToString());
+                Print("retrace_1: " + retrace_1.ToString());
 
                 if (!retrace_1)
                 {
@@ -195,38 +193,35 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 }
             }
 
-            if (CurrentBar > 3)
+            if (bias[1] == 1 && Close[0] > High[1] && opp_close[0] && took_hl[0] && !is_long[1])
             {
-                if (bias[1] == 1 && Close[0] > High[1] && opp_close[0] && took_hl[0] && !is_long[1])
+                is_long[0] = true;
+                if (stop_orders)
                 {
-                    is_long[0] = true;
-                    if (stop_orders)
-                    {
-                        EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
-                    }
-                    else
-                    {
-                        double atrValue = atrIndicator[0];
-                        SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
-                        SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
-
-                        EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
-                    }
+                    EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
                 }
-                if (bias[1] == 11 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[1])
+                else
                 {
-                    is_short[0] = true;
-                    if (stop_orders)
-                    {
-                        EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
-                    }
-                    else
-                    {
-                        double atrValue = atrIndicator[0];
-                        SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
-                        SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
-                        EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
-                    }
+                    double atrValue = atrIndicator[0];
+                    SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
+                    SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
+
+                    EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
+                }
+            }
+            if (bias[1] == -1 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[1])
+            {
+                is_short[0] = true;
+                if (stop_orders)
+                {
+                    EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
+                }
+                else
+                {
+                    double atrValue = atrIndicator[0];
+                    SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
+                    SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
+                    EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
                 }
             }
         }
@@ -266,8 +261,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         {
             if (!t_trade[0] && t_trade[1])
             {
-                Print("vars resetting: ");
-
                 bias[0] = 0;
                 is_long[0] = false;
                 is_short[0] = false;
@@ -281,7 +274,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             range_high[0] = range_high[1];
             range_low[0] = range_low[1];
 
-            if (t_prev[0] && CurrentBar > 3)
+            if (t_prev[0])
             {
                 if (!t_prev[1])
                 {
