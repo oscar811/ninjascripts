@@ -26,41 +26,13 @@ using NinjaTrader.NinjaScript.Indicators.RajIndicators;
 namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class GraniteAlgo : Strategy
-    {
-        private bool enableSmaFilter = true;
-        private int shortSmaPeriod = 7;
-        private int mediumSmaPeriod = 14;
-        private int longSmaPeriod = 21;
-
-        private bool enableAdxFilter = true;
-        private int adxFilterFrom = 15;
-        private int adxFilterTo = 50;
-
-        private bool enableBBFilter = true;
-        private int bbLength = 14;
-        private int bbStdDev = 1;
-
-        private bool enableRsiFilter = false;
-        private int rsiPeriod = 14;
-        private int rsiOverbought = 70;
-        private int rsiOversold = 30;
-
-        private bool enablePercentTpSl = false;
-        private double tpPercent = 0.8;
-        private double slPercent = 0.3;
-
-        private double enableAtrTpSl = true;
-        private int atrMaLength = 26;
-        private double tpAtr = 4;
-        private double slAtr = 2;
-
-        private bool enableSmaTpSl = false;
-
+    {       
         private SMA shortSMA;
         private SMA mediumSMA;
         private SMA longSMA;
         private RSI rsi;
-        private BB bb;
+        private Bollinger bb;
+        private ATR atr;
 
         private Series<bool> smaBuyCondition;
         private Series<bool> smaSellCondition;
@@ -68,6 +40,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private Series<bool> rsiSellCondition;
         private Series<bool> adxBuyCondition;
         private Series<bool> adxSellCondition;
+
+        private Series<bool> buyCondition;
+        private Series<bool> sellCondition;
 
         protected override void OnStateChange()
         {
@@ -95,8 +70,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = false;
 
-                EnableAtm = false;
-                AtmStrategyTemplateId = "your atm";
+                //EnableAtm = false;
+                //AtmStrategyTemplateId = "your atm";
 
                 enableSmaFilter = true;
                 shortSmaPeriod = 7;
@@ -121,9 +96,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 slPercent = 0.3;
 
                 enableAtrTpSl = true;
-                atrMaLength = 26;
-                tpAtr = 4;
-                slAtr = 2;
+                atrPeriod = 14;
+                atrMultiplierForTakeProfit = 4;
+                atrMultiplierForStopLoss = 2;
 
                 enableSmaTpSl = false;
             }
@@ -131,18 +106,40 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             {
                 ClearOutputWindow();
 
-                shortSMA = new SMA(shortSmaPeriod);
-                mediumSMA = new SMA(mediumSmaPeriod);
-                longSMA = new SMA(longSmaPeriod);
+                shortSMA = SMA(shortSmaPeriod);
+                mediumSMA = SMA(mediumSmaPeriod);
+                longSMA = SMA(longSmaPeriod);
 
                 // adx
                 // bb
 
-                rsi = new RSI(rsiPeriod);
+                rsi = RSI(rsiPeriod, 3);
+                atr = ATR(atrPeriod);
 
-                AddPlot(Brushes.Red, "shortSMA");
-                AddPlot(Brushes.Green, "mediumSMA");
-                AddPlot(Brushes.Yello, "longSMA");
+                smaBuyCondition = new Series<bool>(this);
+                smaSellCondition = new Series<bool>(this);
+                rsiBuyCondition = new Series<bool>(this);
+                rsiSellCondition = new Series<bool>(this);
+                adxBuyCondition = new Series<bool>(this);
+                adxSellCondition = new Series<bool>(this);
+
+                buyCondition = new Series<bool>(this);
+                sellCondition = new Series<bool>(this);
+
+                if (enableSmaFilter)
+                {
+                    shortSMA.Plots[0].Brush = Brushes.Red;
+                    mediumSMA.Plots[0].Brush = Brushes.Green;
+                    longSMA.Plots[0].Brush = Brushes.Yellow;
+                    AddChartIndicator(shortSMA);
+                    AddChartIndicator(mediumSMA);
+                    AddChartIndicator(longSMA);
+                }
+				
+				if (enableRsiFilter)
+				{
+					AddChartIndicator(rsi);
+				}
             }
             else if (State == State.DataLoaded)
             {
@@ -175,14 +172,14 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 rsiBuyCondition[0] = (rsiBuyCondition[1] || rsi[0] < rsiOversold) && rsi[0] < rsiOverbought;
                 buyCondition[0] = (!enableSmaFilter || smaBuyCondition[0]) && (!enableRsiFilter || rsiBuyCondition[0]) && (!enableAdxFilter) && (!enableBBFilter);
 
-                smaSellCondition[0] = shortSMA < mediumSMA && shortSMA < longSMA;
+                smaSellCondition[0] = shortSMA[0] < mediumSMA[0] && shortSMA[0] < longSMA[0];
                 rsiSellCondition[0] = (rsiSellCondition[1] || rsi[0] > rsiOverbought) && rsi[0] > rsiOversold;
                 // bbSellCondition[0] = close < bbLower
-                sellCondition[0] = (!enableSmaFilter || smaSellCondition[0]) && (!enableRsiFilter || rsiSellCondition[0]) && (!enableAdxFilter) && (!enableBBFilter)
+                sellCondition[0] = (!enableSmaFilter || smaSellCondition[0]) && (!enableRsiFilter || rsiSellCondition[0]) && (!enableAdxFilter) && (!enableBBFilter);
 
                 if (buyCondition[0] && Position.MarketPosition == MarketPosition.Flat)
                 {
-                    double atrValue = atrIndicator[0];
+                    double atrValue = atr[0];
                     SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
                     SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
                     EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
@@ -190,7 +187,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 if (sellCondition[0] && Position.MarketPosition == MarketPosition.Flat)
                 {
-                    double atrValue = atrIndicator[0];
+                    double atrValue = atr[0];
                     SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
                     SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
                     EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
@@ -217,6 +214,60 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         // { get; set; }
 
         [NinjaScriptProperty]
+        [Display(Name = "Enable SMA Filter", Order = 3, GroupName = "SMA")]
+        public bool enableSmaFilter { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Short Sma Period", Order = 3, GroupName = "SMA")]
+        public int shortSmaPeriod { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Medium Sma Period", Order = 3, GroupName = "SMA")]
+        public int mediumSmaPeriod { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Long Sma Period", Order = 3, GroupName = "SMA")]
+        public int longSmaPeriod { get; set; }
+
+        private bool enableAdxFilter = true;
+        private int adxFilterFrom = 15;
+        private int adxFilterTo = 50;
+
+        private bool enableBBFilter = true;
+        private int bbLength = 14;
+        private int bbStdDev = 1;
+
+        [NinjaScriptProperty]
+        [Display(Name = "Enable RSI Filter", Order = 3, GroupName = "RSI")]
+        public bool enableRsiFilter { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "RSI Period", Order = 3, GroupName = "RSI")]
+        public int rsiPeriod { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "RSI Overbought", Order = 3, GroupName = "RSI")]
+        public int rsiOverbought { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "RSI Oversold", Order = 3, GroupName = "RSI")]
+        public int rsiOversold { get; set; }
+
+        private bool enablePercentTpSl = false;
+        private double tpPercent = 0.8;
+        private double slPercent = 0.3;
+
+        //        private int atrMaLength = 26;
+        //        private double tpAtr = 4;
+        //        private double slAtr = 2;
+
+        private bool enableSmaTpSl = false;
+
+        [NinjaScriptProperty]
+        [Display(Name = "Enable ATR Tp/Sl", Order = 3, GroupName = "ATM")]
+        public bool enableAtrTpSl { get; set; }
+
+        [NinjaScriptProperty]
         [Display(Name = "Atr Period", Order = 3, GroupName = "ATM")]
         public int atrPeriod { get; set; }
 
@@ -228,18 +279,17 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         [Display(Name = "Atr mult for TP", Order = 3, GroupName = "ATM")]
         public double atrMultiplierForTakeProfit { get; set; }
 
+        //[NinjaScriptProperty]
+        //[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+        //[Display(Name = "Asian Start", Order = 1, GroupName = "Time")]
+        //public DateTime Start_Time_1
+        //{ get; set; }
 
-        [NinjaScriptProperty]
-        [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Asian Start", Order = 1, GroupName = "Time")]
-        public DateTime Start_Time_1
-        { get; set; }
-
-        [NinjaScriptProperty]
-        [PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        [Display(Name = "Asian End", Order = 2, GroupName = "Time")]
-        public DateTime Stop_Time_1
-        { get; set; }
+        //[NinjaScriptProperty]
+        //[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
+        //[Display(Name = "Asian End", Order = 2, GroupName = "Time")]
+        //public DateTime Stop_Time_1
+        //{ get; set; }
 
         #endregion
     }

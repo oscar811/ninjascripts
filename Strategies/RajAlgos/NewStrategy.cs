@@ -57,8 +57,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 EnableAtm = false;
                 AtmStrategyTemplateId = "your atm";
-                Profit_Target = 2000;
-                Stop_Loss = 1000;
+//                Profit_Target = 2000;
+//                Stop_Loss = 1000;
             }
             else if (State == State.Configure)
             {
@@ -70,10 +70,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.DataLoaded)
             {
-                sessionLevels = SessionLevels(Close, true, true, true, true, DateTime.Parse("6:00 PM"), DateTime.Parse("11:59 PM"), true, DateTime.Parse("12:00 AM"), DateTime.Parse("6:00 AM"), true, DateTime.Parse("6:00 AM"), DateTime.Parse("12:00 PM"), true, DateTime.Parse("12:00 PM"), DateTime.Parse("6:00 PM"));
+//                sessionLevels = SessionLevels(Close, true, true, true, true, DateTime.Parse("6:00 PM"), DateTime.Parse("11:59 PM"), true, DateTime.Parse("12:00 AM"), DateTime.Parse("6:00 AM"), true, DateTime.Parse("6:00 AM"), DateTime.Parse("12:00 PM"), true, DateTime.Parse("12:00 PM"), DateTime.Parse("6:00 PM"));
 
-                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
-                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
+//                SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
+//                SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
             }
         }
 

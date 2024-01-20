@@ -574,6 +574,8 @@
     <Compile Include="Strategies\RajAlgos\CaptainBacktest.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest2.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest3.cs" />
+    <Compile Include="Strategies\RajAlgos\GraniteAlgo.cs" />
+    <Compile Include="Strategies\RajAlgos\NewStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
