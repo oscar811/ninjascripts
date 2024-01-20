@@ -94,7 +94,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.Configure)
             {
-				ClearOutputWindow();
+                ClearOutputWindow();
 
                 range_high = new Series<double>(this);
                 range_low = new Series<double>(this);
@@ -137,7 +137,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             //     SetStopLoss("", CalculationMode.Ticks, risk / TickSize, false);
             // }
 
-//			Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+            //			Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
 
             prev_range();
             reset();
@@ -184,43 +184,43 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     }
                 }
 
-//				Print("Time[0]: " + Time[0].ToString());
-//			    Print("CurrentBar: " + CurrentBar);
-//                Print("bias[0]: " + bias[0].ToString());
-//                Print("opp_close[0]: " + opp_close[0].ToString());
-//                Print("took_hl[0]: " + took_hl[0].ToString());
+                // Print("Time[0]: " + Time[0].ToString());
+                // Print("CurrentBar: " + CurrentBar);
+                // Print("bias[0]: " + bias[0].ToString());
+                // Print("opp_close[0]: " + opp_close[0].ToString());
+                // Print("took_hl[0]: " + took_hl[0].ToString());
 
 
                 if (bias[1] == 1 && Close[0] > High[1] && opp_close[0] && took_hl[0] && !is_long[0])
+                {
+                    is_long[0] = true;
+                    if (stop_orders)
                     {
-                        is_long[0] = true;
-                        if (stop_orders)
-                        {
-                            EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
-                        }
-                        else
-                        {
-                            double atrValue = atrIndicator[0];
-                            SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
-                            SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
-                            EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
-                        }
+                        EnterLongStopMarket(DefaultQuantity, High[0], Convert.ToString(CurrentBar) + " Long");
                     }
-                    if (bias[1] == -1 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[0])
+                    else
                     {
-                        is_short[0] = true;
-                        if (stop_orders)
-                        {
-                            EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
-                        }
-                        else
-                        {
-                            double atrValue = atrIndicator[0];
-                            SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
-                            SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
-                            EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
-                        }
+                        double atrValue = atrIndicator[0];
+                        SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
+                        SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
+                        EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
                     }
+                }
+                if (bias[1] == -1 && Close[0] < Low[1] && opp_close[0] && took_hl[0] && !is_short[0])
+                {
+                    is_short[0] = true;
+                    if (stop_orders)
+                    {
+                        EnterShortStopMarket(DefaultQuantity, Low[0], Convert.ToString(CurrentBar) + " Short");
+                    }
+                    else
+                    {
+                        double atrValue = atrIndicator[0];
+                        SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
+                        SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
+                        EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
+                    }
+                }
             }
             else if (!t_trade[0] && t_trade[1])
             {
