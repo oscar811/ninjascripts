@@ -37,15 +37,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private Bollinger bb;
         private ATR atr;
 
-        //        private Series<bool> smaBuyCondition;
-        //        private Series<bool> smaSellCondition;
         private Series<bool> rsiBuyCondition;
         private Series<bool> rsiSellCondition;
-        //private Series<bool> adxBuyCondition;
-        //private Series<bool> adxSellCondition;
-
-        //        private Series<bool> buyCondition;
-        //        private Series<bool> sellCondition;
 
         private Series<bool> t_trade;
 
@@ -103,7 +96,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 tpPercent = 0.8;
                 slPercent = 0.3;
 
-                enableAtrTpSl = true;
+                EnableAtrTpSl = true;
+                MoveSLToBreakEven = true;
                 atrPeriod = 14;
                 atrMultiplierForTakeProfit = 4;
                 atrMultiplierForStopLoss = 2;
@@ -156,8 +150,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 atr = ATR(atrPeriod);
 
-                // sessionLevels = SessionLevels(Close, true, true, true, true, DateTime.Parse("6:00 PM"), DateTime.Parse("11:59 PM"), true, DateTime.Parse("12:00 AM"), DateTime.Parse("6:00 AM"), true, DateTime.Parse("6:00 AM"), DateTime.Parse("12:00 PM"), true, DateTime.Parse("12:00 PM"), DateTime.Parse("6:00 PM"));
-
                 // SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
                 // SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
             }
@@ -175,11 +167,11 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 t_trade[0] = check_time(trade_start, trade_end);
 
-                //                Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
                 //                Print("Time[0]: " + Time[0].ToString());
-                                Print("CurrentBar: " + CurrentBar);
-                Print("rsi[0]: " + rsi[0]);
-                Print("rsiHtf[0]: " + rsiHtf[0]);
+                Print("CurrentBar: " + CurrentBar);
+                //                Print("rsi[0]: " + rsi[0]);
+                //                Print("rsiHtf[0]: " + rsiHtf[0]);
                 //				Print("adxPeriod: " + adxPeriod);
                 //				Print("adx[0]: " + adx[0]);
 
@@ -204,26 +196,51 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 bool sellCondition = (!enableSmaFilter || smaSellCondition) && (!enableRsiFilter || rsiSellCondition[0])
                     && (!enableAdxFilter || adxCondtion) && (!enableBBFilter || bbSellCondition);
 
+                double atrValue = atr[0];
                 if (t_trade[0] && buyCondition && Position.MarketPosition == MarketPosition.Flat)
                 {
-                    double atrValue = atr[0];
-                    SetStopLoss("", CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue, false);
-                    SetProfitTarget("", CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
+                    Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                    SetStopLoss(CalculationMode.Price, Close[0] - atrMultiplierForStopLoss * atrValue);
+                    SetProfitTarget(CalculationMode.Price, Close[0] + atrMultiplierForTakeProfit * atrValue);
                     EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
                 }
 
                 if (t_trade[0] && sellCondition && Position.MarketPosition == MarketPosition.Flat)
                 {
-                    double atrValue = atr[0];
-                    SetStopLoss("", CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue, false);
-                    SetProfitTarget("", CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
+                    Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                    SetStopLoss(CalculationMode.Price, Close[0] + atrMultiplierForStopLoss * atrValue);
+                    SetProfitTarget(CalculationMode.Price, Close[0] - atrMultiplierForTakeProfit * atrValue);
                     EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
                 }
+
+                MoveSLIfNeeded(atrValue);
             }
             catch (Exception e)
             {
                 Print("Exception caught: " + e.Message);
                 Print("Stack Trace: " + e.StackTrace);
+            }
+        }
+
+        private void MoveSLIfNeeded(double atrValue)
+        {
+            if (MoveSLToBreakEven && Position.MarketPosition != MarketPosition.Flat)
+            {
+                double unrealizedProfit = Position.MarketPosition == MarketPosition.Long
+                                          ? Close[0] - Position.AveragePrice
+                                          : Position.AveragePrice - Close[0];
+
+                if (unrealizedProfit > atrMultiplierForStopLoss * atrValue)
+                {
+                    double newStopLossPrice = Position.MarketPosition == MarketPosition.Long
+                                              ? Close[0] - atrMultiplierForStopLoss * atrValue
+                                              : Close[0] + atrMultiplierForStopLoss * atrValue;
+
+                    SetStopLoss(CalculationMode.Price, newStopLossPrice);
+
+                    Print(unrealizedProfit);
+                    Print(atrMultiplierForStopLoss * atrValue);
+                }
             }
         }
 
@@ -334,32 +351,24 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private bool enableSmaTpSl = false;
 
         [NinjaScriptProperty]
-        [Display(Name = "Enable Atr Tp/Sl", Order = 3, GroupName = "Risk")]
-        public bool enableAtrTpSl { get; set; }
+        [Display(Name = "Enable Atr Tp/Sl", Order = 1, GroupName = "1) Risk")]
+        public bool EnableAtrTpSl { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Atr Period", Order = 3, GroupName = "Risk")]
+        [Display(Name = "Move SL to Breakeven", Order = 2, GroupName = "1) Risk")]
+        public bool MoveSLToBreakEven { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Atr Period", Order = 3, GroupName = "1) Risk")]
         public int atrPeriod { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Atr mult for SL", Order = 3, GroupName = "Risk")]
+        [Display(Name = "Atr mult for SL", Order = 4, GroupName = "1) Risk")]
         public double atrMultiplierForStopLoss { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Atr mult for TP", Order = 3, GroupName = "Risk")]
+        [Display(Name = "Atr mult for TP", Order = 5, GroupName = "1) Risk")]
         public double atrMultiplierForTakeProfit { get; set; }
-
-        //[NinjaScriptProperty]
-        //[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        //[Display(Name = "Asian Start", Order = 1, GroupName = "Time")]
-        //public DateTime Start_Time_1
-        //{ get; set; }
-
-        //[NinjaScriptProperty]
-        //[PropertyEditor("NinjaTrader.Gui.Tools.TimeEditorKey")]
-        //[Display(Name = "Asian End", Order = 2, GroupName = "Time")]
-        //public DateTime Stop_Time_1
-        //{ get; set; }
 
         #endregion
     }
