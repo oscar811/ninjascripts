@@ -576,6 +576,7 @@
     <Compile Include="Strategies\RajAlgos\CaptainBacktest3.cs" />
     <Compile Include="Strategies\RajAlgos\GraniteAlgo.cs" />
     <Compile Include="Strategies\RajAlgos\NewStrategy.cs" />
+    <Compile Include="Strategies\Time400am.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
@@ -627,10 +628,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent></PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -169,7 +169,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
                 //                Print("Time[0]: " + Time[0].ToString());
-                Print("CurrentBar: " + CurrentBar);
+//                Print("CurrentBar: " + CurrentBar);
                 //                Print("rsi[0]: " + rsi[0]);
                 //                Print("rsiHtf[0]: " + rsiHtf[0]);
                 //				Print("adxPeriod: " + adxPeriod);
@@ -238,8 +238,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                     SetStopLoss(CalculationMode.Price, newStopLossPrice);
 
-                    Print(unrealizedProfit);
-                    Print(atrMultiplierForStopLoss * atrValue);
+//                    Print(unrealizedProfit);
+//                    Print(atrMultiplierForStopLoss * atrValue);
                 }
             }
         }
