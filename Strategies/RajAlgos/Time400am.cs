@@ -27,7 +27,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
     public class Time400am : Strategy
     {
         private SessionHighLow SessionHighLow1;
-        private List<TradingCondition> tradingConditions;
+        private List<TimePeriod> timePeriods;
 
         protected override void OnStateChange()
         {
@@ -52,7 +52,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 BarsRequiredToTrade = 20;
                 // Disable this property for performance gains in Strategy Analyzer optimizations
                 // See the Help Guide for additional information
-                IsInstantiatedOnEachOptimizationIteration = false;
+                IsInstantiatedOnEachOptimizationIteration = true;
+
                 CONTRACTS = 1;
                 Profit_Target = 100;
                 Stop_Loss = 100;
@@ -88,24 +89,15 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
                 SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
 
-                tradingConditions = new List<TradingCondition>
+                timePeriods = new List<TimePeriod>
                 {
-                    new TradingCondition(Time_2, Start_Time_2, Stop_Time_2, new[] { DayOfWeek.Monday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
-                    new TradingCondition(Time_2, Start_Time_2, Stop_Time_2, new[] { DayOfWeek.Monday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
-                    new TradingCondition(Time_3, Start_Time_3, Stop_Time_3, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
-                    new TradingCondition(Time_3, Start_Time_3, Stop_Time_3, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
-                    new TradingCondition(Time_4, Start_Time_4, Stop_Time_4, null, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
-                    new TradingCondition(Time_4, Start_Time_4, Stop_Time_4, null, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
-                    new TradingCondition(Time_5, Start_Time_5, Stop_Time_5, null, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
-                    new TradingCondition(Time_5, Start_Time_5, Stop_Time_5, null, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
-
-                    new TradingCondition(Time_6, Start_Time_6, Stop_Time_6, new[] { DayOfWeek.Tuesday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
-                    new TradingCondition(Time_6, Start_Time_6, Stop_Time_6, new[] { DayOfWeek.Tuesday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
-
-                    new TradingCondition(Time_7, Start_Time_7, Stop_Time_7, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
-                    new TradingCondition(Time_7, Start_Time_7, Stop_Time_7, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true)
+                    new TimePeriod(Time_2, Start_Time_2, Stop_Time_2, new[] { DayOfWeek.Monday }),
+                    new TimePeriod(Time_3, Start_Time_3, Stop_Time_3, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday }),
+                    new TimePeriod(Time_4, Start_Time_4, Stop_Time_4, null),
+                    new TimePeriod(Time_5, Start_Time_5, Stop_Time_5, null),
+                    new TimePeriod(Time_6, Start_Time_6, Stop_Time_6, new[] { DayOfWeek.Tuesday }),
+                    new TimePeriod(Time_7, Start_Time_7, Stop_Time_7, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday })
                 };
-
             }
         }
 
@@ -125,20 +117,33 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 DateTime currentTime = Time[0];
                 DayOfWeek currentDay = Time[0].DayOfWeek;
-                
+
                 Print("currentTime: " + currentTime);
-                Print("currentDay:" + currentDay);
+                //Print("currentDay:" + currentDay);
 
-                foreach (var condition in tradingConditions)
+                foreach (var timePeriod in timePeriods)
                 {
-                    Print("condition: " + condition.Start);
-
-                    if (condition.isTimeConditionMet(currentTime) && (condition.Days == null || condition.Days.Contains(currentDay)) && condition.CrossCondition())
+                    if (timePeriod.isTimeConditionMet(currentTime, currentDay))
                     {
-                        if (condition.IsLongTrade)
-                            EnterLong(quantity: CONTRACTS, signalName: "");
-                        else
-                            EnterShort(quantity: CONTRACTS, signalName: "");
+                        Print("HasTraded: " + timePeriod.HasTraded);
+
+                        if (!timePeriod.HasTraded)
+                        {
+                            if (CrossAbove(High, SessionHighLow1.Session_Low, 1))
+                            {
+                                EnterShort(quantity: CONTRACTS, signalName: "");
+                                timePeriod.HasTraded = true;
+                            }
+                            else if (CrossBelow(Low, SessionHighLow1.Session_Low, 1))
+                            {
+                                EnterLong(quantity: CONTRACTS, signalName: "");
+                                timePeriod.HasTraded = true;
+                            }                            
+                        }
+                    }
+                    else
+                    {
+                        timePeriod.HasTraded = false;
                     }
                 }
             }

@@ -11,6 +11,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         public DateTime Stop { get; set; }
         public DayOfWeek[] Days { get; set; }
         public Func<bool> CrossCondition { get; set; }
+        public bool HasTraded { get; set; }
         public bool IsLongTrade { get; set; }
 
         public TradingCondition(bool useTimePeriod, DateTime start, DateTime stop, DayOfWeek[] days, Func<bool> crossCondition, bool isLongTrade)
