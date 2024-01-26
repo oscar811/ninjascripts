@@ -213,7 +213,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 
                 if (Closes[0][1] > tmpRay.StartAnchor.Price)
                 {
-                    Print("tmpRay.StartAnchor.Price: " + tmpRay.StartAnchor.Price);
+//                    Print("tmpRay.StartAnchor.Price: " + tmpRay.StartAnchor.Price);
                     EnterLong(Convert.ToInt32(DefaultQuantity), @"Long");
                 }
 

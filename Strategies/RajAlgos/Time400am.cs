@@ -22,12 +22,12 @@ using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
-//This namespace holds Strategies in this folder and is required. Do not change it. 
-namespace NinjaTrader.NinjaScript.Strategies
+namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class Time400am : Strategy
     {
         private SessionHighLow SessionHighLow1;
+        private List<TradingCondition> tradingConditions;
 
         protected override void OnStateChange()
         {
@@ -84,155 +84,69 @@ namespace NinjaTrader.NinjaScript.Strategies
                 SessionHighLow1.Plots[0].Brush = Brushes.HotPink;
                 SessionHighLow1.Plots[1].Brush = Brushes.HotPink;
                 AddChartIndicator(SessionHighLow1);
+
                 SetProfitTarget("", CalculationMode.Ticks, Profit_Target);
                 SetStopLoss("", CalculationMode.Ticks, Stop_Loss, false);
+
+                tradingConditions = new List<TradingCondition>
+                {
+                    new TradingCondition(Time_2, Start_Time_2, Stop_Time_2, new[] { DayOfWeek.Monday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
+                    new TradingCondition(Time_2, Start_Time_2, Stop_Time_2, new[] { DayOfWeek.Monday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
+                    new TradingCondition(Time_3, Start_Time_3, Stop_Time_3, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
+                    new TradingCondition(Time_3, Start_Time_3, Stop_Time_3, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
+                    new TradingCondition(Time_4, Start_Time_4, Stop_Time_4, null, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
+                    new TradingCondition(Time_4, Start_Time_4, Stop_Time_4, null, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
+                    new TradingCondition(Time_5, Start_Time_5, Stop_Time_5, null, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
+                    new TradingCondition(Time_5, Start_Time_5, Stop_Time_5, null, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
+
+                    new TradingCondition(Time_6, Start_Time_6, Stop_Time_6, new[] { DayOfWeek.Tuesday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
+                    new TradingCondition(Time_6, Start_Time_6, Stop_Time_6, new[] { DayOfWeek.Tuesday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true),
+
+                    new TradingCondition(Time_7, Start_Time_7, Stop_Time_7, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, () => CrossAbove(High, SessionHighLow1.Session_Low, 1), isLongTrade: false),
+                    new TradingCondition(Time_7, Start_Time_7, Stop_Time_7, new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday }, () => CrossBelow(High, SessionHighLow1.Session_Low, 1), isLongTrade: true)
+                };
+
             }
         }
 
         protected override void OnBarUpdate()
         {
-            if (BarsInProgress != 0)
-                return;
-
-            if (CurrentBars[0] < 1)
-                return;
-
-            // Set 1
-            if ((Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
-                 && (Time_2 == true)
-                 && (CrossAbove(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && (Times[0][0].DayOfWeek == DayOfWeek.Monday))
+            try
             {
-                EnterShort(Convert.ToInt32(CONTRACTS), "");
-            }
+                if (CurrentBar < BarsRequiredToTrade)
+                    return;
 
-            // Set 2
-            if ((Times[0][0].TimeOfDay >= Start_Time_2.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_2.TimeOfDay)
-                 && (Time_2 == true)
-                 && (CrossBelow(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && (Times[0][0].DayOfWeek == DayOfWeek.Monday))
+                if (BarsInProgress != 0 || CurrentBars[0] < 1)
+                    return;
+
+                // Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                // Print("Time[0]: " + Time[0].ToString());
+                // Print("CurrentBar: " + CurrentBar);
+
+                DateTime currentTime = Time[0];
+                DayOfWeek currentDay = Time[0].DayOfWeek;
+                
+                Print("currentTime: " + currentTime);
+                Print("currentDay:" + currentDay);
+
+                foreach (var condition in tradingConditions)
+                {
+                    Print("condition: " + condition.Start);
+
+                    if (condition.isTimeConditionMet(currentTime) && (condition.Days == null || condition.Days.Contains(currentDay)) && condition.CrossCondition())
+                    {
+                        if (condition.IsLongTrade)
+                            EnterLong(quantity: CONTRACTS, signalName: "");
+                        else
+                            EnterShort(quantity: CONTRACTS, signalName: "");
+                    }
+                }
+            }
+            catch (Exception e)
             {
-                EnterLong(Convert.ToInt32(CONTRACTS), "");
+                Print("Exception caught: " + e.Message);
+                Print("Stack Trace: " + e.StackTrace);
             }
-
-            // Set 3
-            if ((Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
-                 && (Time_3 == true)
-                 && (CrossAbove(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && ((Times[0][0].DayOfWeek == DayOfWeek.Monday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Tuesday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Wednesday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)))
-            {
-                EnterShort(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 4
-            if ((Times[0][0].TimeOfDay >= Start_Time_3.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_3.TimeOfDay)
-                 && (Time_3 == true)
-                 && (CrossBelow(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && ((Times[0][0].DayOfWeek == DayOfWeek.Monday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Tuesday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Wednesday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)))
-            {
-                EnterLong(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 5
-            if ((Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
-                 && (Time_4 == true)
-                 && (CrossBelow(High, SessionHighLow1.Session_Low, 1)))
-            {
-                EnterLong(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 6
-            if ((Times[0][0].TimeOfDay >= Start_Time_4.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_4.TimeOfDay)
-                 && (Time_4 == true)
-                 && (CrossAbove(High, SessionHighLow1.Session_Low, 1)))
-            {
-                EnterShort(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 7
-            if ((Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
-                 && (Time_5 == true)
-                 && (CrossAbove(High, SessionHighLow1.Session_Low, 1)))
-            {
-                EnterShort(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 8
-            if ((Times[0][0].TimeOfDay >= Start_Time_5.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_5.TimeOfDay)
-                 && (Time_5 == true)
-                 && (CrossBelow(High, SessionHighLow1.Session_Low, 1)))
-            {
-                EnterLong(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 9
-            if ((Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
-                 && (Time_6 == true)
-                 && (CrossAbove(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && (Times[0][0].DayOfWeek == DayOfWeek.Tuesday))
-            {
-                EnterShort(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 10
-            if ((Times[0][0].TimeOfDay >= Start_Time_6.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_6.TimeOfDay)
-                 && (Time_6 == true)
-                 && (CrossBelow(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && (Times[0][0].DayOfWeek == DayOfWeek.Tuesday))
-            {
-                EnterLong(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 11
-            if ((Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
-                 && (Time_7 == true)
-                 && (CrossAbove(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && ((Times[0][0].DayOfWeek == DayOfWeek.Monday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Wednesday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Friday)))
-            {
-                EnterShort(Convert.ToInt32(CONTRACTS), "");
-            }
-
-            // Set 12
-            if ((Times[0][0].TimeOfDay >= Start_Time_7.TimeOfDay)
-                 && (Times[0][0].TimeOfDay <= Stop_Time_7.TimeOfDay)
-                 && (Time_7 == true)
-                 && (CrossBelow(High, SessionHighLow1.Session_Low, 1))
-                 // Condition group 1
-                 && ((Times[0][0].DayOfWeek == DayOfWeek.Monday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Wednesday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Thursday)
-                 || (Times[0][0].DayOfWeek == DayOfWeek.Friday)))
-            {
-                EnterLong(Convert.ToInt32(CONTRACTS), "");
-            }
-
         }
 
         #region Properties

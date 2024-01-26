@@ -278,7 +278,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         [Display(Name = "Enable Atm Strategy", Order = 2, GroupName = "ATM")]
         public bool EnableAtmStrategyMode
         { get; set; }
-        
+
         [NinjaScriptProperty]
         [Display(Name = "ATM Strategy (Only real time)", Order = 3, GroupName = "ATM")]
         public string AtmStrategyTemplateId
@@ -300,7 +300,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         [Range(1, int.MaxValue)]
         [Display(Name = "Macd_Diff", Order = 4, GroupName = "Signal")]
         public int Macd_Diff
-        { get; set; }        
+        { get; set; }
 
         [NinjaScriptProperty]
         [Display(Name = "Enable_SMA_Filter", Description = "Filter out long and shorts based on if price is below or above the choosed MA", Order = 7, GroupName = "Signal")]
