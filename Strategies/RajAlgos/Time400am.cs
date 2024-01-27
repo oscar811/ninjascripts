@@ -131,12 +131,19 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                         {
                             if (CrossAbove(High, SessionHighLow1.Session_Low, 1))
                             {
-                                EnterShort(quantity: CONTRACTS, signalName: "");
+                                EnterShort(quantity: CONTRACTS, signalName: "Short1");
+                                EnterShort(quantity: CONTRACTS, signalName: "Short2");
+
+                                SetProfitTarget("Short1", CalculationMode.Ticks, Profit_Target);
+                                SetProfitTarget("Short2", CalculationMode.Ticks, 2 * Profit_Target);
                                 timePeriod.HasTraded = true;
                             }
                             else if (CrossBelow(Low, SessionHighLow1.Session_Low, 1))
                             {
-                                EnterLong(quantity: CONTRACTS, signalName: "");
+                                EnterLong(quantity: CONTRACTS, signalName: "Long1");
+
+                                SetProfitTarget("Long1", CalculationMode.Ticks, Profit_Target);
+                                SetProfitTarget("Long2", CalculationMode.Ticks, Profit_Target);
                                 timePeriod.HasTraded = true;
                             }                            
                         }
