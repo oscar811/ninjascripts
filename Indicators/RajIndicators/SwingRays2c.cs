@@ -59,10 +59,15 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 SwingHighRays = new Stack();
                 SwingLowRays = new Stack();
 
-                IsHighBroken = new Series<bool>(this);
-                IsHighSwept = new Series<bool>(this);                
-                IsLowBroken = new Series<bool>(this);
-                IsLowSwept = new Series<bool>(this);                
+                AddPlot(Brushes.Transparent, "IsHighBroken");
+                AddPlot(Brushes.Transparent, "IsHighSwept");
+                AddPlot(Brushes.Transparent, "IsLowBroken");
+                AddPlot(Brushes.Transparent, "IsLowSwept");
+
+                //IsHighBroken = new Series<double>(this);
+                //IsHighSwept = new Series<double>(this);
+                //IsLowBroken = new Series<double>(this);
+                //IsLowSwept = new Series<double>(this);
             }
         }
 
@@ -149,8 +154,8 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                     }
 
                     SwingHighRays.Pop();
-                    IsHighBroken[0] = true;
-                    if (Close[0] < tmpRay.StartAnchor.Price) IsHighSwept[0] = true;
+                    Values[0][0] = 1.0;
+                    if (Close[0] < tmpRay.StartAnchor.Price) Values[1][0] = 1.0;
 
                     if (SwingHighRays.Count != 0)
                     {
@@ -175,8 +180,8 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                     }
 
                     SwingLowRays.Pop();
-                    IsLowBroken[0] = true;
-                    if (Close[0] > tmpRay.StartAnchor.Price) IsLowSwept[0] = true;
+                    Values[2][0] = 1.0;
+                    if (Close[0] > tmpRay.StartAnchor.Price) Values[3][0] = 1.0;
 
                     if (SwingLowRays.Count != 0)
                     {
@@ -234,14 +239,13 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
         public int LineWidth
         { get; set; }
 
-        public Series<bool> IsHighSwept { get; private set; }
-        public Series<bool> IsHighBroken { get; private set; }
+        public Series<double> IsHighBroken { get { return Values[0]; } }
+        public Series<double> IsHighSwept { get { return Values[1]; } }
 
-        public Series<bool> IsLowSwept { get; private set; }
-        public Series<bool> IsLowBroken { get; private set; }
+        public Series<double> IsLowBroken { get { return Values[2]; } }
+        public Series<double> IsLowSwept { get { return Values[3]; } }
 
         #endregion
-
     }
 }
 
