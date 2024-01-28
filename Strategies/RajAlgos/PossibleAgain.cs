@@ -21,7 +21,6 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
 using NinjaTrader.NinjaScript.Indicators.RajIndicators;
-using System.Collections;
 using NinjaTrader.Custom.Strategies.RajAlgos;
 #endregion
 
@@ -31,11 +30,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
     {
         private UniqueStack<Ray> swingHighRays;        /*	Last Entry represents the most recent swing, i.e. 				*/
         private UniqueStack<Ray> swingLowRays;         /*	swingHighRays are sorted descedingly by price and vice versa	*/
-        private int soundBar = 0;		// to prevent multiple sounds when Calculate = OnEachTick or OnPriceChange, so one sound per bar only.	
 
         private Series<double> secondarySeries;
         private int htf_mult;
-        private SwingRays2b swingRays2b;
+        private SwingRays2c swingRays2c;
 
         protected override void OnStateChange()
         {
@@ -61,7 +59,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // Disable this property for performance gains in Strategy Analyzer optimizations
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
-                
+
                 Strength = 4;
                 TakeProfit = 100;
                 StopLoss = 50;
@@ -69,11 +67,11 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 SwingHighColor = Brushes.DodgerBlue;
                 SwingLowColor = Brushes.Fuchsia;
                 LineWidth = 1;
-                htf_mult = 1/5; // htf multiplier, default 5min/1min tf
+                htf_mult = 1 / 5; // htf multiplier, default 5min/1min tf
             }
             else if (State == State.Configure)
             {
-                AddDataSeries(Data.BarsPeriodType.Minute, 1);
+                AddDataSeries(BarsPeriodType.Minute, 5);
 
                 swingHighRays = new UniqueStack<Ray>();
                 swingLowRays = new UniqueStack<Ray>();
@@ -85,8 +83,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.DataLoaded)
             {
-                swingRays2b = new SwingRays2b(4, false, false, 1);
-                AddChartIndicator(swingRays2b);
+                swingRays2c = SwingRays2c(Closes[1], 4, true, 1);
+                AddChartIndicator(swingRays2c);
                 //secondarySeries = new Series<double>(this);   
             }
         }
@@ -101,11 +99,16 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
-                // Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                //Print("Time inside strat: " + Time[0]);
+                //Print("total high swings: " + swingRays2c.SwingHighRays.Count);
+                //Print("total low swings: " + swingRays2c.SwingLowRays.Count);
+
+                 Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
                 // Print("Time[0]: " + Time[0].ToString());
-                // Print("CurrentBar: " + CurrentBar);
+                 Print("CurrentBar: " + CurrentBar);
 
                 // write your logic here
+                Print("swingRays2c.IsHighSwept[0]: " + swingRays2c.IsHighSwept[0]);
             }
             catch (Exception e)
             {

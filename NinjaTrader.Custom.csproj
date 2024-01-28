@@ -231,6 +231,7 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
+    <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartNetChange.cs" />
     <Compile Include="MarketAnalyzerColumns\%40DaysUntilRollover.cs" />
@@ -435,6 +436,7 @@
     <Compile Include="Strategies\RajAlgos\PossibleAgain.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
     <Compile Include="Strategies\RajAlgos\Time400am.cs" />
+    <Compile Include="Strategies\RajAlgos\TimePeriod - Copy.cs" />
     <Compile Include="Strategies\RajAlgos\TimePeriod.cs" />
     <Compile Include="Strategies\RajAlgos\Squeeze.cs" />
     <Compile Include="Strategies\RajAlgos\TradingCondition.cs" />
@@ -637,14 +639,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent></PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent></PreBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
