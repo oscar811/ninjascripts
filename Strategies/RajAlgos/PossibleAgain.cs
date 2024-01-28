@@ -33,7 +33,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         private Series<double> secondarySeries;
         private int htf_mult;
-        private SwingRays2c swingRays2c;
+        private SwingRays2c swingRaysLtf;
+        private SwingRays2c swingRaysHtf;
 
         protected override void OnStateChange()
         {
@@ -83,8 +84,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.DataLoaded)
             {
-                swingRays2c = SwingRays2c(Closes[1], 4, true, 1);
-                AddChartIndicator(swingRays2c);
+                swingRaysLtf = SwingRays2c(Closes[0], 4, true, 1);
+                swingRaysHtf = SwingRays2c(Closes[1], 4, true, 1);
+                AddChartIndicator(swingRaysLtf);
+                AddChartIndicator(swingRaysHtf);
                 //secondarySeries = new Series<double>(this);   
             }
         }
@@ -107,8 +110,14 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // Print("Time[0]: " + Time[0].ToString());
                  Print("CurrentBar: " + CurrentBar);
 
-                // write your logic here
-                Print("swingRays2c.IsHighSwept[0]: " + swingRays2c.IsHighSwept[0]);
+                // check for 5 min high sweep
+                // check for 5 min low broken(not sweep)
+                // check for 1 min high sweep
+                // confirm trend (50 < 200)
+                // enter short
+                // wait till 5 min low broken
+
+                // after 5 min sweep, store
             }
             catch (Exception e)
             {

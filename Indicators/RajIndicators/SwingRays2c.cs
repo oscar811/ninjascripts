@@ -27,8 +27,8 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
 {
     public class SwingRays2c : Indicator
     {
-        public Stack SwingHighRays { get; set; }        /*	Last Entry represents the most recent swing, i.e. 				*/
-        public Stack SwingLowRays { get; set; }         /*	swingHighRays are sorted descedingly by price and vice versa	*/
+        private Stack SwingHighRays { get; set; }        /*	Last Entry represents the most recent swing, i.e. 				*/
+        private Stack SwingLowRays { get; set; }         /*	swingHighRays are sorted descedingly by price and vice versa	*/
 
         protected override void OnStateChange()
         {
@@ -43,7 +43,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 DrawHorizontalGridLines = true;
                 DrawVerticalGridLines = true;
                 PaintPriceMarkers = true;
-                ScaleJustification = NinjaTrader.Gui.Chart.ScaleJustification.Right;
+                ScaleJustification = ScaleJustification.Right;
                 //Disable this property if your indicator requires custom values that cumulate with each new market data event. 
                 //See Help Guide for additional information.
                 IsSuspendedWhileInactive = true;
@@ -63,11 +63,6 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 AddPlot(Brushes.Transparent, "IsHighSwept");
                 AddPlot(Brushes.Transparent, "IsLowBroken");
                 AddPlot(Brushes.Transparent, "IsLowSwept");
-
-                //IsHighBroken = new Series<double>(this);
-                //IsHighSwept = new Series<double>(this);
-                //IsLowBroken = new Series<double>(this);
-                //IsLowSwept = new Series<double>(this);
             }
         }
 
@@ -80,8 +75,6 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             {
                 if (CurrentBar < 2 * Strength + 2)
                     return;
-                Print("Time: " + Time[0]);
-                //Print("High[0]: " + High[0]);
 
                 if (IsFirstTickOfBar)
                 {   /*	Highs - Check whether we have a new swing peaking at CurrentBar - Strength - 1	 	*/
@@ -246,6 +239,14 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
         public Series<double> IsLowSwept { get { return Values[3]; } }
 
         #endregion
+    }
+
+    class MssState
+    {
+        public Series<double> IsHighBroken { get; set; }
+        public Series<double> IsHighSwept { get; set; }
+        public Series<double> IsLowBroken { get; set; }    
+        public Series<double> IsLowSwept { get; set; }
     }
 }
 
