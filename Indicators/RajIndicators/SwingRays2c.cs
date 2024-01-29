@@ -64,6 +64,10 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 AddPlot(Brushes.Transparent, "IsLowBroken");
                 AddPlot(Brushes.Transparent, "IsLowSwept");
             }
+            else if (State != State.DataLoaded)
+            {
+
+            }
         }
 
         protected override void OnBarUpdate()
@@ -136,7 +140,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                     tmpRay = ((SwingLevel)SwingHighRays.Peek()).Ray;
                 }
 
-                while (SwingHighRays.Count != 0 && (Input is Indicator ? Input[0] : High[0]) > tmpRay.StartAnchor.Price)
+                while (SwingHighRays.Count != 0 && (Input is Indicator ? Input[0] : High[0] + ToleranceTicks) > tmpRay.StartAnchor.Price)
                 {
                     RemoveDrawObject(tmpRay.Tag);
 
@@ -162,7 +166,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                     tmpRay = ((SwingLevel)SwingLowRays.Peek()).Ray;
                 }
 
-                while (SwingLowRays.Count != 0 && (Input is Indicator ? Input[0] : Low[0]) < tmpRay.StartAnchor.Price)
+                while (SwingLowRays.Count != 0 && (Input is Indicator ? Input[0] : Low[0] - ToleranceTicks) < tmpRay.StartAnchor.Price)
                 {
                     RemoveDrawObject(tmpRay.Tag);
 
@@ -197,8 +201,14 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
         public int Strength
         { get; set; }
 
+        [Range(0, 10)]
         [NinjaScriptProperty]
-        [Display(Name = "Keep broken lines", Description = "Show broken swing lines, beginning to end", Order = 3, GroupName = "Parameters")]
+        [Display(Name = "Tolerance Ticks", Description = "Threshold Ticks", Order = 2, GroupName = "Parameters")]
+        public int ToleranceTicks
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Keep broken lines", Description = "Show broken swing lines, beginning to end", Order = 3, GroupName = "Options")]
         public bool KeepBrokenLines
         { get; set; }
 
@@ -240,14 +250,6 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
 
         #endregion
     }
-
-    class MssState
-    {
-        public Series<double> IsHighBroken { get; set; }
-        public Series<double> IsHighSwept { get; set; }
-        public Series<double> IsLowBroken { get; set; }    
-        public Series<double> IsLowSwept { get; set; }
-    }
 }
 
 #region NinjaScript generated code. Neither change nor remove.
@@ -257,18 +259,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private RajIndicators.SwingRays2c[] cacheSwingRays2c;
-		public RajIndicators.SwingRays2c SwingRays2c(int strength, bool keepBrokenLines, int lineWidth)
+		public RajIndicators.SwingRays2c SwingRays2c(int strength, int toleranceTicks, bool keepBrokenLines, int lineWidth)
 		{
-			return SwingRays2c(Input, strength, keepBrokenLines, lineWidth);
+			return SwingRays2c(Input, strength, toleranceTicks, keepBrokenLines, lineWidth);
 		}
 
-		public RajIndicators.SwingRays2c SwingRays2c(ISeries<double> input, int strength, bool keepBrokenLines, int lineWidth)
+		public RajIndicators.SwingRays2c SwingRays2c(ISeries<double> input, int strength, int toleranceTicks, bool keepBrokenLines, int lineWidth)
 		{
 			if (cacheSwingRays2c != null)
 				for (int idx = 0; idx < cacheSwingRays2c.Length; idx++)
-					if (cacheSwingRays2c[idx] != null && cacheSwingRays2c[idx].Strength == strength && cacheSwingRays2c[idx].KeepBrokenLines == keepBrokenLines && cacheSwingRays2c[idx].LineWidth == lineWidth && cacheSwingRays2c[idx].EqualsInput(input))
+					if (cacheSwingRays2c[idx] != null && cacheSwingRays2c[idx].Strength == strength && cacheSwingRays2c[idx].ToleranceTicks == toleranceTicks && cacheSwingRays2c[idx].KeepBrokenLines == keepBrokenLines && cacheSwingRays2c[idx].LineWidth == lineWidth && cacheSwingRays2c[idx].EqualsInput(input))
 						return cacheSwingRays2c[idx];
-			return CacheIndicator<RajIndicators.SwingRays2c>(new RajIndicators.SwingRays2c(){ Strength = strength, KeepBrokenLines = keepBrokenLines, LineWidth = lineWidth }, input, ref cacheSwingRays2c);
+			return CacheIndicator<RajIndicators.SwingRays2c>(new RajIndicators.SwingRays2c(){ Strength = strength, ToleranceTicks = toleranceTicks, KeepBrokenLines = keepBrokenLines, LineWidth = lineWidth }, input, ref cacheSwingRays2c);
 		}
 	}
 }
@@ -277,14 +279,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.RajIndicators.SwingRays2c SwingRays2c(int strength, bool keepBrokenLines, int lineWidth)
+		public Indicators.RajIndicators.SwingRays2c SwingRays2c(int strength, int toleranceTicks, bool keepBrokenLines, int lineWidth)
 		{
-			return indicator.SwingRays2c(Input, strength, keepBrokenLines, lineWidth);
+			return indicator.SwingRays2c(Input, strength, toleranceTicks, keepBrokenLines, lineWidth);
 		}
 
-		public Indicators.RajIndicators.SwingRays2c SwingRays2c(ISeries<double> input , int strength, bool keepBrokenLines, int lineWidth)
+		public Indicators.RajIndicators.SwingRays2c SwingRays2c(ISeries<double> input , int strength, int toleranceTicks, bool keepBrokenLines, int lineWidth)
 		{
-			return indicator.SwingRays2c(input, strength, keepBrokenLines, lineWidth);
+			return indicator.SwingRays2c(input, strength, toleranceTicks, keepBrokenLines, lineWidth);
 		}
 	}
 }
@@ -293,14 +295,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.RajIndicators.SwingRays2c SwingRays2c(int strength, bool keepBrokenLines, int lineWidth)
+		public Indicators.RajIndicators.SwingRays2c SwingRays2c(int strength, int toleranceTicks, bool keepBrokenLines, int lineWidth)
 		{
-			return indicator.SwingRays2c(Input, strength, keepBrokenLines, lineWidth);
+			return indicator.SwingRays2c(Input, strength, toleranceTicks, keepBrokenLines, lineWidth);
 		}
 
-		public Indicators.RajIndicators.SwingRays2c SwingRays2c(ISeries<double> input , int strength, bool keepBrokenLines, int lineWidth)
+		public Indicators.RajIndicators.SwingRays2c SwingRays2c(ISeries<double> input , int strength, int toleranceTicks, bool keepBrokenLines, int lineWidth)
 		{
-			return indicator.SwingRays2c(input, strength, keepBrokenLines, lineWidth);
+			return indicator.SwingRays2c(input, strength, toleranceTicks, keepBrokenLines, lineWidth);
 		}
 	}
 }

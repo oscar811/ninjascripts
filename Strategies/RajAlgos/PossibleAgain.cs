@@ -21,20 +21,20 @@ using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
 using NinjaTrader.NinjaScript.Indicators.RajIndicators;
-using NinjaTrader.Custom.Strategies.RajAlgos;
 #endregion
 
 namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class PossibleAgain : Strategy
     {
-        private UniqueStack<Ray> swingHighRays;        /*	Last Entry represents the most recent swing, i.e. 				*/
-        private UniqueStack<Ray> swingLowRays;         /*	swingHighRays are sorted descedingly by price and vice versa	*/
+        private SwingRays2c ltfSwingRays;
+        private SwingRays2c htfSwingRays;
 
-        private Series<double> secondarySeries;
-        private int htf_mult;
-        private SwingRays2c swingRaysLtf;
-        private SwingRays2c swingRaysHtf;
+        private Series<double> htfHighSweep;
+        private Series<double> htfLowSweep;
+
+        private EMA emaShort;
+        private EMA emaLong;
 
         protected override void OnStateChange()
         {
@@ -61,34 +61,48 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
+                HtfTimeFrame = 5;
                 Strength = 4;
+                EmaShortPeriod = 20;
+                EmaLongPeriod = 50;
+
                 TakeProfit = 100;
-                StopLoss = 50;
+                StopLoss = 70;
                 KeepBrokenLines = true; // defaulted to false to reduce overhead
-                SwingHighColor = Brushes.DodgerBlue;
-                SwingLowColor = Brushes.Fuchsia;
-                LineWidth = 1;
-                htf_mult = 1 / 5; // htf multiplier, default 5min/1min tf
+
+                HtfSwingColor = Brushes.DodgerBlue;
+                LtfSwingColor = Brushes.Fuchsia;
             }
             else if (State == State.Configure)
             {
-                AddDataSeries(BarsPeriodType.Minute, 5);
+                AddDataSeries(BarsPeriodType.Minute, HtfTimeFrame);
 
-                swingHighRays = new UniqueStack<Ray>();
-                swingLowRays = new UniqueStack<Ray>();
+                htfHighSweep = new Series<double>(this);
+                htfLowSweep = new Series<double>(this);
 
-                SetStopLoss(CalculationMode.Ticks, TakeProfit);
-                SetProfitTarget(CalculationMode.Ticks, StopLoss);
+                SetStopLoss(CalculationMode.Ticks, StopLoss);
+                SetProfitTarget(CalculationMode.Ticks, TakeProfit);
 
                 ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
             {
-                swingRaysLtf = SwingRays2c(Closes[0], 4, true, 1);
-                swingRaysHtf = SwingRays2c(Closes[1], 4, true, 1);
-                AddChartIndicator(swingRaysLtf);
-                AddChartIndicator(swingRaysHtf);
-                //secondarySeries = new Series<double>(this);   
+                emaShort = EMA(EmaShortPeriod);
+                emaShort.Plots[0].Brush = Brushes.HotPink;
+                emaLong = EMA(EmaLongPeriod);
+                //AddChartIndicator(emaShort);
+                //AddChartIndicator(emaLong);
+
+                ltfSwingRays = SwingRays2c(Closes[0], Strength, 1, KeepBrokenLines, 1);
+                ltfSwingRays.SwingHighColor = LtfSwingColor;
+                ltfSwingRays.SwingLowColor = LtfSwingColor;
+
+                htfSwingRays = SwingRays2c(Closes[1], Strength, 0, KeepBrokenLines, 1);
+                htfSwingRays.SwingHighColor = HtfSwingColor;
+                htfSwingRays.SwingLowColor = HtfSwingColor;
+
+                AddChartIndicator(ltfSwingRays);
+                AddChartIndicator(htfSwingRays);
             }
         }
 
@@ -106,9 +120,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //Print("total high swings: " + swingRays2c.SwingHighRays.Count);
                 //Print("total low swings: " + swingRays2c.SwingLowRays.Count);
 
-                 Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
-                // Print("Time[0]: " + Time[0].ToString());
-                 Print("CurrentBar: " + CurrentBar);
+                //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                //Print("CurrentBar: " + CurrentBar);
+                //Print("Time[0]: " + Time[0].ToString());
 
                 // check for 5 min high sweep
                 // check for 5 min low broken(not sweep)
@@ -117,7 +131,35 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // enter short
                 // wait till 5 min low broken
 
-                // after 5 min sweep, store
+                // after 5 min sweep, store mss
+
+                htfHighSweep[0] = htfHighSweep[1] == 1 || htfSwingRays.IsHighBroken[0] == 1 ? 1 : 0;
+                //if (htfLowSweep[0] == 1) htfHighSweep[0] = 0;
+                //if (htfHighSweep[0] == 1) Print("htfHighSweep[0]: " + htfHighSweep[0]);
+
+                htfLowSweep[0] = htfLowSweep[1] == 1 || htfSwingRays.IsLowBroken[0] == 1 ? 1 : 0;
+                //if (htfHighSweep[0] == 1) htfLowSweep[0] = 0;
+                //if (htfLowSweep[0] == 1) Print("htfLowSweep[0]: " + htfLowSweep[0]);
+
+                if (htfLowSweep[0] == 1 && emaShort[0] > emaLong[0] && ltfSwingRays.IsLowBroken[0] == 1)
+                {
+                    EnterLong();
+                }
+                else if (htfHighSweep[0] == 1 && emaShort[0] < emaLong[0] && ltfSwingRays.IsHighBroken[0] == 1)
+                {
+                    EnterShort();
+                }
+
+                if (CrossBelow(emaShort, emaLong, 2)) // start of downtrend, exit longs
+                {
+                    htfLowSweep[0] = 0;
+                    if (Position.MarketPosition == MarketPosition.Long) ExitLong();
+                }
+                else if (CrossAbove(emaShort, emaLong, 2)) // start of uptrend, exit shorts
+                {
+                    htfHighSweep[0] = 0;
+                    if (Position.MarketPosition == MarketPosition.Short) ExitShort();
+                }
             }
             catch (Exception e)
             {
@@ -127,11 +169,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         }
 
         #region Properties
-        [Range(2, int.MaxValue)]
-        [NinjaScriptProperty]
-        [Display(Name = "Swing Strength", Description = "Number of bars before/after each pivot bar", Order = 1, GroupName = "Parameters")]
-        public int Strength
-        { get; set; }
 
         [NinjaScriptProperty]
         [Display(Name = "Take Profit (ticks)", Description = "", Order = 1, GroupName = "ATM")]
@@ -143,42 +180,37 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         public int StopLoss
         { get; set; }
 
+        [Display(Name = "Htf Timeframe (mins)", Order = 1, GroupName = "Strategy")]
+        public int HtfTimeFrame
+        { get; set; }
+
+        [Range(2, int.MaxValue)]
+        [Display(Name = "Swing Strength", Description = "Number of bars before/after each pivot bar", Order = 2, GroupName = "Strategy")]
+        public int Strength
+        { get; set; }
+
+        [Display(Name = "Ema short period", Order = 3, GroupName = "Strategy")]
+        public int EmaShortPeriod
+        { get; set; }
+
+        [Display(Name = "Ema long period", Order = 4, GroupName = "Strategy")]
+        public int EmaLongPeriod
+        { get; set; }
+
         [NinjaScriptProperty]
-        [Display(Name = "Keep broken lines", Description = "Show broken swing lines, beginning to end", Order = 3, GroupName = "Parameters")]
+        [Display(Name = "Keep broken lines", Description = "Show broken swing lines, beginning to end", Order = 3, GroupName = "Options")]
         public bool KeepBrokenLines
         { get; set; }
 
         [XmlIgnore]
-        [Display(Name = "Swing High color", Description = "Color for swing high rays/lines", Order = 4, GroupName = "Options")]
-        public Brush SwingHighColor
+        [Display(Name = "Htf Swing Level color", Description = "Color for htf swing level rays/lines", Order = 4, GroupName = "Options")]
+        public Brush HtfSwingColor
         { get; set; }
-
-        [Browsable(false)]
-        public string SwingHighColorSerializable
-        {
-            get { return Serialize.BrushToString(SwingHighColor); }
-            set { SwingHighColor = Serialize.StringToBrush(value); }
-        }
 
         [XmlIgnore]
-        [Display(Name = "Swing Low color", Description = "Color for swing low rays/lines", Order = 5, GroupName = "Options")]
-        public Brush SwingLowColor
+        [Display(Name = "Ltf Swing Level color", Description = "Color for ltf swing level rays/lines", Order = 5, GroupName = "Options")]
+        public Brush LtfSwingColor
         { get; set; }
-
-        [Browsable(false)]
-        public string SwingLowColorSerializable
-        {
-            get { return Serialize.BrushToString(SwingLowColor); }
-            set { SwingLowColor = Serialize.StringToBrush(value); }
-        }
-
-        [Range(1, int.MaxValue)]
-        [NinjaScriptProperty]
-        [Display(Name = "Line width", Description = "Thickness of swing lines", Order = 6, GroupName = "Options")]
-        public int LineWidth
-        { get; set; }
-
-
 
         #endregion
     }
