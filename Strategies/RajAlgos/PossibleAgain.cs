@@ -33,6 +33,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private Series<double> htfHighSweep;
         private Series<double> htfLowSweep;
 
+        private EMA emaEntry;
         private EMA emaShort;
         private EMA emaLong;
 
@@ -63,10 +64,12 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 HtfTimeFrame = 5;
                 Strength = 4;
+                EmaEntryPeriod = 100;
+                EnableEmaEntry = true;
                 EmaShortPeriod = 20;
                 EmaLongPeriod = 50;
 
-                TakeProfit = 100;
+                TakeProfit = 300;
                 StopLoss = 70;
                 KeepBrokenLines = true; // defaulted to false to reduce overhead
 
@@ -87,6 +90,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.DataLoaded)
             {
+                emaEntry = EMA(EmaEntryPeriod);
+                AddChartIndicator(emaEntry);
+
                 emaShort = EMA(EmaShortPeriod);
                 emaShort.Plots[0].Brush = Brushes.HotPink;
                 emaLong = EMA(EmaLongPeriod);
@@ -141,11 +147,11 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //if (htfHighSweep[0] == 1) htfLowSweep[0] = 0;
                 //if (htfLowSweep[0] == 1) Print("htfLowSweep[0]: " + htfLowSweep[0]);
 
-                if (htfLowSweep[0] == 1 && emaShort[0] > emaLong[0] && ltfSwingRays.IsLowBroken[0] == 1)
+                if (htfLowSweep[0] == 1 && EnableEmaEntry && High[0] > emaEntry[0] && ltfSwingRays.IsLowBroken[0] == 1)
                 {
                     EnterLong();
                 }
-                else if (htfHighSweep[0] == 1 && emaShort[0] < emaLong[0] && ltfSwingRays.IsHighBroken[0] == 1)
+                else if (htfHighSweep[0] == 1 && EnableEmaEntry && Low[0] < emaEntry[0] && ltfSwingRays.IsHighBroken[0] == 1)
                 {
                     EnterShort();
                 }
@@ -189,11 +195,21 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         public int Strength
         { get; set; }
 
-        [Display(Name = "Ema short period", Order = 3, GroupName = "Strategy")]
+        [NinjaScriptProperty]
+        [Display(Name = "Ema Entry filter", Order = 3, GroupName = "Strategy")]
+        public bool EnableEmaEntry
+        { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Ema (entry)", Order = 4, GroupName = "Strategy")]
+        public int EmaEntryPeriod
+        { get; set; }
+
+        [Display(Name = "Ema short (exit)", Order = 5, GroupName = "Strategy")]
         public int EmaShortPeriod
         { get; set; }
 
-        [Display(Name = "Ema long period", Order = 4, GroupName = "Strategy")]
+        [Display(Name = "Ema long (exit)", Order = 6, GroupName = "Strategy")]
         public int EmaLongPeriod
         { get; set; }
 
