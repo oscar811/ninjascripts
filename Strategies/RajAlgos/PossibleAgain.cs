@@ -96,8 +96,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 emaShort = EMA(EmaShortPeriod);
                 emaShort.Plots[0].Brush = Brushes.HotPink;
                 emaLong = EMA(EmaLongPeriod);
-                //AddChartIndicator(emaShort);
-                //AddChartIndicator(emaLong);
+                AddChartIndicator(emaShort);
+                AddChartIndicator(emaLong);
 
                 ltfSwingRays = SwingRays2c(Closes[0], Strength, 1, KeepBrokenLines, 1);
                 ltfSwingRays.SwingHighColor = LtfSwingColor;
@@ -177,19 +177,21 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         #region Properties
 
         [NinjaScriptProperty]
-        [Display(Name = "Take Profit (ticks)", Description = "", Order = 1, GroupName = "ATM")]
+        [Display(Name = "Take Profit (ticks)", Order = 1, GroupName = "ATM")]
         public int TakeProfit
         { get; set; }
 
         [NinjaScriptProperty]
-        [Display(Name = "Stop Loss (ticks)", Description = "", Order = 1, GroupName = "ATM")]
+        [Display(Name = "Stop Loss (ticks)", Order = 1, GroupName = "ATM")]
         public int StopLoss
         { get; set; }
 
+        [NinjaScriptProperty]
         [Display(Name = "Htf Timeframe (mins)", Order = 1, GroupName = "Strategy")]
         public int HtfTimeFrame
         { get; set; }
 
+        [NinjaScriptProperty]
         [Range(2, int.MaxValue)]
         [Display(Name = "Swing Strength", Description = "Number of bars before/after each pivot bar", Order = 2, GroupName = "Strategy")]
         public int Strength
@@ -202,14 +204,19 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         [NinjaScriptProperty]
         [Display(Name = "Ema (entry)", Order = 4, GroupName = "Strategy")]
+        [Range(10, int.MaxValue)]
         public int EmaEntryPeriod
         { get; set; }
 
+        [NinjaScriptProperty]
         [Display(Name = "Ema short (exit)", Order = 5, GroupName = "Strategy")]
+        [Range(10, int.MaxValue)]
         public int EmaShortPeriod
         { get; set; }
 
+        [NinjaScriptProperty]
         [Display(Name = "Ema long (exit)", Order = 6, GroupName = "Strategy")]
+        [Range(10, int.MaxValue)]
         public int EmaLongPeriod
         { get; set; }
 
