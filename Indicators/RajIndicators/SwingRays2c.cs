@@ -72,7 +72,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
 
         protected override void OnBarUpdate()
         {
-            /*			Swing break determination is on TickByTick basis, Swing creation not			*/
+            /*			Swing break determination is on TickByTick basis, Swing creation not			*/			
             /*			IRay's Anchor member gives the price at which the ray is draw...				*/
 
             try

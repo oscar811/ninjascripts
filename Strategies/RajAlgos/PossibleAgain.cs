@@ -30,8 +30,14 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         private SwingRays2c ltfSwingRays;
         private SwingRays2c htfSwingRays;
 
+        private SwingRays2c ltfEsSwingRays;
+        private SwingRays2c htfEsSwingRays;
+
         private Series<double> htfHighSweep;
         private Series<double> htfLowSweep;
+
+        private Series<double> htfEsHighSweep;
+        private Series<double> htfEsLowSweep;
 
         private EMA emaEntry;
         private EMA emaShort;
@@ -62,8 +68,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 // See the Help Guide for additional information
                 IsInstantiatedOnEachOptimizationIteration = true;
 
-                HtfTimeFrame = 5;
-                Strength = 4;
+                HtfTimeFrame = 15;
+                Strength = 3;
                 EmaEntryPeriod = 100;
                 EnableEmaEntry = true;
                 EmaShortPeriod = 20;
@@ -79,9 +85,14 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             else if (State == State.Configure)
             {
                 AddDataSeries(BarsPeriodType.Minute, HtfTimeFrame);
+                AddDataSeries("ES", BarsPeriodType.Minute, BarsPeriod.Value);
+                AddDataSeries("ES", BarsPeriodType.Minute, HtfTimeFrame);
 
                 htfHighSweep = new Series<double>(this);
                 htfLowSweep = new Series<double>(this);
+
+                htfEsHighSweep = new Series<double>(this);
+                htfEsLowSweep = new Series<double>(this);
 
                 SetStopLoss(CalculationMode.Ticks, StopLoss);
                 SetProfitTarget(CalculationMode.Ticks, TakeProfit);
@@ -103,9 +114,17 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 ltfSwingRays.SwingHighColor = LtfSwingColor;
                 ltfSwingRays.SwingLowColor = LtfSwingColor;
 
-                htfSwingRays = SwingRays2c(Closes[1], Strength, 0, KeepBrokenLines, 1);
+                htfSwingRays = SwingRays2c(Closes[1], Strength, 1, KeepBrokenLines, 1);
                 htfSwingRays.SwingHighColor = HtfSwingColor;
                 htfSwingRays.SwingLowColor = HtfSwingColor;
+
+                ltfEsSwingRays = SwingRays2c(Closes[2], Strength, 1, KeepBrokenLines, 1);
+                ltfEsSwingRays.SwingHighColor = Brushes.Transparent;
+                ltfEsSwingRays.SwingLowColor = Brushes.Transparent;
+
+                //htfEsSwingRays = SwingRays2c(Closes[3], Strength, 0, KeepBrokenLines, 1);
+                //htfEsSwingRays.SwingHighColor = Brushes.Transparent;
+                //htfEsSwingRays.SwingLowColor = Brushes.Transparent;
 
                 AddChartIndicator(ltfSwingRays);
                 AddChartIndicator(htfSwingRays);
@@ -126,8 +145,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //Print("total high swings: " + swingRays2c.SwingHighRays.Count);
                 //Print("total low swings: " + swingRays2c.SwingLowRays.Count);
 
-                //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
-                //Print("CurrentBar: " + CurrentBar);
+                Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                Print("CurrentBar: " + CurrentBar);
                 //Print("Time[0]: " + Time[0].ToString());
 
                 // check for 5 min high sweep
@@ -139,20 +158,23 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 // after 5 min sweep, store mss
 
-                htfHighSweep[0] = htfHighSweep[1] == 1 || htfSwingRays.IsHighBroken[0] == 1 ? 1 : 0;
-                //if (htfLowSweep[0] == 1) htfHighSweep[0] = 0;
-                //if (htfHighSweep[0] == 1) Print("htfHighSweep[0]: " + htfHighSweep[0]);
+                htfHighSweep[0] = htfHighSweep[1] == 1 || htfSwingRays.IsHighSwept[0] == 1 ? 1 : 0;
+                if (htfHighSweep[0] == 1) htfLowSweep[0] = 0;
 
-                htfLowSweep[0] = htfLowSweep[1] == 1 || htfSwingRays.IsLowBroken[0] == 1 ? 1 : 0;
-                //if (htfHighSweep[0] == 1) htfLowSweep[0] = 0;
-                //if (htfLowSweep[0] == 1) Print("htfLowSweep[0]: " + htfLowSweep[0]);
+                htfLowSweep[0] = htfLowSweep[1] == 1 || htfSwingRays.IsLowSwept[0] == 1 ? 1 : 0;
+                if (htfLowSweep[0] == 1) htfHighSweep[0] = 0;
 
-                if (htfLowSweep[0] == 1 && EnableEmaEntry && High[0] > emaEntry[0] && ltfSwingRays.IsLowBroken[0] == 1)
+                if (htfHighSweep[0] == 1) Print("htfHighSweep[0]: " + htfHighSweep[0]);
+                if (htfLowSweep[0] == 1) Print("htfLowSweep[0]: " + htfLowSweep[0]);
+
+                if (htfLowSweep[0] == 1 && (!EnableEmaEntry || High[0] > emaEntry[0]) && ltfSwingRays.IsLowBroken[0] == 1)
                 {
                     EnterLong();
                 }
-                else if (htfHighSweep[0] == 1 && EnableEmaEntry && Low[0] < emaEntry[0] && ltfSwingRays.IsHighBroken[0] == 1)
+                else if (htfHighSweep[0] == 1 && (!EnableEmaEntry || Low[0] < emaEntry[0]) && ltfSwingRays.IsHighBroken[0] == 1)
                 {
+                    Print("ltfSwingRays broke");
+
                     EnterShort();
                 }
 
