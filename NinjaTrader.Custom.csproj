@@ -229,6 +229,7 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
+    <Compile Include="Indicators\RajIndicators\Ifv.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartNetChange.cs" />
@@ -583,6 +584,7 @@
     <Compile Include="Strategies\RajAlgos\GraniteAlgo.cs" />
     <Compile Include="Strategies\RajAlgos\NewStrategy.cs" />
     <Compile Include="Strategies\Time400am.cs" />
+    <Compile Include="Indicators\RajIndicators\IFvg.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
