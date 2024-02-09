@@ -52,6 +52,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             }
             else if (State == State.Configure)
             {
+                ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
             {
@@ -164,7 +165,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 double? bx_bot = _ary[i].bot;
                 DateTime bx_left = _ary[i].left.Value;
                 DateTime? xval = _ary[i].x_val;
-                double? mid = _ary[i].mid.Value;
+                double mid = _ary[i].mid.Value;
                 SolidColorBrush col = _ary[i].dir == -1 ? Brushes.Green : Brushes.Red;
                 SolidColorBrush o_col = _ary[i].dir == -1 ? Brushes.Red : Brushes.Green;
 
@@ -172,13 +173,13 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 {
                     //box.new(bx_left, bx_top, xval, bx_bot, bgcolor = col, border_color = invis, xloc = xloc.bar_time);
                     //box.new(xval, bx_top, time, bx_bot, bgcolor = o_col, border_color = invis, xloc = xloc.bar_time);
-
-                    //Draw.Line(this, "myDashedLine" + CurrentBar, true, bx_left, mid, currentBarDateTime, mid, Brushes.Gray, DashStyleHelper.Dash, 2);
+                    
+                    Draw.Line(this, "myDashedLine" + CurrentBar, true, ToTime(bx_left), mid, ToTime(currentBarDateTime), mid, Brushes.Gray, DashStyleHelper.Dash, 2);
                     ////line.new(bx_left, mid, time, mid, color = gray, style = line.style_dashed, xloc = xloc.bar_time);
 
                     //box.new(bar_index, bx_top, bar_index + 50, bx_bot, bgcolor = o_col, border_color = invis);
 
-                    //Draw.Line(this, "myDashedLine" + CurrentBar, true, bx_top, mid, currentBarDateTime, mid, Brushes.Gray, DashStyleHelper.Dash, 2);
+                    //Draw.Line(this, "myDashedLine" + CurrentBar, true, ToTime(bx_top), mid, ToTime(currentBarDateTime), mid, Brushes.Gray, DashStyleHelper.Dash, 2);
                     ////line.new(bar_index, mid, bar_index + 50, mid, color = gray, style = line.style_dashed);
                 }
 
@@ -203,6 +204,9 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
         {
             try
             {
+                if (CurrentBar < 3)
+                    return;
+
                 double c_top = Math.Max(Open[0], Close[0]);
                 double c_bot = Math.Min(Open[0], Close[0]);
 
@@ -245,6 +249,8 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 if (fvg_down && Math.Abs(Low[2] - High[0]) > atr)
                     //array.push(bear_fvg_ary, fvg.new(time[1], low[2], time, high, math.avg(high, low[2]), -1, 0, array.new< lab > (na), na));
                     bull_fvg_ary.Add(new Fvg(Time[1], Low[2], Time[0], High[0], (High[0] + Low[2]) / 2, -1, 0, new List<Lab>(), null));
+
+                Print("bull_fvg_ary:" + bull_fvg_ary.Count);
 
                 //---------------------------------------------------------------------------------------------------------------------}
                 //Running Functions
