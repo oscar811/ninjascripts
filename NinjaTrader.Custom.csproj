@@ -26,7 +26,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <DocumentationFile>bin\Debug\NinjaTrader.Custom.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -43,7 +43,7 @@
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <DebugSymbols>true</DebugSymbols>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -54,7 +54,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <LangVersion>5</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -68,7 +68,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <LangVersion>5</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -155,6 +155,9 @@
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
+    <Reference Include="LuxAlgo - BreakerBlockswithSignals">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - BreakerBlockswithSignals.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BarsTypes\%40DayBarsType.cs" />
@@ -229,7 +232,8 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
-    <Compile Include="Indicators\RajIndicators\Ifv.cs" />
+    <Compile Include="Indicators\RajIndicators\FvgSessions2.cs" />
+    <Compile Include="Indicators\RajIndicators\PineLib.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartNetChange.cs" />
@@ -432,6 +436,7 @@
     <Compile Include="Strategies\%40SampleMultiInstrument.cs" />
     <Compile Include="Strategies\%40SampleMultiTimeFrame.cs" />
     <Compile Include="Strategies\%40Strategy.cs" />
+    <Compile Include="Strategies\RajAlgos\TestBB.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleAgain.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
     <Compile Include="Strategies\RajAlgos\Time400am.cs" />
@@ -585,6 +590,8 @@
     <Compile Include="Strategies\RajAlgos\NewStrategy.cs" />
     <Compile Include="Strategies\Time400am.cs" />
     <Compile Include="Indicators\RajIndicators\IFvg.cs" />
+    <Compile Include="Indicators\RajIndicators\IFvg2.cs" />
+    <Compile Include="LuxAlgo - BreakerBlockswithSignals.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
@@ -639,10 +646,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent></PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
