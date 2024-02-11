@@ -79,22 +79,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="WindowsBase">
-      <HintPath>C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationCore">
-      <HintPath>C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationCore.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationFramework">
-      <HintPath>C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="UIAutomationProvider">
-      <HintPath>C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\UIAutomationProvider.dll</HintPath>
-    </Reference>
     <Reference Include="InfragisticsWPF4.DataPresenter.v15.1">
       <HintPath>C:\Program Files\NinjaTrader 8\bin\InfragisticsWPF4.DataPresenter.v15.1.dll</HintPath>
     </Reference>
@@ -152,11 +139,27 @@
     <Reference Include="LuxAlgo - LiquiditySwings">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - LiquiditySwings.dll</HintPath>
     </Reference>
+    <Reference Include="LuxAlgo - BreakerBlockswithSignals">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - BreakerBlockswithSignals.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib">
+      <HintPath>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
-    <Reference Include="LuxAlgo - BreakerBlockswithSignals">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - BreakerBlockswithSignals.dll</HintPath>
+    <Reference Include="WindowsBase">
+      <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore">
+      <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationCore.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="UIAutomationProvider">
+      <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\UIAutomationProvider.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -232,8 +235,6 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
-    <Compile Include="Indicators\RajIndicators\FvgSessions2.cs" />
-    <Compile Include="Indicators\RajIndicators\PineLib.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartNetChange.cs" />
@@ -248,7 +249,6 @@
     <Compile Include="ResourceEnumConverter.cs" />
     <Compile Include="ImportTypes\%40TextImportType.cs" />
     <Compile Include="ImportTypes\%40TextImportTypeBeginningOfBar.cs" />
-    <Compile Include="Indicators\%40ADX.cs" />
     <Compile Include="Indicators\%40Aroon.cs" />
     <Compile Include="Indicators\%40AroonOscillator.cs" />
     <Compile Include="Indicators\%40ATR.cs" />
@@ -449,9 +449,6 @@
     <Compile Include="SuperDomColumns\%40Notes.cs" />
     <Compile Include="SuperDomColumns\%40ProfitLoss.cs" />
     <Compile Include="SuperDomColumns\%40Volume.cs" />
-    <Compile Include="obj\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
-    <Compile Include="obj\Debug\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
-    <Compile Include="obj\Debug\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
     <Compile Include="Indicators\WaveTrendV2.cs" />
     <Compile Include="Strategies\VolumeSuperTrendAI.cs" />
     <Compile Include="Indicators\amaATR.cs" />
@@ -519,7 +516,6 @@
     <Compile Include="Strategies\AMDwickV1.cs" />
     <Compile Include="Indicators\TradeSaber\MultiSeriesHL.cs" />
     <Compile Include="Strategies\AMDwickV1EditedOct28.cs" />
-    <Compile Include="Strategies\SupplySystem.cs" />
     <Compile Include="Indicators\%40CurrentDayOHL.cs" />
     <Compile Include="Indicators\ICTFVG.cs" />
     <Compile Include="Indicators\%40MAX.cs" />
@@ -528,10 +524,7 @@
     <Compile Include="Strategies\RajAlgos\PeaceBringer.cs" />
     <Compile Include="Strategies\RajAlgos\SimpleOrderBlock.cs" />
     <Compile Include="Indicators\RajIndicators\LiquidityLevels.cs" />
-    <Compile Include="Indicators\%40ADL.cs" />
     <Compile Include="Indicators\%40Swing.cs" />
-    <Compile Include="DrawingTools\Resistance Line.cs" />
-    <Compile Include="DrawingTools\SupportLine.cs" />
     <Compile Include="Indicators\Infinity\SupDemZones.cs" />
     <Compile Include="Indicators\SwingRays2b.cs" />
     <Compile Include="Indicators\AuADXVMA.cs" />
@@ -566,23 +559,19 @@
     <Compile Include="Indicators\RajIndicators\SessionHighLow.cs" />
     <Compile Include="Indicators\RajIndicators\SessionLevels.cs" />
     <Compile Include="Indicators\RajIndicators\AMDCyclesIndicator.cs" />
-    <Compile Include="PJSQQE.cs" />
     <Compile Include="Indicators\SampleGetHighLowByTimeRange.cs" />
     <Compile Include="Indicators\RGaussianFilter.cs" />
     <Compile Include="Indicators\RSqueeze.cs" />
     <Compile Include="Indicators\AntoQQE.cs" />
     <Compile Include="Indicators\AntoSSLQQEHybrid.cs" />
     <Compile Include="Indicators\JMA.cs" />
-    <Compile Include="GemsTraderLadder_bin_v0.3.7.cs" />
     <Compile Include="Strategies\RajAlgos\ZipStrategy.cs" />
     <Compile Include="Strategies\ProfitableLoserBacktestStratAsia.cs" />
     <Compile Include="Strategies\DailyRangeAMDxScalper.cs" />
     <Compile Include="Strategies\ProfitableLoserBacktestStrat.cs" />
-    <Compile Include="LuxAlgo - LiquiditySwings.cs" />
     <Compile Include="Indicators\RajIndicators\SwingLevels.cs" />
     <Compile Include="Strategies\RajAlgos\UniqueStack.cs" />
     <Compile Include="Strategies\RajAlgos\BarCloseStrategy.cs" />
-    <Compile Include="obj\Debug\.NETFramework,Version=v4.8.1.AssemblyAttributes.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest2.cs" />
     <Compile Include="Strategies\RajAlgos\CaptainBacktest3.cs" />
@@ -591,7 +580,13 @@
     <Compile Include="Strategies\Time400am.cs" />
     <Compile Include="Indicators\RajIndicators\IFvg.cs" />
     <Compile Include="Indicators\RajIndicators\IFvg2.cs" />
-    <Compile Include="LuxAlgo - BreakerBlockswithSignals.cs" />
+    <Compile Include="Indicators\%40ADL.cs" />
+    <Compile Include="Indicators\%40ADX.cs" />
+    <Compile Include="Indicators\%40StochRSI.cs" />
+    <Compile Include="Strategies\SupplySystem.cs" />
+    <Compile Include="SuperDomColumns\%40PullingStacking.cs" />
+    <Compile Include="SuperDomColumns\%40Recent.cs" />
+    <Compile Include="obj\x64\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
@@ -646,12 +641,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent></PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent></PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
