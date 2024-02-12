@@ -122,6 +122,9 @@
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
+    <Reference Include="LuxAlgo - BuysideSellsideLiquidity">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - BuysideSellsideLiquidity.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
     </Reference>
@@ -208,6 +211,8 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
+    <Compile Include="Indicators\LuxAlgo2\LiquidityVoidsFVG2.cs" />
+    <Compile Include="Indicators\LuxAlgo2\PineLib.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartNetChange.cs" />
@@ -549,8 +554,9 @@
     <Compile Include="SuperDomColumns\%40Recent.cs" />
     <Compile Include="obj\x64\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="LuxAlgo - LiquidityVoidsFVG.cs" />
-    <Compile Include="Indicators\LuxAlgo2\LiquidityVoidsFVG2.cs" />
-    <Compile Include="Indicators\LuxAlgo2\PineLib.cs" />
+    <Compile Include="LuxAlgo - BuysideSellsideLiquidity.cs" />
+    <Compile Include="Indicators\LuxAlgo2\CrossEnum.cs" />
+    <Compile Include="Indicators\LuxAlgo2\BuysideSellsideLiquidity2.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
