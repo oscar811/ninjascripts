@@ -1,5 +1,5 @@
-#region Assembly AdjustableMAAlternatingExtremities, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null
-// C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - AdjustableMAAlternatingExtremities.dll
+﻿#region Assembly LuxAlgo Indicator, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null
+// C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - LiquidityVoidsFVG.dll
 // Decompiled with ICSharpCode.Decompiler 8.1.1.7464
 #endregion
 
@@ -15,7 +15,7 @@ using NinjaTrader.Gui.NinjaScript;
 using NinjaTrader.Gui.Tools;
 using NinjaTrader.NinjaScript.DrawingTools;
 
-namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
+namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 {
     public class PineLib
     {
@@ -65,8 +65,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
 
                 if (SavedCandleTime[index] != ownerStatic.Time[0])
                 {
-                    ref DateTime reference = ref SavedCandleTime[index];
-                    reference = ownerStatic.Time[0];
+                    SavedCandleTime[index] = ownerStatic.Time[0];
                     return true;
                 }
 
@@ -217,14 +216,48 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
 
             public double RandomNumber(double min = 0.0, double max = 1.0, int seed = 0)
             {
-                Random random = new Random(seed);
-                return random.NextDouble() * (max - min) + min;
+                return new Random(seed).NextDouble() * (max - min) + min;
             }
 
             public double RandomNumber(double min = 0.0, double max = 1.0)
             {
-                Random random = new Random();
-                return random.NextDouble() * (max - min) + min;
+                return new Random().NextDouble() * (max - min) + min;
+            }
+
+            public double QuadInterpolation(int x1, double y1, int x2, double y2, int x3, double y3, int x)
+            {
+                double num = ((y3 - y1) / (double)(x3 - x1) - (y2 - y1) / (double)(x2 - x1)) / (double)(x3 - x2);
+                double num2 = (y2 - y1) / (double)(x2 - x1) - num * (double)(x2 + x1);
+                double num3 = y1 - num * (double)x1 * (double)x1 - num2 * (double)x1;
+                return num * (double)x * (double)x + num2 * (double)x + num3;
+            }
+
+            public double CubicInterpolation(int x1, double y1, int x2, double y2, int x3, double y3, int x4, double y4, int x)
+            {
+                double num = (y2 - y1) / (double)(x2 - x1);
+                double num2 = ((y3 - y2) / (double)(x3 - x2) - num) / (double)(x3 - x1);
+                double num3 = (((y4 - y3) / (double)(x4 - x3) - num2) / (double)(x4 - x1) - num) / (double)(x4 - x2);
+                return y1 - num * (double)x1 - num2 * (double)x1 * (double)x2 - num3 * (double)x1 * (double)x2 * (double)x3 + num * (double)x + num2 * (double)x * (double)x + num3 * (double)x * (double)x * (double)x;
+            }
+
+            public double Interpolation(int[] x, double[] y, int x0)
+            {
+                double num = 0.0;
+                for (int i = 0; i < x.Length; i++)
+                {
+                    double num2 = y[i];
+                    for (int j = 0; j < x.Length; j++)
+                    {
+                        if (i != j)
+                        {
+                            num2 *= (double)((x0 - x[j]) / (x[i] - x[j]));
+                        }
+                    }
+
+                    num += num2;
+                }
+
+                return num;
             }
         }
 
@@ -309,6 +342,11 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 }
             }
 
+            public void RemoveAt<T>(ref T[] myArray, int index)
+            {
+                RemoveElement(ref myArray, index);
+            }
+
             public T[] SliceArray<T>(ref T[] array, int index_from, int index_to)
             {
                 return array.Skip(index_from).Take(index_to - index_from).ToArray();
@@ -324,14 +362,62 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 return array.Skip(start).Take((count > 0) ? count : (array.Length - start)).Min();
             }
 
+            public double Range(ref double[] array)
+            {
+                return MaxArrayValue(ref array) - MinArrayValue(ref array);
+            }
+
             public double SumArrayElements<T>(ref T[] array, int count = 0, int start = 0) where T : IConvertible
             {
-                return array.Skip(start).Take((count > 0) ? count : (array.Length - start)).Sum((T x) => x.ToDouble(CultureInfo.InvariantCulture));
+                return array.Skip(start).Take((count > 0) ? count : (array.Length - start)).Sum(delegate (T x)
+                {
+                    ref T reference = ref x;
+                    T val = default(T);
+                    if (val == null)
+                    {
+                        val = reference;
+                        reference = ref val;
+                    }
+
+                    return reference.ToDouble(CultureInfo.InvariantCulture);
+                });
             }
 
             public double AverageArrayElements<T>(ref T[] array, int count = 0, int start = 0) where T : IConvertible
             {
-                return array.Skip(start).Take((count > 0) ? count : (array.Length - start)).Average((T x) => x.ToDouble(CultureInfo.InvariantCulture));
+                return array.Skip(start).Take((count > 0) ? count : (array.Length - start)).Average(delegate (T x)
+                {
+                    ref T reference = ref x;
+                    T val = default(T);
+                    if (val == null)
+                    {
+                        val = reference;
+                        reference = ref val;
+                    }
+
+                    return reference.ToDouble(CultureInfo.InvariantCulture);
+                });
+            }
+
+            public double AverageArrayElements<T>(T[] array, int count = 0, int start = 0) where T : IConvertible
+            {
+                if (array.Length == 0)
+                {
+                    return 0.0;
+                }
+
+                return array.Skip(start).Take((count > 0) ? count : (array.Length - start)).Average(delegate (T x)
+                {
+                    ref T reference = ref x;
+                    T val = default(T);
+                    if (val == null)
+                    {
+                        val = reference;
+                        reference = ref val;
+                    }
+
+                    return reference.ToDouble(CultureInfo.InvariantCulture);
+                });
             }
 
             public T[] ConvertFromArguments<T>(params object[] args)
@@ -381,6 +467,122 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 return (from pair in id.Select((T value, int index) => new { value, index })
                         orderby pair.value descending
                         select pair.index).ToArray();
+            }
+
+            public void Sort<T>(ref T[] id, bool ascending = true)
+            {
+                if (ascending)
+                {
+                    id = id.OrderBy((T x) => x).ToArray();
+                }
+                else
+                {
+                    id = id.OrderByDescending((T x) => x).ToArray();
+                }
+            }
+
+            public double Covariance<T1, T2>(T1[] array1, T2[] array2, bool biased = true)
+            {
+                if (array1.Length != array2.Length)
+                {
+                    return double.NaN;
+                }
+
+                int num = array1.Length;
+                double num2 = array1.Average((T1 x) => Convert.ToDouble(x));
+                double num3 = array2.Average((T2 x) => Convert.ToDouble(x));
+                double num4 = 0.0;
+                for (int i = 0; i < array1.Length; i++)
+                {
+                    double num5 = Convert.ToDouble(array1[i]);
+                    double num6 = Convert.ToDouble(array2[i]);
+                    num4 += (num5 - num2) * (num6 - num3);
+                }
+
+                if (biased)
+                {
+                    return num4 / (double)num;
+                }
+
+                return num4 / (double)(num - 1);
+            }
+
+            public double Variance<T>(T[] array, bool biased = true)
+            {
+                int num = array.Length;
+                double num2 = array.Average((T x) => Convert.ToDouble(x));
+                double num3 = 0.0;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    num3 += System.Math.Pow(Convert.ToDouble(array[i]) - num2, 2.0);
+                }
+
+                if (biased)
+                {
+                    return num3 / (double)num;
+                }
+
+                return num3 / (double)(num - 1);
+            }
+
+            public double StdDev<T>(T[] array, bool biased = true)
+            {
+                return System.Math.Sqrt(Variance(array, biased));
+            }
+
+            public double PercentileLinearInterpolation(double[] array, double percentage)
+            {
+                if (array.Length == 0)
+                {
+                    return double.NaN;
+                }
+
+                if (percentage < 0.0 || percentage > 100.0)
+                {
+                    return double.NaN;
+                }
+
+                if (percentage == 100.0)
+                {
+                    return array.Max();
+                }
+
+                if (percentage == 0.0)
+                {
+                    return array.Min();
+                }
+
+                double[] array2 = array.OrderBy((double x) => x).ToArray();
+                double num = (double)(array2.Length + 1) * percentage / 100.0;
+                int num2 = (int)num;
+                double num3 = num - (double)num2;
+                if (num2 == 0)
+                {
+                    return array2[0];
+                }
+
+                if (num2 == array2.Length)
+                {
+                    return array2[array2.Length - 1];
+                }
+
+                return array2[num2 - 1] + num3 * (array2[num2] - array2[num2 - 1]);
+            }
+
+            public double Median(double[] array)
+            {
+                if (array.Length == 0)
+                {
+                    return 0.0;
+                }
+
+                double[] array2 = array.OrderBy((double x) => x).ToArray();
+                if (array2.Length % 2 == 0)
+                {
+                    return (array2[array2.Length / 2 - 1] + array2[array2.Length / 2]) / 2.0;
+                }
+
+                return array2[array2.Length / 2];
             }
         }
 
@@ -611,6 +813,35 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 return DefVal;
             }
 
+            public T2 ValueWhen<T2>(ISeries<bool> c_condition, ISeries<T2> c_source, int c_occurrence, T2 DefVal)
+            {
+                int num = 0;
+                for (int i = 0; i < owner.CurrentBar - 1; i++)
+                {
+                    if (c_condition[i])
+                    {
+                        if (num == c_occurrence)
+                        {
+                            return c_source[i];
+                        }
+
+                        num++;
+                    }
+                }
+
+                return DefVal;
+            }
+
+            public int mom(ISeries<int> source, int length = 1, int offset = 0)
+            {
+                return source[offset] - source[offset + length];
+            }
+
+            public double mom(ISeries<double> source, int length = 1, int offset = 0)
+            {
+                return source[offset] - source[offset + length];
+            }
+
             public bool isZero(double val, double eps = 0.0)
             {
                 return System.Math.Abs(val) <= eps;
@@ -621,6 +852,42 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 double num = (y1 - y2) / (x1 - x2);
                 double num2 = y1 - num * x1;
                 return num * x + num2;
+            }
+
+            public bool Falling(ISeries<double> source, int length = 1)
+            {
+                if (owner.CurrentBar < length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < length; i++)
+                {
+                    if (source[i] >= source[i + 1])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public bool Rising(ISeries<double> source, int length = 1)
+            {
+                if (owner.CurrentBar < length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < length; i++)
+                {
+                    if (source[i] <= source[i + 1])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
 
@@ -661,7 +928,12 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 c_value = System.Math.Max(System.Math.Min(c_value, top_value), bot_value);
                 double num = top_value - bot_value;
                 double num2 = c_value - bot_value;
-                return (num2 != 0.0) ? ((int)(num2 / num * 100.0)) : 0;
+                if (num2 == 0.0)
+                {
+                    return 0;
+                }
+
+                return (int)(num2 / num * 100.0);
             }
 
             public Color FromBrush(Brush myCustomBrush, double myOpacity = 100.0)
@@ -691,9 +963,10 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             public void CreateGradientArray3(ref Brush[] GradientBrushes, Color dnCol, Color midCol, Color upCol, double percent = 50.0)
             {
                 GradientBrushes = new Brush[101];
+                percent = ((percent > 99.0) ? 99.0 : ((percent < 1.0) ? 1.0 : percent));
                 for (int i = 0; i <= 100; i++)
                 {
-                    Color color = ((i > 50) ? FromGradient(i, percent, 100.0, midCol, upCol) : FromGradient(i, 0.0, 50.0, dnCol, midCol));
+                    Color color = (((double)i > percent) ? FromGradient(i, percent, 100.0, midCol, upCol) : FromGradient(i, 0.0, percent, dnCol, midCol));
                     GradientBrushes[i] = new SolidColorBrush(color);
                     GradientBrushes[i].Freeze();
                 }
@@ -731,7 +1004,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 style_dotted = DashStyleHelper.Dot;
             }
 
-            public NinjaTrader.NinjaScript.DrawingTools.Line New(int x1 = 0, double y1 = 0.0, int x2 = 0, double y2 = 0.0, Brush color = null, DashStyleHelper style = DashStyleHelper.Solid, int width = 1)
+            public NinjaTrader.NinjaScript.DrawingTools.Line New(int x1 = 0, double y1 = 0.0, int x2 = 0, double y2 = 0.0, Brush color = null, DashStyleHelper style = DashStyleHelper.Solid, int width = 1, bool isAutoScale = false)
             {
                 if (objectCount > MaxObjectsLimit)
                 {
@@ -739,10 +1012,10 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 }
 
                 color = color ?? Brushes.Transparent;
-                return Draw.Line(owner, "[LuxAlgo] PineLib Line " + ++objectCount, isAutoScale: false, owner.Time.GetValueAt(x1), y1, owner.Time.GetValueAt(x2), y2, color, style, width);
+                return Draw.Line(owner, "[LuxAlgo] PineLib Line " + ++objectCount, isAutoScale, owner.Time.GetValueAt(x1), y1, owner.Time.GetValueAt(x2), y2, color, style, width);
             }
 
-            public NinjaTrader.NinjaScript.DrawingTools.Line New(DateTime x1, double y1 = 0.0, DateTime x2 = default(DateTime), double y2 = 0.0, Brush color = null, DashStyleHelper style = DashStyleHelper.Solid, int width = 1)
+            public NinjaTrader.NinjaScript.DrawingTools.Line New(DateTime x1, double y1 = 0.0, DateTime x2 = default(DateTime), double y2 = 0.0, Brush color = null, DashStyleHelper style = DashStyleHelper.Solid, int width = 1, bool isAutoScale = false)
             {
                 if (objectCount > MaxObjectsLimit)
                 {
@@ -750,12 +1023,17 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 }
 
                 color = color ?? Brushes.Transparent;
-                return Draw.Line(owner, "[LuxAlgo] PineLib Line " + ++objectCount, isAutoScale: false, x1, y1, x2, y2, color, style, width);
+                return Draw.Line(owner, "[LuxAlgo] PineLib Line " + ++objectCount, isAutoScale, x1, y1, x2, y2, color, style, width);
+            }
+
+            public void Delete(ref NinjaTrader.NinjaScript.DrawingTools.Line line)
+            {
+                FixPineObject(ref line);
+                renderBase.RemoveDrawObject(line.Tag);
             }
 
             public void Delete(NinjaTrader.NinjaScript.DrawingTools.Line line)
             {
-                FixPineObject(ref line);
                 renderBase.RemoveDrawObject(line.Tag);
             }
 
@@ -881,6 +1159,15 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 FixPineObject(ref line);
                 return line.EndAnchor.Price;
             }
+
+            public double GetPrice(ref NinjaTrader.NinjaScript.DrawingTools.Line line, int index = 0)
+            {
+                FixPineObject(ref line);
+                double slotIndex = line.StartAnchor.SlotIndex;
+                double price = line.StartAnchor.Price;
+                double slotIndex2 = line.EndAnchor.SlotIndex;
+                return (line.EndAnchor.Price - price) / (slotIndex2 - slotIndex) * ((double)index - slotIndex) + price;
+            }
         }
 
         public class PineLabel
@@ -929,9 +1216,14 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 return Draw.Text(owner, "[LuxAlgo] PineLib Label " + ++objectCount, isAutoScale: false, text, x1, y1, style * offset, textcolor, font, textalign, colorOutline, color, opacity);
             }
 
-            public void Delete(Text label)
+            public void Delete(ref Text label)
             {
                 FixPineObject(ref label);
+                renderBase.RemoveDrawObject(label.Tag);
+            }
+
+            public void Delete(Text label)
+            {
                 renderBase.RemoveDrawObject(label.Tag);
             }
 
@@ -1104,9 +1396,14 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 return rectangle;
             }
 
-            public void Delete(Rectangle box)
+            public void Delete(ref Rectangle box)
             {
                 FixPineObject(ref box);
+                renderBase.RemoveDrawObject(box.Tag);
+            }
+
+            public void Delete(Rectangle box)
+            {
                 renderBase.RemoveDrawObject(box.Tag);
             }
 
@@ -1221,16 +1518,20 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                 return box.EndAnchor.Price;
             }
 
-            public void SetBgColor(ref Rectangle box, Brush color)
+            public void SetBgColor(ref Rectangle box, Brush color, int opacity = -1)
             {
                 FixPineObject(ref box);
                 box.AreaBrush = color;
+                if (opacity > -1)
+                {
+                    box.AreaOpacity = opacity;
+                }
             }
 
-            public void SetOpacity(ref Rectangle box, int transp)
+            public void SetOpacity(ref Rectangle box, int opacity)
             {
                 FixPineObject(ref box);
-                box.AreaOpacity = transp;
+                box.AreaOpacity = opacity;
             }
 
             public void SetBorderColor(ref Rectangle box, Brush color)
@@ -1257,6 +1558,8 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             protected NinjaScriptBase owner;
 
             public bool IsLast => owner.CurrentBar == owner.Bars.Count - 1 - ((owner.Calculate == Calculate.OnBarClose) ? 1 : 0);
+
+            public bool IsFirst => owner.CurrentBar == 0;
 
             public PineBarState(NinjaScriptBase thisOwner)
             {
@@ -1357,9 +1660,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
                     default:
                         if (formatString.Contains("."))
                         {
-                            string[] array = formatString.Split('.');
-                            int length = array[1].Length;
-                            return num.ToString("F" + length);
+                            return num.ToString("F" + formatString.Split('.')[1].Length);
                         }
 
                         return num.ToString();
@@ -1457,6 +1758,19 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             return owner.BarsArray[BarsIndex].GetBar(owner.Time[0]) != owner.BarsArray[BarsIndex].GetBar(owner.Time[1]);
         }
 
+        public bool IsTimeframeStart(int BarsIndex, int CandleIndex = 0)
+        {
+            for (int i = 1; i <= BarsIndex; i++)
+            {
+                if (owner.Time[0] < owner.Times[i].GetValueAt(CandleIndex))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public double FixNaN(ISeries<double> source, double value = double.NaN)
         {
             if (double.IsNaN(value))
@@ -1465,6 +1779,16 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
             }
 
             return value;
+        }
+
+        public double Nz(double source, double value = 0.0)
+        {
+            if (double.IsNaN(source))
+            {
+                return value;
+            }
+
+            return source;
         }
 
         public static bool IsNewCandle(int index = 0, bool reset = false)
@@ -1476,8 +1800,7 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
 
             if (SavedCandleTime[index] != ownerStatic.Time[0])
             {
-                ref DateTime reference = ref SavedCandleTime[index];
-                reference = ownerStatic.Time[0];
+                SavedCandleTime[index] = ownerStatic.Time[0];
                 return true;
             }
 
@@ -1537,54 +1860,41 @@ namespace NinjaTrader.NinjaScript.Indicators.RajIndicators
     }
 }
 #if false // Decompilation log
-'36' items in cache
-------------------
-Resolve: 'NinjaTrader.Core, Version=8.1.1.6, Culture=neutral, PublicKeyToken=null'
-Found single assembly: 'NinjaTrader.Core, Version=8.1.1.7, Culture=neutral, PublicKeyToken=null'
-WARN: Version mismatch. Expected: '8.1.1.6', Got: '8.1.1.7'
-Load from: 'C:\Program Files\NinjaTrader 8\bin\NinjaTrader.Core.dll'
-------------------
-Resolve: 'NinjaTrader.Gui, Version=8.1.1.6, Culture=neutral, PublicKeyToken=null'
-Found single assembly: 'NinjaTrader.Gui, Version=8.1.1.7, Culture=neutral, PublicKeyToken=null'
-WARN: Version mismatch. Expected: '8.1.1.6', Got: '8.1.1.7'
-Load from: 'C:\Program Files\NinjaTrader 8\bin\NinjaTrader.Gui.dll'
+'23' items in cache
 ------------------
 Resolve: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 Found single assembly: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-Load from: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\mscorlib.dll'
+Load from: 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll'
 ------------------
 Resolve: 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 Found single assembly: 'System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 Load from: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.dll'
 ------------------
-Resolve: 'NinjaTrader.Vendor, Version=8.1.1.6, Culture=neutral, PublicKeyToken=null'
-Found single assembly: 'NinjaTrader.Vendor, Version=8.1.1.7, Culture=neutral, PublicKeyToken=null'
-WARN: Version mismatch. Expected: '8.1.1.6', Got: '8.1.1.7'
-Load from: 'C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll'
+Resolve: 'NinjaTrader.Gui, Version=8.1.2.0, Culture=neutral, PublicKeyToken=null'
+Found single assembly: 'NinjaTrader.Gui, Version=8.1.2.1, Culture=neutral, PublicKeyToken=null'
+WARN: Version mismatch. Expected: '8.1.2.0', Got: '8.1.2.1'
+Load from: 'C:\Program Files\NinjaTrader 8\bin\NinjaTrader.Gui.dll'
+------------------
+Resolve: 'NinjaTrader.Core, Version=8.1.2.0, Culture=neutral, PublicKeyToken=null'
+Found single assembly: 'NinjaTrader.Core, Version=8.1.2.1, Culture=neutral, PublicKeyToken=null'
+WARN: Version mismatch. Expected: '8.1.2.0', Got: '8.1.2.1'
+Load from: 'C:\Program Files\NinjaTrader 8\bin\NinjaTrader.Core.dll'
 ------------------
 Resolve: 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
 Found single assembly: 'WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-Load from: 'C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll'
-------------------
-Resolve: 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-Found single assembly: 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-Load from: 'C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationCore.dll'
+Load from: 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll'
 ------------------
 Resolve: 'SharpDX.Direct2D1, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1'
 Found single assembly: 'SharpDX.Direct2D1, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1'
 Load from: 'C:\Program Files\NinjaTrader 8\bin\SharpDX.Direct2D1.dll'
 ------------------
-Resolve: 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-Found single assembly: 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-Load from: 'C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationFramework.dll'
+Resolve: 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Found single assembly: 'PresentationCore, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Load from: 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationCore.dll'
 ------------------
 Resolve: 'SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1'
 Found single assembly: 'SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1'
 Load from: 'C:\Program Files\NinjaTrader 8\bin\SharpDX.dll'
-------------------
-Resolve: 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-Found single assembly: 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-Load from: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.Core.dll'
 ------------------
 Resolve: 'System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
 Found single assembly: 'System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
@@ -1594,9 +1904,18 @@ Resolve: 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561
 Found single assembly: 'System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 Load from: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.Xml.dll'
 ------------------
-Resolve: 'System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-Found single assembly: 'System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
-Load from: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.Windows.Forms.dll'
+Resolve: 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Found single assembly: 'PresentationFramework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
+Load from: 'C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\PresentationFramework.dll'
+------------------
+Resolve: 'NinjaTrader.Vendor, Version=8.1.2.0, Culture=neutral, PublicKeyToken=null'
+Found single assembly: 'NinjaTrader.Vendor, Version=8.1.2.1, Culture=neutral, PublicKeyToken=null'
+WARN: Version mismatch. Expected: '8.1.2.0', Got: '8.1.2.1'
+Load from: 'C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll'
+------------------
+Resolve: 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Found single assembly: 'System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
+Load from: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8.1\System.Core.dll'
 ------------------
 Resolve: 'System.Xaml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'
 Found single assembly: 'System.Xaml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089'

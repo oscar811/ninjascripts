@@ -26,7 +26,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <DocumentationFile>bin\Debug\NinjaTrader.Custom.XML</DocumentationFile>
     <NoWarn>1591</NoWarn>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -43,7 +43,7 @@
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <DebugSymbols>true</DebugSymbols>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -54,7 +54,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -68,7 +68,7 @@
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -100,36 +100,6 @@
     <Reference Include="SharpDX.Direct2D1">
       <HintPath>C:\Program Files\NinjaTrader 8\bin\SharpDX.Direct2D1.dll</HintPath>
     </Reference>
-    <Reference Include="LuxAlgo - FibonacciProgressionWithBreaks">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - FibonacciProgressionWithBreaks.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - MarketStructureTrailingStop">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - MarketStructureTrailingStop.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - DRIDRCandles">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - DRIDRCandles.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - HullButterflyOscillator">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - HullButterflyOscillator.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - BollingerBandsBreakoutOscillator">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - BollingerBandsBreakoutOscillator.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - TrendVolumeAccumulations">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - TrendVolumeAccumulations.dll</HintPath>
-    </Reference>
-    <Reference Include="FVGATMV3">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\FVGATMV3.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - AdjustableMAAlternatingExtremities">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - AdjustableMAAlternatingExtremities.dll</HintPath>
-    </Reference>
-    <Reference Include="LuxAlgo - FVGSessions">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - FVGSessions.dll</HintPath>
-    </Reference>
-    <Reference Include="FVGBACKTESTV2">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\FVGBACKTESTV2.dll</HintPath>
-    </Reference>
     <Reference Include="PJSQQE">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\PJSQQE.dll</HintPath>
     </Reference>
@@ -146,6 +116,9 @@
       <HintPath>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll</HintPath>
     </Reference>
     <Reference Include="System.Xaml" />
+    <Reference Include="LuxAlgo - LiquidityVoidsFVG">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - LiquidityVoidsFVG.dll</HintPath>
+    </Reference>
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
@@ -436,7 +409,6 @@
     <Compile Include="Strategies\%40SampleMultiInstrument.cs" />
     <Compile Include="Strategies\%40SampleMultiTimeFrame.cs" />
     <Compile Include="Strategies\%40Strategy.cs" />
-    <Compile Include="Strategies\RajAlgos\TestBB.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleAgain.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
     <Compile Include="Strategies\RajAlgos\Time400am.cs" />
@@ -482,16 +454,7 @@
     <Compile Include="Strategies\ZigZagStrat.cs" />
     <Compile Include="Strategies\McDaddy.cs" />
     <Compile Include="Strategies\VolSuperTrendAI2.cs" />
-    <Compile Include="LuxAlgo - FibonacciProgressionWithBreaks.cs" />
-    <Compile Include="LuxAlgo - MarketStructureTrailingStop.cs" />
-    <Compile Include="LuxAlgo - DRIDRCandles.cs" />
-    <Compile Include="LuxAlgo - HullButterflyOscillator.cs" />
-    <Compile Include="LuxAlgo - BollingerBandsBreakoutOscillator.cs" />
-    <Compile Include="LuxAlgo - TrendVolumeAccumulations.cs" />
-    <Compile Include="Strategies\LuxTralingStopStrategy.cs" />
     <Compile Include="Strategies\SmackyAMD.cs" />
-    <Compile Include="FVGATMV3.cs" />
-    <Compile Include="LuxAlgo - AdjustableMAAlternatingExtremities.cs" />
     <Compile Include="Strategies\UTBotStrat.cs" />
     <Compile Include="Strategies\KeltnerChannelsStrategy.cs" />
     <Compile Include="Strategies\GannSwingStrategy.cs" />
@@ -506,10 +469,8 @@
     <Compile Include="Indicators\ZLabeledLines.cs" />
     <Compile Include="Strategies\AMDCycles.cs" />
     <Compile Include="Strategies\SupplySystemStrat.cs" />
-    <Compile Include="LuxAlgo - FVGSessions.cs" />
     <Compile Include="Indicators\IGMarketProfile.cs" />
     <Compile Include="Strategies\SmackyAMDv2NotEdited.cs" />
-    <Compile Include="FVGBACKTESTV2.cs" />
     <Compile Include="Strategies\FVGBot.cs" />
     <Compile Include="Indicators\SettlementLinesPlus.cs" />
     <Compile Include="Strategies\TimeTestStrat.cs" />
@@ -587,6 +548,9 @@
     <Compile Include="SuperDomColumns\%40PullingStacking.cs" />
     <Compile Include="SuperDomColumns\%40Recent.cs" />
     <Compile Include="obj\x64\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
+    <Compile Include="LuxAlgo - LiquidityVoidsFVG.cs" />
+    <Compile Include="Indicators\LuxAlgo2\LiquidityVoidsFVG2.cs" />
+    <Compile Include="Indicators\LuxAlgo2\PineLib.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
@@ -639,6 +603,7 @@
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent></PostBuildEvent>
