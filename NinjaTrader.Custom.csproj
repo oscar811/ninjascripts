@@ -557,6 +557,7 @@
     <Compile Include="LuxAlgo - BuysideSellsideLiquidity.cs" />
     <Compile Include="Indicators\LuxAlgo2\CrossEnum.cs" />
     <Compile Include="Indicators\LuxAlgo2\BuysideSellsideLiquidity2.cs" />
+    <Compile Include="Strategies\RajAlgos\CameronStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">

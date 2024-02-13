@@ -110,7 +110,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         protected static PineLib Pine;
 
-        public override string DisplayName => "LuxAlgo - Buyside & Sellside Liquidity";
+        public override string DisplayName => "Lux - BSL-SSL - 2";
 
         [NinjaScriptProperty]
         [Display(Name = "Detection Length", Description = "Detection Length", Order = 1, GroupName = "Liquidity Detection")]

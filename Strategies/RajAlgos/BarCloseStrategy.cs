@@ -54,9 +54,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 ShortSL = 70;
             }
             else if (State == State.Configure)
-            {
-                ClearOutputWindow();
-
+            {                
                 //SetProfitTarget("", CalculationMode.Ticks, LongTP);
                 //SetStopLoss("", CalculationMode.Ticks, LongSL, false);
             }
