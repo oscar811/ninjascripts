@@ -114,10 +114,10 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         [NinjaScriptProperty]
         [Display(Name = "Detection Length", Description = "Detection Length", Order = 1, GroupName = "Liquidity Detection")]
-        [Range(3, 13)]
+        [Range(3, 30)]
         public int liqLen { get; set; }
 
-        [Range(4, 9)]
+        [Range(1, 9)]
         [Display(Name = "Margin", Description = "Margin", Order = 2, GroupName = "Liquidity Detection")]
         [NinjaScriptProperty]
         public double LiqMar { get; set; }
@@ -248,13 +248,16 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
             }
         }
 
-        public event Action<double> OnLqBreach;
+        public event Action<double> OnBslBreach;
+        public event Action<double> OnSslBreach;
+        public event Action<double> OnBullFvgCreate;
+        public event Action<double> OnBearFvgCreate;
 
         protected override void OnStateChange()
         {
             if (base.State == State.SetDefaults)
             {
-                base.Description = "Enter the description for your new custom Indicator here.";
+                base.Description = "BSL SSL";
                 base.Name = "Buyside & Sellside Liquidity";
                 base.Calculate = Calculate.OnBarClose;
                 base.IsOverlay = true;
@@ -501,7 +504,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         Pine.Box.SetBgColor(ref liq5.bxz, cLIQ_B);
                         Pine.Box.SetOpacity(ref liq5.bxz, liqBuy ? 25 : 0);
 
-                        OnLqBreach?.Invoke(CurrentBar);
+                        OnBslBreach?.Invoke(CurrentBar);
                     }
                 }
                 else
@@ -542,6 +545,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         Pine.Box.SetRightBottom(ref liq6.bxz, base.CurrentBar + 1, Math.Max(Pine.Line.GetY1(ref liq6.ln) - marSel * atr, base.Low[0]));
                         Pine.Box.SetBgColor(ref liq6.bxz, cLIQ_S);
                         Pine.Box.SetOpacity(ref liq6.bxz, liqSel ? 25 : 0);
+
+                        OnSslBreach?.Invoke(CurrentBar);
                     }
                 }
                 else
@@ -579,6 +584,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         for (int m = 0; m < num15; m++)
                         {
                             Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.Low[1] + (double)m * num16, base.CurrentBar, base.Low[1] + (double)(m + 1) * num16, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
+
+                            OnBullFvgCreate?.Invoke(CurrentBar);
                         }
                     }
                     else
@@ -587,6 +594,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         for (int n = 0; n < num15; n++)
                         {
                             Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.High[2] + (double)n * num17, base.CurrentBar, base.High[2] + (double)(n + 1) * num17, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
+
+                            OnBullFvgCreate?.Invoke(CurrentBar);
                         }
                     }
                 }
@@ -600,6 +609,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         for (int num20 = 0; num20 < num18; num20++)
                         {
                             Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.High[0] + (double)num20 * num19, base.CurrentBar, base.High[0] + (double)(num20 + 1) * num19, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
+
+                            OnBearFvgCreate?.Invoke(CurrentBar);
                         }
                     }
                     else
@@ -608,6 +619,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         for (int num22 = 0; num22 < num18; num22++)
                         {
                             Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.High[0] + (double)num22 * num21, base.CurrentBar, base.High[0] + (double)(num22 + 1) * num21, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
+
+                            OnBearFvgCreate?.Invoke(CurrentBar);
                         }
                     }
                 }

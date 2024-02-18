@@ -30,8 +30,11 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class CameronStrategy : Strategy
     {
-        private BuysideSellsideLiquidity2 lq;
-        //private LiquidityVoidsFVG2 fvg;
+        private LiquiditySwings2 lqSwings;
+        //private BuysideSellsideLiquidity2 lq;
+        //private BuysideSellsideLiquidity2 lq2;
+
+        //private LiquidityVoidsFVG2 fvg; 
 
         private int StopLoss = 50;
         private int TakeProfit = 100;
@@ -64,31 +67,39 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
             else if (State == State.Configure)
             {
+                ClearOutputWindow();
+
                 AddDataSeries(BarsPeriodType.Minute, 5);
-                AddDataSeries(BarsPeriodType.Second, 30);
                 //AddDataSeries("ES", BarsPeriodType.Minute, BarsPeriod.Value);
                 //AddDataSeries("ES", BarsPeriodType.Minute, HtfTimeFrame);
 
                 SetStopLoss(CalculationMode.Ticks, StopLoss);
                 SetProfitTarget(CalculationMode.Ticks, TakeProfit);
 
-                Lq_Breach = new Series<bool?>(this);
-
-                ClearOutputWindow();
+                Lq_BslBreach = new Series<bool?>(this);
+                Lq_SslBreach = new Series<bool?>(this);
+                Lq_BullFvg = new Series<bool?>(this);
+                Lq_BearFvg = new Series<bool?>(this);
             }
             else if (State == State.DataLoaded)
             {
-                lq = BuysideSellsideLiquidity2(Closes[0], liqLen: 7, liqMar: 6.9, liqBuy: true, marBuy: 2.3, cLIQ_B: Brushes.Green,
-                    liqSel: true, marSel: 2.3, cLIQ_S: Brushes.Red, lqVoid: false, cLQV_B: Brushes.Green, cLQV_S: Brushes.Red, mode: LuxBSLMode.Present, visLiq: 3);
-                AddChartIndicator(lq);
-                lq.OnLqBreach += Lq_OnBreached;
-
+                //lqSwings = LiquiditySwings(Closes[0], )
+                //lq = BuysideSellsideLiquidity2(Closes[0], liqLen: 30, liqMar: 6.9, liqBuy: false, marBuy: 2.3, cLIQ_B: Brushes.Green,
+                //    liqSel: false, marSel: 2.3, cLIQ_S: Brushes.Red, lqVoid: true, cLQV_B: Brushes.Green, cLQV_S: Brushes.Red, mode: LuxBSLMode.Historical, visLiq: 10);
+                //AddChartIndicator(lq);
+                //lq.OnBslBreach += Lq_OnBslBreached;
+                //lq.OnSslBreach += Lq_OnSslBreached;
+                //lq.OnBullFvgCreate += Lq_OnBullFvgCreate;
+                //lq.OnBearFvgCreate += Lq_OnBearFvgCreate;
                 //fvg = LiquidityVoidsFVG2(Closes[2], mode: LUXLVFVGMode.Historical, back: 360, lqTH: 0.5, lqBC: Brushes.Teal, lqSC: Brushes.Crimson, lqVF: true, lqFC: Brushes.Gray);
                 //AddChartIndicator(fvg);
             }
         }
 
-        private Series<bool?> Lq_Breach; // = new Series<bool?>(this);
+        private Series<bool?> Lq_BslBreach;
+        private Series<bool?> Lq_SslBreach;
+        private Series<bool?> Lq_BullFvg;
+        private Series<bool?> Lq_BearFvg;
 
         protected override void OnBarUpdate()
         {
@@ -101,8 +112,20 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                     return;
 
                 Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
-                Print("Time[0]: " + Time[0].ToString());
-                Print("CurrentBar: " + CurrentBar);
+                //Print("Time[0]: " + Time[0].ToString());
+                //Print("CurrentBar: " + CurrentBar);
+
+                Lq_BslBreach[0] = null;
+                Lq_SslBreach[0] = null;
+                Lq_BullFvg[0] = null;
+                Lq_BearFvg[0] = null;
+
+                // so if lq is swept? how to know if it is swept?
+                // breach + opposite candle?, need another series to track that
+                // fvg in ltf, need series to track that
+                // if both conditions are met, take position
+                // when to exit? opposite lq breached? 1:1? start with 1:1
+
             }
             catch (Exception e)
             {
@@ -111,11 +134,30 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
             }
         }
 
-        private void Lq_OnBreached(double newValue)
+        private void Lq_OnBslBreached(double newValue)
         {
+            Lq_BslBreach[0] = true;
             // Handle the value change event, e.g., by adjusting strategy behavior
-            Print("Indicator value changed to: " + newValue);
+            Print("BSL breached: " + newValue);
         }
 
+        private void Lq_OnSslBreached(double newValue)
+        {
+            Lq_SslBreach[0] = true;
+            // Handle the value change event, e.g., by adjusting strategy behavior
+            Print("SSL breached: " + newValue);
+        }
+
+        private void Lq_OnBullFvgCreate(double barNo)
+        {
+            Lq_BullFvg[0] = true;
+            //Print("Bull FVG created: " + barNo);
+        }
+
+        private void Lq_OnBearFvgCreate(double barNo)
+        {
+            Lq_BearFvg[0] = true;
+            //Print("Bear FVG created: " + barNo);
+        }
     }
 }
