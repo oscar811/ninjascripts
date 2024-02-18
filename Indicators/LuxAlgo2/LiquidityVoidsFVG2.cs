@@ -19,7 +19,6 @@ using NinjaTrader.Data;
 using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.DrawingTools;
-using NinjaTrader.NinjaScript.Indicators.LuxAlgo;
 #endregion
 
 //This namespace holds Indicators in this folder and is required. Do not change it. 

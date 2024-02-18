@@ -23,6 +23,7 @@ using NinjaTrader.NinjaScript.DrawingTools;
 using NinjaTrader.NinjaScript.Indicators.LuxAlgo2;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using static NinjaTrader.CQG.ProtoBuf.Quote.Types;
 #endregion
 
 namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
@@ -30,7 +31,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
     public class CameronStrategy : Strategy
     {
         private BuysideSellsideLiquidity2 lq;
-        private LiquidityVoidsFVG2 fvg;
+        //private LiquidityVoidsFVG2 fvg;
 
         private int StopLoss = 50;
         private int TakeProfit = 100;
@@ -71,19 +72,23 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 SetStopLoss(CalculationMode.Ticks, StopLoss);
                 SetProfitTarget(CalculationMode.Ticks, TakeProfit);
 
+                Lq_Breach = new Series<bool?>(this);
+
                 ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
             {
-                lq = BuysideSellsideLiquidity2(Closes[1], liqLen: 7, liqMar: 6.9, liqBuy: true, marBuy: 2.3, cLIQ_B: Brushes.Green,
+                lq = BuysideSellsideLiquidity2(Closes[0], liqLen: 7, liqMar: 6.9, liqBuy: true, marBuy: 2.3, cLIQ_B: Brushes.Green,
                     liqSel: true, marSel: 2.3, cLIQ_S: Brushes.Red, lqVoid: false, cLQV_B: Brushes.Green, cLQV_S: Brushes.Red, mode: LuxBSLMode.Present, visLiq: 3);
-
-                fvg = LiquidityVoidsFVG2(Closes[2], mode: LUXLVFVGMode.Historical, back: 360, lqTH: 0.5, lqBC: Brushes.Teal, lqSC: Brushes.Crimson, lqVF: true, lqFC: Brushes.Gray);
-
                 AddChartIndicator(lq);
-                AddChartIndicator(fvg);
+                lq.OnLqBreach += Lq_OnBreached;
+
+                //fvg = LiquidityVoidsFVG2(Closes[2], mode: LUXLVFVGMode.Historical, back: 360, lqTH: 0.5, lqBC: Brushes.Teal, lqSC: Brushes.Crimson, lqVF: true, lqFC: Brushes.Gray);
+                //AddChartIndicator(fvg);
             }
         }
+
+        private Series<bool?> Lq_Breach; // = new Series<bool?>(this);
 
         protected override void OnBarUpdate()
         {
@@ -95,7 +100,9 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
-                fvg.MaximumBarsLookBack
+                Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                Print("Time[0]: " + Time[0].ToString());
+                Print("CurrentBar: " + CurrentBar);
             }
             catch (Exception e)
             {
@@ -103,5 +110,12 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 Print("Stack Trace: " + e.StackTrace);
             }
         }
+
+        private void Lq_OnBreached(double newValue)
+        {
+            // Handle the value change event, e.g., by adjusting strategy behavior
+            Print("Indicator value changed to: " + newValue);
+        }
+
     }
 }

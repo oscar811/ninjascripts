@@ -248,6 +248,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
             }
         }
 
+        public event Action<double> OnLqBreach;
+
         protected override void OnStateChange()
         {
             if (base.State == State.SetDefaults)
@@ -498,6 +500,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         Pine.Box.SetRightBottom(ref liq5.bxz, base.CurrentBar + 1, Pine.Line.GetY1(ref liq5.ln));
                         Pine.Box.SetBgColor(ref liq5.bxz, cLIQ_B);
                         Pine.Box.SetOpacity(ref liq5.bxz, liqBuy ? 25 : 0);
+
+                        OnLqBreach?.Invoke(CurrentBar);
                     }
                 }
                 else
