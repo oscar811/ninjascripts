@@ -25,6 +25,262 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 {
     public class LiquiditySwings2 : Indicator
     {
+        private SimpleFont font;
+
+        private LSClass phClass;
+
+        private LSClass plClass;
+
+        private Rectangle ph_bx;
+
+        private Rectangle pl_bx;
+
+        protected static PineLib Pine;
+
+        public override string DisplayName => "LiquiditySwings-2 (" + length + ")";
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Pivot Lookback", Order = 1, GroupName = "Parameters")]
+        public int length { get; set; }
+
+        [Display(Name = "Swing Area", Order = 2, GroupName = "Parameters")]
+        [NinjaScriptProperty]
+        public LuxLSAreaType Area { get; set; }
+
+        [Display(Name = "Intrabar Precision", Order = 3, GroupName = "Parameters")]
+        [NinjaScriptProperty]
+        public bool IntraPrecision { get; set; }
+
+        [Range(1, int.MaxValue)]
+        [Display(Name = "Intrabar Minutes", Order = 4, GroupName = "Parameters")]
+        [NinjaScriptProperty]
+        public int IntrabarTf { get; set; }
+
+        [Display(Name = "Filter Areas By", Order = 5, GroupName = "Parameters")]
+        [NinjaScriptProperty]
+        public LuxLSFilterType FilterOptions { get; set; }
+
+        [Range(0, int.MaxValue)]
+        [Display(Name = "Filter Value", Order = 6, GroupName = "Parameters")]
+        [NinjaScriptProperty]
+        public int FilterValue { get; set; }
+
+        [NinjaScriptProperty]
+        [Display(Name = "Swing High", Order = 7, GroupName = "Style")]
+        public bool ShowTop { get; set; }
+
+        [NinjaScriptProperty]
+        [XmlIgnore]
+        [Display(Name = "High Color", Order = 8, GroupName = "Style")]
+        public Brush TopCss { get; set; }
+
+        [Browsable(false)]
+        public string TopCssSerializable
+        {
+            get
+            {
+                return Serialize.BrushToString(TopCss);
+            }
+            set
+            {
+                TopCss = Serialize.StringToBrush(value);
+            }
+        }
+
+        [Display(Name = "Swing Low", Order = 9, GroupName = "Style")]
+        [NinjaScriptProperty]
+        public bool ShowBtm { get; set; }
+
+        [NinjaScriptProperty]
+        [XmlIgnore]
+        [Display(Name = "Low Color", Order = 10, GroupName = "Style")]
+        public Brush BtmCss { get; set; }
+
+        [Browsable(false)]
+        public string BtmCssSerializable
+        {
+            get
+            {
+                return Serialize.BrushToString(BtmCss);
+            }
+            set
+            {
+                BtmCss = Serialize.StringToBrush(value);
+            }
+        }
+
+        [Display(Name = "Font Size", Order = 11, GroupName = "Style")]
+        [Range(1, int.MaxValue)]
+        [NinjaScriptProperty]
+        public int FontSize { get; set; }
+
+        [Browsable(false)]
+        public new NinjaScriptBase Owner;
+
+        public Series<bool?> Lq_BslBreach;
+        public Series<bool?> Lq_SslBreach;
+
+        //public event Action<double> OnBslBreach;
+        //public event Action<double> OnSslBreach;
+        //public event Action<double> OnBullFvgCreate;
+        //public event Action<double> OnBearFvgCreate;
+
+        protected override void OnStateChange()
+        {
+            if (State == State.SetDefaults)
+            {
+                Description = "The Liquidity Swings indicator highlights swing areas with large trading activity for traders to find accumulation/distribution zones as well as levels to trade as support and resistance. The number of times price revisited a swing area is highlighted by a zone delimiting the areas. Additionally, the accumulated volume within swing areas is highlighted by labels on the chart. An option to filter out swing areas with volume/counts not reaching a user set threshold is also included.";
+                Name = "LiquiditySwings-2";
+                Calculate = Calculate.OnPriceChange;
+                IsOverlay = true;
+                DisplayInDataBox = true;
+                DrawOnPricePanel = true;
+                DrawHorizontalGridLines = true;
+                DrawVerticalGridLines = true;
+                PaintPriceMarkers = true;
+                ScaleJustification = ScaleJustification.Right;
+                IsSuspendedWhileInactive = true;
+                length = 3;
+                Area = LuxLSAreaType.Wick_Extremity;
+                IntraPrecision = false;
+                IntrabarTf = 1;
+                FilterOptions = LuxLSFilterType.Count;
+                FilterValue = 0;
+                ShowTop = true;
+                TopCss = Brushes.Crimson;
+                ShowBtm = true;
+                BtmCss = Brushes.LightSeaGreen;
+                FontSize = 12;
+            }
+            else if (State == State.Configure)
+            {
+                if (IntraPrecision)
+                {
+                    AddDataSeries(BarsPeriodType.Minute, IntrabarTf);
+                }
+
+                Lq_BslBreach = new Series<bool?>(this);
+                Lq_SslBreach = new Series<bool?>(this);
+            }
+            else if (State == State.DataLoaded)
+            {
+                if (Owner == null) Owner = this;
+                Pine = new PineLib(Owner, this, DrawObjects);
+                font = new SimpleFont("Arial", FontSize);
+                ph_bx = Pine.Box.New();
+                pl_bx = Pine.Box.New();
+                phClass = new LSClass(this, length, FilterValue);
+                plClass = new LSClass(this, length, FilterValue);
+            }
+        }
+
+        protected override void OnBarUpdate()
+        {
+            if (BarsInProgress != 0)
+            {
+                return;
+            }
+
+            Lq_BslBreach[0] = Lq_BslBreach[1];
+            Lq_SslBreach[0] = Lq_SslBreach[1];
+
+            if (CurrentBar < length + 2)
+            {
+                phClass.BeforeBar();
+                plClass.BeforeBar();
+                return;
+            }
+
+            phClass.OnBar();
+            plClass.OnBar();
+            double d = Pine.TA.PivotHigh(High, length, length);
+            phClass.get_counts(!double.IsNaN(d), IntraPrecision);
+            if (!double.IsNaN(d) && ShowTop)
+            {
+                phClass.top[0] = High[length];
+                switch (Area)
+                {
+                    case LuxLSAreaType.Wick_Extremity:
+                        phClass.btm[0] = Pine.Math.MaxValue<double>(Close[length], Open[length]);
+                        break;
+                    case LuxLSAreaType.Full_Range:
+                        phClass.btm[0] = Low[length];
+                        break;
+                }
+
+                phClass.x1[0] = CurrentBar - length;
+                phClass.crossed[0] = false;
+                Pine.Box.SetLeftTop(ref ph_bx, (int)phClass.x1[0], phClass.top[0]);
+                Pine.Box.SetRightBottom(ref ph_bx, (int)phClass.x1[0], phClass.btm[0]);
+            }
+            else
+            {
+                phClass.crossed[0] = Close[0] > phClass.top[0] || phClass.crossed[0];
+                if (phClass.crossed[0])
+                {
+                    Pine.Box.SetRight(ref ph_bx, (int)phClass.x1[0]);
+                    //OnBslBreach?.Invoke(CurrentBar);
+                    Lq_BslBreach[0] = true;
+                    Lq_SslBreach[0] = false;
+                }
+                else
+                {
+                    Pine.Box.SetRight(ref ph_bx, CurrentBar + 3);
+                }
+            }
+
+            if (ShowTop)
+            {
+                phClass.set_zone(!double.IsNaN(d), (FilterOptions == LuxLSFilterType.Count) ? phClass.count : phClass.vol, TopCss);
+                phClass.set_level(!double.IsNaN(d), phClass.top[0], (FilterOptions == LuxLSFilterType.Count) ? phClass.count : phClass.vol, TopCss);
+                phClass.set_label((FilterOptions == LuxLSFilterType.Count) ? phClass.count : phClass.vol, phClass.top[0], TopCss, Pine.Label.style_label_down, font);
+            }
+
+            double d2 = Pine.TA.PivotLow(Low, length, length);
+            plClass.get_counts(!double.IsNaN(d2), IntraPrecision);
+            if (!double.IsNaN(d2) && ShowBtm)
+            {
+                plClass.btm[0] = Low[length];
+                switch (Area)
+                {
+                    case LuxLSAreaType.Wick_Extremity:
+                        plClass.top[0] = Pine.Math.MinValue<double>(Close[length], Open[length]);
+                        break;
+                    case LuxLSAreaType.Full_Range:
+                        plClass.top[0] = High[length];
+                        break;
+                }
+
+                plClass.x1[0] = CurrentBar - length;
+                plClass.crossed[0] = false;
+                Pine.Box.SetLeftTop(ref pl_bx, (int)plClass.x1[0], plClass.top[0]);
+                Pine.Box.SetRightBottom(ref pl_bx, (int)plClass.x1[0], plClass.btm[0]);
+            }
+            else
+            {
+                plClass.crossed[0] = Close[0] < plClass.btm[0] || plClass.crossed[0];
+                if (plClass.crossed[0])
+                {
+                    Pine.Box.SetRight(ref pl_bx, (int)plClass.x1[0]);
+                    //OnSslBreach?.Invoke(CurrentBar);
+                    Lq_BslBreach[0] = false;
+                    Lq_SslBreach[0] = true;
+                }
+                else
+                {
+                    Pine.Box.SetRight(ref pl_bx, CurrentBar + 3);
+                }
+            }
+
+            if (ShowBtm)
+            {
+                plClass.set_zone(!double.IsNaN(d2), (FilterOptions == LuxLSFilterType.Count) ? plClass.count : plClass.vol, BtmCss);
+                plClass.set_level(!double.IsNaN(d2), plClass.btm[0], (FilterOptions == LuxLSFilterType.Count) ? plClass.count : plClass.vol, BtmCss);
+                plClass.set_label((FilterOptions == LuxLSFilterType.Count) ? plClass.count : plClass.vol, plClass.btm[0], BtmCss, Pine.Label.style_label_up, font);
+            }
+        }
+
         private class LSClass
         {
             private NinjaScriptBase owner;
@@ -35,7 +291,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
             private Text lbl;
 
-            private NinjaTrader.NinjaScript.DrawingTools.Line lvl;
+            private DrawingTools.Line lvl;
 
             private Rectangle bx;
 
@@ -170,238 +426,6 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 {
                     Pine.Box.SetRight(ref bx, (int)x1[0] + (int)count[0]);
                 }
-            }
-        }
-
-        private SimpleFont font;
-
-        private LSClass phClass;
-
-        private LSClass plClass;
-
-        private Rectangle ph_bx;
-
-        private Rectangle pl_bx;
-
-        protected static PineLib Pine;
-
-        public override string DisplayName => "LiquiditySwings-2 (" + length + ")";
-
-        [NinjaScriptProperty]
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Pivot Lookback", Order = 1, GroupName = "Parameters")]
-        public int length { get; set; }
-
-        [Display(Name = "Swing Area", Order = 2, GroupName = "Parameters")]
-        [NinjaScriptProperty]
-        public LuxLSAreaType Area { get; set; }
-
-        [Display(Name = "Intrabar Precision", Order = 3, GroupName = "Parameters")]
-        [NinjaScriptProperty]
-        public bool IntraPrecision { get; set; }
-
-        [Range(1, int.MaxValue)]
-        [Display(Name = "Intrabar Minutes", Order = 4, GroupName = "Parameters")]
-        [NinjaScriptProperty]
-        public int IntrabarTf { get; set; }
-
-        [Display(Name = "Filter Areas By", Order = 5, GroupName = "Parameters")]
-        [NinjaScriptProperty]
-        public LuxLSFilterType FilterOptions { get; set; }
-
-        [Range(0, int.MaxValue)]
-        [Display(Name = "Filter Value", Order = 6, GroupName = "Parameters")]
-        [NinjaScriptProperty]
-        public int FilterValue { get; set; }
-
-        [NinjaScriptProperty]
-        [Display(Name = "Swing High", Order = 7, GroupName = "Style")]
-        public bool ShowTop { get; set; }
-
-        [NinjaScriptProperty]
-        [XmlIgnore]
-        [Display(Name = "High Color", Order = 8, GroupName = "Style")]
-        public Brush TopCss { get; set; }
-
-        [Browsable(false)]
-        public string TopCssSerializable
-        {
-            get
-            {
-                return Serialize.BrushToString(TopCss);
-            }
-            set
-            {
-                TopCss = Serialize.StringToBrush(value);
-            }
-        }
-
-        [Display(Name = "Swing Low", Order = 9, GroupName = "Style")]
-        [NinjaScriptProperty]
-        public bool ShowBtm { get; set; }
-
-        [NinjaScriptProperty]
-        [XmlIgnore]
-        [Display(Name = "Low Color", Order = 10, GroupName = "Style")]
-        public Brush BtmCss { get; set; }
-
-        [Browsable(false)]
-        public string BtmCssSerializable
-        {
-            get
-            {
-                return Serialize.BrushToString(BtmCss);
-            }
-            set
-            {
-                BtmCss = Serialize.StringToBrush(value);
-            }
-        }
-
-        [Display(Name = "Font Size", Order = 11, GroupName = "Style")]
-        [Range(1, int.MaxValue)]
-        [NinjaScriptProperty]
-        public int FontSize { get; set; }
-
-        protected override void OnStateChange()
-        {
-            if (base.State == State.SetDefaults)
-            {
-                base.Description = "The Liquidity Swings indicator highlights swing areas with large trading activity for traders to find accumulation/distribution zones as well as levels to trade as support and resistance. The number of times price revisited a swing area is highlighted by a zone delimiting the areas. Additionally, the accumulated volume within swing areas is highlighted by labels on the chart. An option to filter out swing areas with volume/counts not reaching a user set threshold is also included.";
-                base.Name = "LiquiditySwings-2";
-                base.Calculate = Calculate.OnBarClose;
-                base.IsOverlay = true;
-                base.DisplayInDataBox = true;
-                base.DrawOnPricePanel = true;
-                base.DrawHorizontalGridLines = true;
-                base.DrawVerticalGridLines = true;
-                base.PaintPriceMarkers = true;
-                base.ScaleJustification = ScaleJustification.Right;
-                base.IsSuspendedWhileInactive = true;
-                length = 3;
-                Area = LuxLSAreaType.Wick_Extremity;
-                IntraPrecision = false;
-                IntrabarTf = 1;
-                FilterOptions = LuxLSFilterType.Count;
-                FilterValue = 0;
-                ShowTop = true;
-                TopCss = Brushes.Crimson;
-                ShowBtm = true;
-                BtmCss = Brushes.LightSeaGreen;
-                FontSize = 12;
-            }
-            else if (base.State == State.Configure)
-            {
-                if (IntraPrecision)
-                {
-                    AddDataSeries(BarsPeriodType.Minute, IntrabarTf);
-                }
-            }
-            else if (base.State == State.DataLoaded)
-            {
-                Pine = new PineLib(this, this, base.DrawObjects);
-                font = new SimpleFont("Arial", FontSize);
-                ph_bx = Pine.Box.New();
-                pl_bx = Pine.Box.New();
-                phClass = new LSClass(this, length, FilterValue);
-                plClass = new LSClass(this, length, FilterValue);
-            }
-        }
-
-        protected override void OnBarUpdate()
-        {
-            if (base.BarsInProgress != 0)
-            {
-                return;
-            }
-
-            if (base.CurrentBar < length + 2)
-            {
-                phClass.BeforeBar();
-                plClass.BeforeBar();
-                return;
-            }
-
-            phClass.OnBar();
-            plClass.OnBar();
-            double d = Pine.TA.PivotHigh(base.High, length, length);
-            phClass.get_counts(!double.IsNaN(d), IntraPrecision);
-            if (!double.IsNaN(d) && ShowTop)
-            {
-                phClass.top[0] = base.High[length];
-                switch (Area)
-                {
-                    case LuxLSAreaType.Wick_Extremity:
-                        phClass.btm[0] = Pine.Math.MaxValue<double>(base.Close[length], base.Open[length]);
-                        break;
-                    case LuxLSAreaType.Full_Range:
-                        phClass.btm[0] = base.Low[length];
-                        break;
-                }
-
-                phClass.x1[0] = base.CurrentBar - length;
-                phClass.crossed[0] = false;
-                Pine.Box.SetLeftTop(ref ph_bx, (int)phClass.x1[0], phClass.top[0]);
-                Pine.Box.SetRightBottom(ref ph_bx, (int)phClass.x1[0], phClass.btm[0]);
-            }
-            else
-            {
-                phClass.crossed[0] = base.Close[0] > phClass.top[0] || phClass.crossed[0];
-                if (phClass.crossed[0])
-                {
-                    Pine.Box.SetRight(ref ph_bx, (int)phClass.x1[0]);
-                }
-                else
-                {
-                    Pine.Box.SetRight(ref ph_bx, base.CurrentBar + 3);
-                }
-            }
-
-            if (ShowTop)
-            {
-                phClass.set_zone(!double.IsNaN(d), (FilterOptions == LuxLSFilterType.Count) ? phClass.count : phClass.vol, TopCss);
-                phClass.set_level(!double.IsNaN(d), phClass.top[0], (FilterOptions == LuxLSFilterType.Count) ? phClass.count : phClass.vol, TopCss);
-                phClass.set_label((FilterOptions == LuxLSFilterType.Count) ? phClass.count : phClass.vol, phClass.top[0], TopCss, Pine.Label.style_label_down, font);
-            }
-
-            double d2 = Pine.TA.PivotLow(base.Low, length, length);
-            plClass.get_counts(!double.IsNaN(d2), IntraPrecision);
-            if (!double.IsNaN(d2) && ShowBtm)
-            {
-                plClass.btm[0] = base.Low[length];
-                switch (Area)
-                {
-                    case LuxLSAreaType.Wick_Extremity:
-                        plClass.top[0] = Pine.Math.MinValue<double>(base.Close[length], base.Open[length]);
-                        break;
-                    case LuxLSAreaType.Full_Range:
-                        plClass.top[0] = base.High[length];
-                        break;
-                }
-
-                plClass.x1[0] = base.CurrentBar - length;
-                plClass.crossed[0] = false;
-                Pine.Box.SetLeftTop(ref pl_bx, (int)plClass.x1[0], plClass.top[0]);
-                Pine.Box.SetRightBottom(ref pl_bx, (int)plClass.x1[0], plClass.btm[0]);
-            }
-            else
-            {
-                plClass.crossed[0] = base.Close[0] < plClass.btm[0] || plClass.crossed[0];
-                if (plClass.crossed[0])
-                {
-                    Pine.Box.SetRight(ref pl_bx, (int)plClass.x1[0]);
-                }
-                else
-                {
-                    Pine.Box.SetRight(ref pl_bx, base.CurrentBar + 3);
-                }
-            }
-
-            if (ShowBtm)
-            {
-                plClass.set_zone(!double.IsNaN(d2), (FilterOptions == LuxLSFilterType.Count) ? plClass.count : plClass.vol, BtmCss);
-                plClass.set_level(!double.IsNaN(d2), plClass.btm[0], (FilterOptions == LuxLSFilterType.Count) ? plClass.count : plClass.vol, BtmCss);
-                plClass.set_label((FilterOptions == LuxLSFilterType.Count) ? plClass.count : plClass.vol, plClass.btm[0], BtmCss, Pine.Label.style_label_up, font);
             }
         }
     }
