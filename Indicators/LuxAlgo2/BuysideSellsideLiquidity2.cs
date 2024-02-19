@@ -26,60 +26,6 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 {
     public class BuysideSellsideLiquidity2 : Indicator
     {
-        public class ZZ
-        {
-            public int[] d;
-
-            public int[] x;
-
-            public double[] y;
-
-            public ZZ(int[] d = null, int[] x = null, double[] y = null)
-            {
-                this.d = d ?? new int[0];
-                this.x = x ?? new int[0];
-                this.y = y ?? new double[0];
-            }
-
-            public void in_out(int _d, int _x, double _y)
-            {
-                Pine.Array.UnshiftElement(ref d, _d);
-                Pine.Array.UnshiftElement(ref x, _x);
-                Pine.Array.UnshiftElement(ref y, _y);
-                Pine.Array.PopElement(ref d);
-                Pine.Array.PopElement(ref x);
-                Pine.Array.PopElement(ref y);
-            }
-        }
-
-        public class liq
-        {
-            public Rectangle bx;
-
-            public Rectangle bxz;
-
-            public Text bxt;
-
-            public bool brZ;
-
-            public bool brL;
-
-            public NinjaTrader.NinjaScript.DrawingTools.Line ln;
-
-            public NinjaTrader.NinjaScript.DrawingTools.Line lne;
-
-            public liq(Rectangle bx = null, Rectangle bxz = null, Text bxt = null, bool brZ = false, bool brL = false, NinjaTrader.NinjaScript.DrawingTools.Line ln = null, NinjaTrader.NinjaScript.DrawingTools.Line lne = null)
-            {
-                this.bx = bx ?? Pine.Box.New();
-                this.bxz = bxz ?? Pine.Box.New();
-                this.bxt = bxt ?? Pine.Label.New();
-                this.brZ = brZ;
-                this.brL = brL;
-                this.ln = ln ?? Pine.Line.New();
-                this.lne = lne ?? Pine.Line.New();
-            }
-        }
-
         private ZZ aZZ;
 
         private liq[] b_liq_B;
@@ -112,12 +58,14 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         public override string DisplayName => "Lux - BSL-SSL - 2";
 
+        #region Properties
+
         [NinjaScriptProperty]
         [Display(Name = "Detection Length", Description = "Detection Length", Order = 1, GroupName = "Liquidity Detection")]
         [Range(3, 30)]
         public int liqLen { get; set; }
 
-        [Range(1, 9)]
+        [Range(1, 40)]
         [Display(Name = "Margin", Description = "Margin", Order = 2, GroupName = "Liquidity Detection")]
         [NinjaScriptProperty]
         public double LiqMar { get; set; }
@@ -244,30 +192,30 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                     return true;
                 }
 
-                return base.CurrentBar > base.Count - 500;
+                return CurrentBar > Count - 500;
             }
         }
 
-        public event Action<double> OnBslBreach;
-        public event Action<double> OnSslBreach;
-        public event Action<double> OnBullFvgCreate;
-        public event Action<double> OnBearFvgCreate;
+        #endregion
 
+        public Series<int> Lq_Breach;
+        public Series<int> Fvg;
+        
         protected override void OnStateChange()
         {
-            if (base.State == State.SetDefaults)
+            if (State == State.SetDefaults)
             {
-                base.Description = "BSL SSL";
-                base.Name = "Buyside & Sellside Liquidity";
-                base.Calculate = Calculate.OnBarClose;
-                base.IsOverlay = true;
-                base.DisplayInDataBox = true;
-                base.DrawOnPricePanel = true;
-                base.DrawHorizontalGridLines = true;
-                base.DrawVerticalGridLines = true;
-                base.PaintPriceMarkers = true;
-                base.ScaleJustification = ScaleJustification.Right;
-                base.IsSuspendedWhileInactive = true;
+                Description = "BSL SSL";
+                Name = "Buyside & Sellside Liquidity";
+                Calculate = Calculate.OnBarClose;
+                IsOverlay = true;
+                DisplayInDataBox = true;
+                DrawOnPricePanel = true;
+                DrawHorizontalGridLines = true;
+                DrawVerticalGridLines = true;
+                PaintPriceMarkers = true;
+                ScaleJustification = ScaleJustification.Right;
+                IsSuspendedWhileInactive = true;
                 liqLen = 7;
                 LiqMar = 6.9;
                 liqBuy = true;
@@ -282,10 +230,10 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 mode = LuxBSLMode.Present;
                 visLiq = 3;
             }
-            else if (base.State != State.Configure && base.State == State.DataLoaded)
+            else if (State != State.Configure && State == State.DataLoaded)
             {
                 maxSize = 50;
-                Pine = new PineLib(this, this, base.DrawObjects);
+                Pine = new PineLib(this, this, DrawObjects);
                 aZZ = new ZZ(new int[maxSize], new int[maxSize], new double[maxSize]);
                 b_liq_B = new liq[1]
                 {
@@ -305,29 +253,32 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 bear = new Series<bool>(this);
                 font = new SimpleFont("Arial", 10);
                 liqMar = 10.0 / LiqMar;
+
+                Lq_Breach = new Series<int>(this);
+                Fvg = new Series<int>(this);
             }
         }
 
         protected override void OnBarUpdate()
         {
-            if (base.CurrentBar < liqLen)
+            if (CurrentBar < liqLen)
             {
                 return;
             }
 
-            x2[0] = base.CurrentBar - 1;
+            x2[0] = CurrentBar - 1;
             x1[0] = x1[1];
             dir[0] = dir[1];
             y1[0] = y1[1];
             y2[0] = y2[1];
-            double num = Pine.TA.PivotHigh(base.High, liqLen, 1);
-            double num2 = Pine.TA.PivotLow(base.Low, liqLen, 1);
+            double num = Pine.TA.PivotHigh(High, liqLen, 1);
+            double num2 = Pine.TA.PivotLow(Low, liqLen, 1);
             if (!double.IsNaN(num))
             {
                 dir[0] = aZZ.d[0];
                 x1[0] = aZZ.x[0];
                 y1[0] = aZZ.y[0];
-                y2[0] = base.High[1];
+                y2[0] = High[1];
                 if (dir[0] < 1)
                 {
                     aZZ.in_out(1, x2[0], y2[0]);
@@ -380,12 +331,12 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         if (num5 == Pine.Box.GetLeft(ref liq.bx))
                         {
                             Pine.Box.SetTop(ref liq.bx, Pine.Math.Avg<double>(num6, num7) + atr / liqMar);
-                            Pine.Box.SetRightBottom(ref liq.bx, base.CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar);
+                            Pine.Box.SetRightBottom(ref liq.bx, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar);
                         }
                         else
                         {
-                            Pine.Array.UnshiftElement(ref b_liq_B, new liq(Pine.Box.New(num5, Pine.Math.Avg<double>(num6, num7) + atr / liqMar, base.CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar), Pine.Box.New(), Pine.Label.New(num5, num4, "Buyside liquidity", null, null, 0, 1, cLIQ_B, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num5, num4, base.CurrentBar - 1, num4, cLIQ_B), Pine.Line.New(base.CurrentBar - 1, num4, 0, num4, cLIQ_B, DashStyleHelper.Dot)));
-                            Pine.Alerts.DoAlert("buyside liquidity level detected/updated for " + base.Instrument.FullName);
+                            Pine.Array.UnshiftElement(ref b_liq_B, new liq(Pine.Box.New(num5, Pine.Math.Avg<double>(num6, num7) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar), Pine.Box.New(), Pine.Label.New(num5, num4, "Buyside liquidity", null, null, 0, 1, cLIQ_B, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num5, num4, CurrentBar - 1, num4, cLIQ_B), Pine.Line.New(CurrentBar - 1, num4, 0, num4, cLIQ_B, DashStyleHelper.Dot)));
+                            Pine.Alerts.DoAlert("buyside liquidity level detected/updated for " + Instrument.FullName);
                         }
 
                         if (b_liq_B.Length > visLiq)
@@ -406,7 +357,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 dir[0] = aZZ.d[0];
                 x1[0] = aZZ.x[0];
                 y1[0] = aZZ.y[0];
-                y2[0] = base.Low[1];
+                y2[0] = Low[1];
                 if (dir[0] > -1)
                 {
                     aZZ.in_out(-1, x2[0], y2[0]);
@@ -459,20 +410,20 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         if (num10 == Pine.Box.GetLeft(ref liq3.bx))
                         {
                             Pine.Box.SetTop(ref liq3.bx, Pine.Math.Avg<double>(num11, num12) + atr / liqMar);
-                            Pine.Box.SetRightBottom(ref liq3.bx, base.CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
+                            Pine.Box.SetRightBottom(ref liq3.bx, CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
                         }
                         else
                         {
                             PineLib.PineArray array = Pine.Array;
                             ref liq[] array2 = ref b_liq_S;
-                            Rectangle bx = Pine.Box.New(num10, Pine.Math.Avg<double>(num11, num12) + atr / liqMar, base.CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
+                            Rectangle bx = Pine.Box.New(num10, Pine.Math.Avg<double>(num11, num12) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
                             Rectangle bxz = Pine.Box.New();
                             PineLib.PineLabel label = Pine.Label;
                             int num13 = num10;
                             double num14 = num9;
                             Brush textcolor = cLIQ_S;
-                            array.UnshiftElement(ref array2, new liq(bx, bxz, label.New(num13, num14, "Sellside liquidity", null, null, 0, -1, textcolor, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num10, num9, base.CurrentBar - 1, num9, cLIQ_S), Pine.Line.New(base.CurrentBar - 1, num9, 0, num9, cLIQ_S, DashStyleHelper.Dot)));
-                            Pine.Alerts.DoAlert("sellside liquidity level detected/updated for " + base.Instrument.FullName, 1);
+                            array.UnshiftElement(ref array2, new liq(bx, bxz, label.New(num13, num14, "Sellside liquidity", null, null, 0, -1, textcolor, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num10, num9, CurrentBar - 1, num9, cLIQ_S), Pine.Line.New(CurrentBar - 1, num9, 0, num9, cLIQ_S, DashStyleHelper.Dot)));
+                            Pine.Alerts.DoAlert("sellside liquidity level detected/updated for " + Instrument.FullName, 1);
                         }
 
                         if (b_liq_S.Length > visLiq)
@@ -493,18 +444,18 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 liq liq5 = b_liq_B[k];
                 if (!liq5.brL)
                 {
-                    Pine.Line.SetX2(ref liq5.lne, base.CurrentBar);
-                    if (base.High[0] > Pine.Box.GetTop(ref liq5.bx))
+                    Pine.Line.SetX2(ref liq5.lne, CurrentBar);
+                    if (High[0] > Pine.Box.GetTop(ref liq5.bx))
                     {
                         liq5.brL = true;
                         liq5.brZ = true;
-                        Pine.Alerts.DoAlert("buyside liquidity level breached for " + base.Instrument.FullName, 2);
-                        Pine.Box.SetLeftTop(ref liq5.bxz, base.CurrentBar - 1, Math.Min(Pine.Line.GetY1(ref liq5.ln) + marBuy * atr, base.High[0]));
-                        Pine.Box.SetRightBottom(ref liq5.bxz, base.CurrentBar + 1, Pine.Line.GetY1(ref liq5.ln));
+                        Pine.Alerts.DoAlert("buyside liquidity level breached for " + Instrument.FullName, 2);
+                        Pine.Box.SetLeftTop(ref liq5.bxz, CurrentBar - 1, Math.Min(Pine.Line.GetY1(ref liq5.ln) + marBuy * atr, High[0]));
+                        Pine.Box.SetRightBottom(ref liq5.bxz, CurrentBar + 1, Pine.Line.GetY1(ref liq5.ln));
                         Pine.Box.SetBgColor(ref liq5.bxz, cLIQ_B);
                         Pine.Box.SetOpacity(ref liq5.bxz, liqBuy ? 25 : 0);
 
-                        OnBslBreach?.Invoke(CurrentBar);
+                        Lq_Breach[0] = 1;
                     }
                 }
                 else
@@ -514,13 +465,13 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         continue;
                     }
 
-                    if (base.Low[0] > Pine.Line.GetY1(ref liq5.ln) - marBuy * atr && base.High[0] < Pine.Line.GetY1(ref liq5.ln) + marBuy * atr)
+                    if (Low[0] > Pine.Line.GetY1(ref liq5.ln) - marBuy * atr && High[0] < Pine.Line.GetY1(ref liq5.ln) + marBuy * atr)
                     {
-                        Pine.Box.SetRight(ref liq5.bxz, base.CurrentBar + 1);
-                        Pine.Box.SetTop(ref liq5.bxz, Math.Max(base.High[0], Pine.Box.GetTop(ref liq5.bxz)));
+                        Pine.Box.SetRight(ref liq5.bxz, CurrentBar + 1);
+                        Pine.Box.SetTop(ref liq5.bxz, Math.Max(High[0], Pine.Box.GetTop(ref liq5.bxz)));
                         if (liqBuy)
                         {
-                            Pine.Line.SetX2(ref liq5.lne, base.CurrentBar + 1);
+                            Pine.Line.SetX2(ref liq5.lne, CurrentBar + 1);
                         }
                     }
                     else
@@ -535,18 +486,18 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 liq liq6 = b_liq_S[l];
                 if (!liq6.brL)
                 {
-                    Pine.Line.SetX2(ref liq6.lne, base.CurrentBar);
-                    if (base.Low[0] < Pine.Box.GetBottom(ref liq6.bx))
+                    Pine.Line.SetX2(ref liq6.lne, CurrentBar);
+                    if (Low[0] < Pine.Box.GetBottom(ref liq6.bx))
                     {
                         liq6.brL = true;
                         liq6.brZ = true;
-                        Pine.Alerts.DoAlert("sellside liquidity level breached for " + base.Instrument.FullName, 3);
-                        Pine.Box.SetLeftTop(ref liq6.bxz, base.CurrentBar - 1, Pine.Line.GetY1(ref liq6.ln));
-                        Pine.Box.SetRightBottom(ref liq6.bxz, base.CurrentBar + 1, Math.Max(Pine.Line.GetY1(ref liq6.ln) - marSel * atr, base.Low[0]));
+                        Pine.Alerts.DoAlert("sellside liquidity level breached for " + Instrument.FullName, 3);
+                        Pine.Box.SetLeftTop(ref liq6.bxz, CurrentBar - 1, Pine.Line.GetY1(ref liq6.ln));
+                        Pine.Box.SetRightBottom(ref liq6.bxz, CurrentBar + 1, Math.Max(Pine.Line.GetY1(ref liq6.ln) - marSel * atr, Low[0]));
                         Pine.Box.SetBgColor(ref liq6.bxz, cLIQ_S);
                         Pine.Box.SetOpacity(ref liq6.bxz, liqSel ? 25 : 0);
 
-                        OnSslBreach?.Invoke(CurrentBar);
+                        Lq_Breach[0] = -1;
                     }
                 }
                 else
@@ -556,12 +507,12 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                         continue;
                     }
 
-                    if (base.Low[0] > Pine.Line.GetY1(ref liq6.ln) - marSel * atr && base.High[0] < Pine.Line.GetY1(ref liq6.ln) + marSel * atr)
+                    if (Low[0] > Pine.Line.GetY1(ref liq6.ln) - marSel * atr && High[0] < Pine.Line.GetY1(ref liq6.ln) + marSel * atr)
                     {
-                        Pine.Box.SetRightBottom(ref liq6.bxz, base.CurrentBar + 1, Math.Min(base.Low[0], Pine.Box.GetBottom(ref liq6.bxz)));
+                        Pine.Box.SetRightBottom(ref liq6.bxz, CurrentBar + 1, Math.Min(Low[0], Pine.Box.GetBottom(ref liq6.bxz)));
                         if (liqSel)
                         {
-                            Pine.Line.SetX2(ref liq6.lne, base.CurrentBar + 1);
+                            Pine.Line.SetX2(ref liq6.lne, CurrentBar + 1);
                         }
                     }
                     else
@@ -573,29 +524,29 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
             if (lqVoid && per)
             {
-                bull[0] = base.Low[0] - base.High[2] > atr200 && base.Low[0] > base.High[2] && base.Close[1] > base.High[2];
-                bear[0] = base.Low[2] - base.High[0] > atr200 && base.High[0] < base.Low[2] && base.Close[1] < base.Low[2];
+                bull[0] = Low[0] - High[2] > atr200 && Low[0] > High[2] && Close[1] > High[2];
+                bear[0] = Low[2] - High[0] > atr200 && High[0] < Low[2] && Close[1] < Low[2];
                 if (bull[0])
                 {
                     int num15 = 13;
                     if (bull[1])
                     {
-                        double num16 = Math.Abs(base.Low[0] - base.Low[1]) / (double)num15;
+                        double num16 = Math.Abs(Low[0] - Low[1]) / (double)num15;
                         for (int m = 0; m < num15; m++)
                         {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.Low[1] + (double)m * num16, base.CurrentBar, base.Low[1] + (double)(m + 1) * num16, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
+                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, Low[1] + (double)m * num16, CurrentBar, Low[1] + (double)(m + 1) * num16, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
 
-                            OnBullFvgCreate?.Invoke(CurrentBar);
+                            Fvg[0] = 1;
                         }
                     }
                     else
                     {
-                        double num17 = Math.Abs(base.Low[0] - base.High[2]) / (double)num15;
+                        double num17 = Math.Abs(Low[0] - High[2]) / (double)num15;
                         for (int n = 0; n < num15; n++)
                         {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.High[2] + (double)n * num17, base.CurrentBar, base.High[2] + (double)(n + 1) * num17, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
+                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[2] + (double)n * num17, CurrentBar, High[2] + (double)(n + 1) * num17, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
 
-                            OnBullFvgCreate?.Invoke(CurrentBar);
+                            Fvg[0] = 1;
                         }
                     }
                 }
@@ -605,22 +556,22 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                     int num18 = 13;
                     if (bear[1])
                     {
-                        double num19 = Math.Abs(base.High[1] - base.High[0]) / (double)num18;
+                        double num19 = Math.Abs(High[1] - High[0]) / (double)num18;
                         for (int num20 = 0; num20 < num18; num20++)
                         {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.High[0] + (double)num20 * num19, base.CurrentBar, base.High[0] + (double)(num20 + 1) * num19, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
+                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[0] + (double)num20 * num19, CurrentBar, High[0] + (double)(num20 + 1) * num19, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
 
-                            OnBearFvgCreate?.Invoke(CurrentBar);
+                            Fvg[0] = -1;
                         }
                     }
                     else
                     {
-                        double num21 = Math.Abs(base.Low[2] - base.High[0]) / (double)num18;
+                        double num21 = Math.Abs(Low[2] - High[0]) / (double)num18;
                         for (int num22 = 0; num22 < num18; num22++)
                         {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(base.CurrentBar - 2, base.High[0] + (double)num22 * num21, base.CurrentBar, base.High[0] + (double)(num22 + 1) * num21, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
+                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[0] + (double)num22 * num21, CurrentBar, High[0] + (double)(num22 + 1) * num21, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
 
-                            OnBearFvgCreate?.Invoke(CurrentBar);
+                            Fvg[0] = -1;
                         }
                     }
                 }
@@ -638,19 +589,74 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 {
                     Rectangle box = b_liq_V[num24];
                     double num25 = (Pine.Box.GetBottom(ref box) + Pine.Box.GetTop(ref box)) / 2.0;
-                    if (Math.Sign(base.Close[1] - num25) != Math.Sign(base.Close[0] - num25) || Math.Sign(base.Close[1] - num25) != Math.Sign(base.Low[0] - num25) || Math.Sign(base.Close[1] - num25) != Math.Sign(base.High[0] - num25))
+                    if (Math.Sign(Close[1] - num25) != Math.Sign(Close[0] - num25) || Math.Sign(Close[1] - num25) != Math.Sign(Low[0] - num25) || Math.Sign(Close[1] - num25) != Math.Sign(High[0] - num25))
                     {
                         Pine.Array.RemoveElement(ref b_liq_V, num24);
                     }
                     else
                     {
-                        Pine.Box.SetRight(ref box, base.CurrentBar + 1);
-                        _ = base.CurrentBar - Pine.Box.GetLeft(ref box);
+                        Pine.Box.SetRight(ref box, CurrentBar + 1);
+                        _ = CurrentBar - Pine.Box.GetLeft(ref box);
                         _ = 21;
                     }
                 }
             }
         }
+
+        public class ZZ
+        {
+            public int[] d;
+
+            public int[] x;
+
+            public double[] y;
+
+            public ZZ(int[] d = null, int[] x = null, double[] y = null)
+            {
+                this.d = d ?? new int[0];
+                this.x = x ?? new int[0];
+                this.y = y ?? new double[0];
+            }
+
+            public void in_out(int _d, int _x, double _y)
+            {
+                Pine.Array.UnshiftElement(ref d, _d);
+                Pine.Array.UnshiftElement(ref x, _x);
+                Pine.Array.UnshiftElement(ref y, _y);
+                Pine.Array.PopElement(ref d);
+                Pine.Array.PopElement(ref x);
+                Pine.Array.PopElement(ref y);
+            }
+        }
+
+        public class liq
+        {
+            public Rectangle bx;
+
+            public Rectangle bxz;
+
+            public Text bxt;
+
+            public bool brZ;
+
+            public bool brL;
+
+            public NinjaTrader.NinjaScript.DrawingTools.Line ln;
+
+            public NinjaTrader.NinjaScript.DrawingTools.Line lne;
+
+            public liq(Rectangle bx = null, Rectangle bxz = null, Text bxt = null, bool brZ = false, bool brL = false, NinjaTrader.NinjaScript.DrawingTools.Line ln = null, NinjaTrader.NinjaScript.DrawingTools.Line lne = null)
+            {
+                this.bx = bx ?? Pine.Box.New();
+                this.bxz = bxz ?? Pine.Box.New();
+                this.bxt = bxt ?? Pine.Label.New();
+                this.brZ = brZ;
+                this.brL = brL;
+                this.ln = ln ?? Pine.Line.New();
+                this.lne = lne ?? Pine.Line.New();
+            }
+        }
+
     }
 
 }

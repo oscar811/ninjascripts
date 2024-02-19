@@ -31,8 +31,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
     public class CameronStrategy : Strategy
     {
-        private LiquiditySwings2 lqSwings;
-        //private BuysideSellsideLiquidity2 lq;
+        //private LiquiditySwings2 lqSwings;
+        private BuysideSellsideLiquidity2 lq;
         //private LiquidityVoidsFVG2 fvg; 
 
         private int StopLoss = 50;
@@ -78,18 +78,18 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //Lq_BullFvg = new Series<bool?>(this);
                 //Lq_BearFvg = new Series<bool?>(this);
 
-                //longBias = new Series<bool?>(this);
-                //opp_close = new Series<bool?>(this);
+                longBias = new Series<bool?>(this);
+                opp_close = new Series<bool?>(this);
             }
             else if (State == State.DataLoaded)
             {
-                lqSwings = LiquiditySwings2(Closes[0], length: 3, LuxLSAreaType.Wick_Extremity, intraPrecision: false, intrabarTf: 1,
-                    filterOptions: LuxLSFilterType.Count, filterValue: 0, showTop: true, topCss: Brushes.Crimson, showBtm: true, btmCss: Brushes.LightSeaGreen, 12);
-                AddChartIndicator(lqSwings);
+                //lqSwings = LiquiditySwings2(Closes[0], length: 3, LuxLSAreaType.Wick_Extremity, intraPrecision: false, intrabarTf: 1,
+                //    filterOptions: LuxLSFilterType.Count, filterValue: 0, showTop: true, topCss: Brushes.Crimson, showBtm: true, btmCss: Brushes.LightSeaGreen, 12);
+                //AddChartIndicator(lqSwings);
 
-                //lq = BuysideSellsideLiquidity2(Closes[0], liqLen: 30, liqMar: 6.9, liqBuy: false, marBuy: 2.3, cLIQ_B: Brushes.Green,
-                //    liqSel: false, marSel: 2.3, cLIQ_S: Brushes.Red, lqVoid: true, cLQV_B: Brushes.Green, cLQV_S: Brushes.Red, mode: LuxBSLMode.Historical, visLiq: 10);
-                //AddChartIndicator(lq);
+                lq = BuysideSellsideLiquidity2(Closes[0], liqLen: 3, liqMar: 27, liqBuy: false, marBuy: 2.3, cLIQ_B: Brushes.Green,
+                    liqSel: false, marSel: 2.3, cLIQ_S: Brushes.Red, lqVoid: true, cLQV_B: Brushes.Green, cLQV_S: Brushes.Red, mode: LuxBSLMode.Historical, visLiq: 20);
+                AddChartIndicator(lq);
 
                 //lqSwings.OnBslBreach += Lq_OnBslBreached;
                 //lqSwings.OnSslBreach += Lq_OnSslBreached;
@@ -106,8 +106,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         //private Series<bool?> Lq_BullFvg;
         //private Series<bool?> Lq_BearFvg;
 
-        //private Series<bool?> longBias;
-        //private Series<bool?> opp_close;
+        private Series<bool?> longBias;
+        private Series<bool?> opp_close;
 
         protected override void OnBarUpdate()
         {
@@ -121,13 +121,22 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
                 Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
                 //Print("Time[0]: " + Time[0].ToString());
-                Print("CurrentBar: " + CurrentBar);
 
-                //longBias[0] = longBias[1];
-                //opp_close[0] = opp_close[1];
+                //longBias[0] = lq.Lq_BslBreach[0] == true && lq.Lq_SslBreach[0] == false;
+                longBias[0] = lq.Lq_Breach[0] == 1;
+                opp_close[0] = opp_close[1];
 
-                Print("lqSwings.Lq_BslBreach[0]: " + lqSwings.Lq_BslBreach[0]);
-                Print("lqSwings.Lq_SslBreach[0]: " + lqSwings.Lq_SslBreach[0]);
+                //if (lq.Lq_BslBreach[0].HasValue && lq.Lq_BslBreach[0].Value)
+                //{
+                //    Print("CurrentBar: " + CurrentBar);
+                //    longBias[0] = false;
+                //}
+
+                if (longBias[0] == false && lq.Fvg[0] == -1)
+                {
+                    Print("CurrentBar: " + CurrentBar);
+                    Print("Go Short");
+                }
 
                 //Lq_BslBreach[0] = Lq_BslBreach[1];
                 //Lq_SslBreach[0] = Lq_SslBreach[1];
