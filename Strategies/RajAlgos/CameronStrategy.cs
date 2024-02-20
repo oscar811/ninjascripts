@@ -87,7 +87,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //    filterOptions: LuxLSFilterType.Count, filterValue: 0, showTop: true, topCss: Brushes.Crimson, showBtm: true, btmCss: Brushes.LightSeaGreen, 12);
                 //AddChartIndicator(lqSwings);
 
-                lq = BuysideSellsideLiquidity2(Closes[0], liqLen: 3, liqMar: 27, liqBuy: false, marBuy: 2.3, cLIQ_B: Brushes.Green,
+                lq = BuysideSellsideLiquidity2(Closes[1], liqLen: 3, liqMar: 27, liqBuy: false, marBuy: 2.3, cLIQ_B: Brushes.Green,
                     liqSel: false, marSel: 2.3, cLIQ_S: Brushes.Red, lqVoid: true, cLQV_B: Brushes.Green, cLQV_S: Brushes.Red, mode: LuxBSLMode.Historical, visLiq: 20);
                 AddChartIndicator(lq);
 

@@ -200,7 +200,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         public Series<int> Lq_Breach;
         public Series<int> Fvg;
-        
+
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
@@ -261,345 +261,354 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         protected override void OnBarUpdate()
         {
-            if (CurrentBar < liqLen)
+            try
             {
-                return;
-            }
 
-            x2[0] = CurrentBar - 1;
-            x1[0] = x1[1];
-            dir[0] = dir[1];
-            y1[0] = y1[1];
-            y2[0] = y2[1];
-            double num = Pine.TA.PivotHigh(High, liqLen, 1);
-            double num2 = Pine.TA.PivotLow(Low, liqLen, 1);
-            if (!double.IsNaN(num))
-            {
-                dir[0] = aZZ.d[0];
-                x1[0] = aZZ.x[0];
-                y1[0] = aZZ.y[0];
-                y2[0] = High[1];
-                if (dir[0] < 1)
+                if (CurrentBar < liqLen)
                 {
-                    aZZ.in_out(1, x2[0], y2[0]);
-                }
-                else if (dir[0] == 1 && num > y1[0])
-                {
-                    aZZ.x[0] = x2[0];
-                    aZZ.y[0] = y2[0];
+                    return;
                 }
 
-                if (per)
+                x2[0] = CurrentBar - 1;
+                x1[0] = x1[1];
+                dir[0] = dir[1];
+                y1[0] = y1[1];
+                y2[0] = y2[1];
+                double num = Pine.TA.PivotHigh(High, liqLen, 1);
+                double num2 = Pine.TA.PivotLow(Low, liqLen, 1);
+                if (!double.IsNaN(num))
                 {
-                    int num3 = 0;
-                    double num4 = 0.0;
-                    int num5 = 0;
-                    double num6 = 0.0;
-                    double num7 = 10000000.0;
-                    for (int i = 0; i < maxSize; i++)
+                    dir[0] = aZZ.d[0];
+                    x1[0] = aZZ.x[0];
+                    y1[0] = aZZ.y[0];
+                    y2[0] = High[1];
+                    if (dir[0] < 1)
                     {
-                        if (aZZ.d[i] != 1)
+                        aZZ.in_out(1, x2[0], y2[0]);
+                    }
+                    else if (dir[0] == 1 && num > y1[0])
+                    {
+                        aZZ.x[0] = x2[0];
+                        aZZ.y[0] = y2[0];
+                    }
+
+                    if (per)
+                    {
+                        int num3 = 0;
+                        double num4 = 0.0;
+                        int num5 = 0;
+                        double num6 = 0.0;
+                        double num7 = 10000000.0;
+                        for (int i = 0; i < maxSize; i++)
+                        {
+                            if (aZZ.d[i] != 1)
+                            {
+                                continue;
+                            }
+
+                            if (aZZ.y[i] > num + atr / liqMar)
+                            {
+                                break;
+                            }
+
+                            if (aZZ.y[i] > num - atr / liqMar && aZZ.y[i] < num + atr / liqMar)
+                            {
+                                num3++;
+                                num5 = aZZ.x[i];
+                                num4 = aZZ.y[i];
+                                if (aZZ.y[i] > num6)
+                                {
+                                    num6 = aZZ.y[i];
+                                }
+
+                                if (aZZ.y[i] < num7)
+                                {
+                                    num7 = aZZ.y[i];
+                                }
+                            }
+                        }
+
+                        if (num3 > 2)
+                        {
+                            liq liq = b_liq_B[0];
+                            if (num5 == Pine.Box.GetLeft(ref liq.bx))
+                            {
+                                Pine.Box.SetTop(ref liq.bx, Pine.Math.Avg<double>(num6, num7) + atr / liqMar);
+                                Pine.Box.SetRightBottom(ref liq.bx, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar);
+                            }
+                            else
+                            {
+                                Pine.Array.UnshiftElement(ref b_liq_B, new liq(Pine.Box.New(num5, Pine.Math.Avg<double>(num6, num7) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar), Pine.Box.New(), Pine.Label.New(num5, num4, "Buyside liquidity", null, null, 0, 1, cLIQ_B, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num5, num4, CurrentBar - 1, num4, cLIQ_B), Pine.Line.New(CurrentBar - 1, num4, 0, num4, cLIQ_B, DashStyleHelper.Dot)));
+                                Pine.Alerts.DoAlert("buyside liquidity level detected/updated for " + Instrument.FullName);
+                            }
+
+                            if (b_liq_B.Length > visLiq)
+                            {
+                                liq liq2 = Pine.Array.PopElement(ref b_liq_B);
+                                Pine.Box.Delete(liq2.bx);
+                                Pine.Box.Delete(liq2.bxz);
+                                Pine.Label.Delete(liq2.bxt);
+                                Pine.Line.Delete(liq2.ln);
+                                Pine.Line.Delete(liq2.lne);
+                            }
+                        }
+                    }
+                }
+
+                if (!double.IsNaN(num2))
+                {
+                    dir[0] = aZZ.d[0];
+                    x1[0] = aZZ.x[0];
+                    y1[0] = aZZ.y[0];
+                    y2[0] = Low[1];
+                    if (dir[0] > -1)
+                    {
+                        aZZ.in_out(-1, x2[0], y2[0]);
+                    }
+                    else if (dir[0] == -1 && num2 < y1[0])
+                    {
+                        aZZ.x[0] = x2[0];
+                        aZZ.y[0] = y2[0];
+                    }
+
+                    if (per)
+                    {
+                        int num8 = 0;
+                        double num9 = 0.0;
+                        int num10 = 0;
+                        double num11 = 0.0;
+                        double num12 = 10000000.0;
+                        for (int j = 0; j < maxSize - 1; j++)
+                        {
+                            if (aZZ.d[j] != -1)
+                            {
+                                continue;
+                            }
+
+                            if (aZZ.y[j] < num2 - atr / liqMar)
+                            {
+                                break;
+                            }
+
+                            if (aZZ.y[j] > num2 - atr / liqMar && aZZ.y[j] < num2 + atr / liqMar)
+                            {
+                                num8++;
+                                num10 = aZZ.x[j];
+                                num9 = aZZ.y[j];
+                                if (aZZ.y[j] > num11)
+                                {
+                                    num11 = aZZ.y[j];
+                                }
+
+                                if (aZZ.y[j] < num12)
+                                {
+                                    num12 = aZZ.y[j];
+                                }
+                            }
+                        }
+
+                        if (num8 > 2)
+                        {
+                            liq liq3 = b_liq_S[0];
+                            if (num10 == Pine.Box.GetLeft(ref liq3.bx))
+                            {
+                                Pine.Box.SetTop(ref liq3.bx, Pine.Math.Avg<double>(num11, num12) + atr / liqMar);
+                                Pine.Box.SetRightBottom(ref liq3.bx, CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
+                            }
+                            else
+                            {
+                                PineLib.PineArray array = Pine.Array;
+                                ref liq[] array2 = ref b_liq_S;
+                                Rectangle bx = Pine.Box.New(num10, Pine.Math.Avg<double>(num11, num12) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
+                                Rectangle bxz = Pine.Box.New();
+                                PineLib.PineLabel label = Pine.Label;
+                                int num13 = num10;
+                                double num14 = num9;
+                                Brush textcolor = cLIQ_S;
+                                array.UnshiftElement(ref array2, new liq(bx, bxz, label.New(num13, num14, "Sellside liquidity", null, null, 0, -1, textcolor, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num10, num9, CurrentBar - 1, num9, cLIQ_S), Pine.Line.New(CurrentBar - 1, num9, 0, num9, cLIQ_S, DashStyleHelper.Dot)));
+                                Pine.Alerts.DoAlert("sellside liquidity level detected/updated for " + Instrument.FullName, 1);
+                            }
+
+                            if (b_liq_S.Length > visLiq)
+                            {
+                                liq liq4 = Pine.Array.PopElement(ref b_liq_S);
+                                Pine.Box.Delete(liq4.bx);
+                                Pine.Box.Delete(liq4.bxz);
+                                Pine.Label.Delete(liq4.bxt);
+                                Pine.Line.Delete(liq4.ln);
+                                Pine.Line.Delete(liq4.lne);
+                            }
+                        }
+                    }
+                }
+
+                for (int k = 0; k < b_liq_B.Length; k++)
+                {
+                    liq liq5 = b_liq_B[k];
+                    if (!liq5.brL)
+                    {
+                        Pine.Line.SetX2(ref liq5.lne, CurrentBar);
+                        if (High[0] > Pine.Box.GetTop(ref liq5.bx))
+                        {
+                            liq5.brL = true;
+                            liq5.brZ = true;
+                            Pine.Alerts.DoAlert("buyside liquidity level breached for " + Instrument.FullName, 2);
+                            Pine.Box.SetLeftTop(ref liq5.bxz, CurrentBar - 1, Math.Min(Pine.Line.GetY1(ref liq5.ln) + marBuy * atr, High[0]));
+                            Pine.Box.SetRightBottom(ref liq5.bxz, CurrentBar + 1, Pine.Line.GetY1(ref liq5.ln));
+                            Pine.Box.SetBgColor(ref liq5.bxz, cLIQ_B);
+                            Pine.Box.SetOpacity(ref liq5.bxz, liqBuy ? 25 : 0);
+
+                            Lq_Breach[0] = 1;
+                        }
+                    }
+                    else
+                    {
+                        if (!liq5.brZ)
                         {
                             continue;
                         }
 
-                        if (aZZ.y[i] > num + atr / liqMar)
+                        if (Low[0] > Pine.Line.GetY1(ref liq5.ln) - marBuy * atr && High[0] < Pine.Line.GetY1(ref liq5.ln) + marBuy * atr)
                         {
-                            break;
-                        }
-
-                        if (aZZ.y[i] > num - atr / liqMar && aZZ.y[i] < num + atr / liqMar)
-                        {
-                            num3++;
-                            num5 = aZZ.x[i];
-                            num4 = aZZ.y[i];
-                            if (aZZ.y[i] > num6)
+                            Pine.Box.SetRight(ref liq5.bxz, CurrentBar + 1);
+                            Pine.Box.SetTop(ref liq5.bxz, Math.Max(High[0], Pine.Box.GetTop(ref liq5.bxz)));
+                            if (liqBuy)
                             {
-                                num6 = aZZ.y[i];
+                                Pine.Line.SetX2(ref liq5.lne, CurrentBar + 1);
                             }
-
-                            if (aZZ.y[i] < num7)
-                            {
-                                num7 = aZZ.y[i];
-                            }
-                        }
-                    }
-
-                    if (num3 > 2)
-                    {
-                        liq liq = b_liq_B[0];
-                        if (num5 == Pine.Box.GetLeft(ref liq.bx))
-                        {
-                            Pine.Box.SetTop(ref liq.bx, Pine.Math.Avg<double>(num6, num7) + atr / liqMar);
-                            Pine.Box.SetRightBottom(ref liq.bx, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar);
                         }
                         else
                         {
-                            Pine.Array.UnshiftElement(ref b_liq_B, new liq(Pine.Box.New(num5, Pine.Math.Avg<double>(num6, num7) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar), Pine.Box.New(), Pine.Label.New(num5, num4, "Buyside liquidity", null, null, 0, 1, cLIQ_B, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num5, num4, CurrentBar - 1, num4, cLIQ_B), Pine.Line.New(CurrentBar - 1, num4, 0, num4, cLIQ_B, DashStyleHelper.Dot)));
-                            Pine.Alerts.DoAlert("buyside liquidity level detected/updated for " + Instrument.FullName);
-                        }
-
-                        if (b_liq_B.Length > visLiq)
-                        {
-                            liq liq2 = Pine.Array.PopElement(ref b_liq_B);
-                            Pine.Box.Delete(liq2.bx);
-                            Pine.Box.Delete(liq2.bxz);
-                            Pine.Label.Delete(liq2.bxt);
-                            Pine.Line.Delete(liq2.ln);
-                            Pine.Line.Delete(liq2.lne);
+                            liq5.brZ = false;
                         }
                     }
                 }
-            }
 
-            if (!double.IsNaN(num2))
-            {
-                dir[0] = aZZ.d[0];
-                x1[0] = aZZ.x[0];
-                y1[0] = aZZ.y[0];
-                y2[0] = Low[1];
-                if (dir[0] > -1)
+                for (int l = 0; l < b_liq_S.Length; l++)
                 {
-                    aZZ.in_out(-1, x2[0], y2[0]);
-                }
-                else if (dir[0] == -1 && num2 < y1[0])
-                {
-                    aZZ.x[0] = x2[0];
-                    aZZ.y[0] = y2[0];
-                }
-
-                if (per)
-                {
-                    int num8 = 0;
-                    double num9 = 0.0;
-                    int num10 = 0;
-                    double num11 = 0.0;
-                    double num12 = 10000000.0;
-                    for (int j = 0; j < maxSize - 1; j++)
+                    liq liq6 = b_liq_S[l];
+                    if (!liq6.brL)
                     {
-                        if (aZZ.d[j] != -1)
+                        Pine.Line.SetX2(ref liq6.lne, CurrentBar);
+                        if (Low[0] < Pine.Box.GetBottom(ref liq6.bx))
+                        {
+                            liq6.brL = true;
+                            liq6.brZ = true;
+                            Pine.Alerts.DoAlert("sellside liquidity level breached for " + Instrument.FullName, 3);
+                            Pine.Box.SetLeftTop(ref liq6.bxz, CurrentBar - 1, Pine.Line.GetY1(ref liq6.ln));
+                            Pine.Box.SetRightBottom(ref liq6.bxz, CurrentBar + 1, Math.Max(Pine.Line.GetY1(ref liq6.ln) - marSel * atr, Low[0]));
+                            Pine.Box.SetBgColor(ref liq6.bxz, cLIQ_S);
+                            Pine.Box.SetOpacity(ref liq6.bxz, liqSel ? 25 : 0);
+
+                            Lq_Breach[0] = -1;
+                        }
+                    }
+                    else
+                    {
+                        if (!liq6.brZ)
                         {
                             continue;
                         }
 
-                        if (aZZ.y[j] < num2 - atr / liqMar)
+                        if (Low[0] > Pine.Line.GetY1(ref liq6.ln) - marSel * atr && High[0] < Pine.Line.GetY1(ref liq6.ln) + marSel * atr)
                         {
-                            break;
-                        }
-
-                        if (aZZ.y[j] > num2 - atr / liqMar && aZZ.y[j] < num2 + atr / liqMar)
-                        {
-                            num8++;
-                            num10 = aZZ.x[j];
-                            num9 = aZZ.y[j];
-                            if (aZZ.y[j] > num11)
+                            Pine.Box.SetRightBottom(ref liq6.bxz, CurrentBar + 1, Math.Min(Low[0], Pine.Box.GetBottom(ref liq6.bxz)));
+                            if (liqSel)
                             {
-                                num11 = aZZ.y[j];
+                                Pine.Line.SetX2(ref liq6.lne, CurrentBar + 1);
                             }
-
-                            if (aZZ.y[j] < num12)
-                            {
-                                num12 = aZZ.y[j];
-                            }
-                        }
-                    }
-
-                    if (num8 > 2)
-                    {
-                        liq liq3 = b_liq_S[0];
-                        if (num10 == Pine.Box.GetLeft(ref liq3.bx))
-                        {
-                            Pine.Box.SetTop(ref liq3.bx, Pine.Math.Avg<double>(num11, num12) + atr / liqMar);
-                            Pine.Box.SetRightBottom(ref liq3.bx, CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
                         }
                         else
                         {
-                            PineLib.PineArray array = Pine.Array;
-                            ref liq[] array2 = ref b_liq_S;
-                            Rectangle bx = Pine.Box.New(num10, Pine.Math.Avg<double>(num11, num12) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num11, num12) - atr / liqMar);
-                            Rectangle bxz = Pine.Box.New();
-                            PineLib.PineLabel label = Pine.Label;
-                            int num13 = num10;
-                            double num14 = num9;
-                            Brush textcolor = cLIQ_S;
-                            array.UnshiftElement(ref array2, new liq(bx, bxz, label.New(num13, num14, "Sellside liquidity", null, null, 0, -1, textcolor, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num10, num9, CurrentBar - 1, num9, cLIQ_S), Pine.Line.New(CurrentBar - 1, num9, 0, num9, cLIQ_S, DashStyleHelper.Dot)));
-                            Pine.Alerts.DoAlert("sellside liquidity level detected/updated for " + Instrument.FullName, 1);
+                            liq6.brZ = false;
                         }
+                    }
+                }
 
-                        if (b_liq_S.Length > visLiq)
+                if (lqVoid && per)
+                {
+                    bull[0] = Low[0] - High[2] > atr200 && Low[0] > High[2] && Close[1] > High[2];
+                    bear[0] = Low[2] - High[0] > atr200 && High[0] < Low[2] && Close[1] < Low[2];
+                    if (bull[0])
+                    {
+                        int num15 = 13;
+                        if (bull[1])
                         {
-                            liq liq4 = Pine.Array.PopElement(ref b_liq_S);
-                            Pine.Box.Delete(liq4.bx);
-                            Pine.Box.Delete(liq4.bxz);
-                            Pine.Label.Delete(liq4.bxt);
-                            Pine.Line.Delete(liq4.ln);
-                            Pine.Line.Delete(liq4.lne);
+                            double num16 = Math.Abs(Low[0] - Low[1]) / (double)num15;
+                            for (int m = 0; m < num15; m++)
+                            {
+                                Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, Low[1] + (double)m * num16, CurrentBar, Low[1] + (double)(m + 1) * num16, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
+
+                                Fvg[0] = 1;
+                            }
+                        }
+                        else
+                        {
+                            double num17 = Math.Abs(Low[0] - High[2]) / (double)num15;
+                            for (int n = 0; n < num15; n++)
+                            {
+                                Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[2] + (double)n * num17, CurrentBar, High[2] + (double)(n + 1) * num17, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
+
+                                Fvg[0] = 1;
+                            }
+                        }
+                    }
+
+                    if (bear[0])
+                    {
+                        int num18 = 13;
+                        if (bear[1])
+                        {
+                            double num19 = Math.Abs(High[1] - High[0]) / (double)num18;
+                            for (int num20 = 0; num20 < num18; num20++)
+                            {
+                                Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[0] + (double)num20 * num19, CurrentBar, High[0] + (double)(num20 + 1) * num19, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
+
+                                Fvg[0] = -1;
+                            }
+                        }
+                        else
+                        {
+                            double num21 = Math.Abs(Low[2] - High[0]) / (double)num18;
+                            for (int num22 = 0; num22 < num18; num22++)
+                            {
+                                Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[0] + (double)num22 * num21, CurrentBar, High[0] + (double)(num22 + 1) * num21, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
+
+                                Fvg[0] = -1;
+                            }
+                        }
+                    }
+                }
+
+                if (b_liq_V.Length <= 0)
+                {
+                    return;
+                }
+
+                int num23 = b_liq_V.Length;
+                for (int num24 = num23 - 1; num24 >= 0; num24--)
+                {
+                    if (num24 < b_liq_V.Length)
+                    {
+                        Rectangle box = b_liq_V[num24];
+                        double num25 = (Pine.Box.GetBottom(ref box) + Pine.Box.GetTop(ref box)) / 2.0;
+                        if (Math.Sign(Close[1] - num25) != Math.Sign(Close[0] - num25) || Math.Sign(Close[1] - num25) != Math.Sign(Low[0] - num25) || Math.Sign(Close[1] - num25) != Math.Sign(High[0] - num25))
+                        {
+                            Pine.Array.RemoveElement(ref b_liq_V, num24);
+                        }
+                        else
+                        {
+                            Pine.Box.SetRight(ref box, CurrentBar + 1);
+                            _ = CurrentBar - Pine.Box.GetLeft(ref box);
+                            _ = 21;
                         }
                     }
                 }
             }
-
-            for (int k = 0; k < b_liq_B.Length; k++)
+            catch (Exception e)
             {
-                liq liq5 = b_liq_B[k];
-                if (!liq5.brL)
-                {
-                    Pine.Line.SetX2(ref liq5.lne, CurrentBar);
-                    if (High[0] > Pine.Box.GetTop(ref liq5.bx))
-                    {
-                        liq5.brL = true;
-                        liq5.brZ = true;
-                        Pine.Alerts.DoAlert("buyside liquidity level breached for " + Instrument.FullName, 2);
-                        Pine.Box.SetLeftTop(ref liq5.bxz, CurrentBar - 1, Math.Min(Pine.Line.GetY1(ref liq5.ln) + marBuy * atr, High[0]));
-                        Pine.Box.SetRightBottom(ref liq5.bxz, CurrentBar + 1, Pine.Line.GetY1(ref liq5.ln));
-                        Pine.Box.SetBgColor(ref liq5.bxz, cLIQ_B);
-                        Pine.Box.SetOpacity(ref liq5.bxz, liqBuy ? 25 : 0);
-
-                        Lq_Breach[0] = 1;
-                    }
-                }
-                else
-                {
-                    if (!liq5.brZ)
-                    {
-                        continue;
-                    }
-
-                    if (Low[0] > Pine.Line.GetY1(ref liq5.ln) - marBuy * atr && High[0] < Pine.Line.GetY1(ref liq5.ln) + marBuy * atr)
-                    {
-                        Pine.Box.SetRight(ref liq5.bxz, CurrentBar + 1);
-                        Pine.Box.SetTop(ref liq5.bxz, Math.Max(High[0], Pine.Box.GetTop(ref liq5.bxz)));
-                        if (liqBuy)
-                        {
-                            Pine.Line.SetX2(ref liq5.lne, CurrentBar + 1);
-                        }
-                    }
-                    else
-                    {
-                        liq5.brZ = false;
-                    }
-                }
-            }
-
-            for (int l = 0; l < b_liq_S.Length; l++)
-            {
-                liq liq6 = b_liq_S[l];
-                if (!liq6.brL)
-                {
-                    Pine.Line.SetX2(ref liq6.lne, CurrentBar);
-                    if (Low[0] < Pine.Box.GetBottom(ref liq6.bx))
-                    {
-                        liq6.brL = true;
-                        liq6.brZ = true;
-                        Pine.Alerts.DoAlert("sellside liquidity level breached for " + Instrument.FullName, 3);
-                        Pine.Box.SetLeftTop(ref liq6.bxz, CurrentBar - 1, Pine.Line.GetY1(ref liq6.ln));
-                        Pine.Box.SetRightBottom(ref liq6.bxz, CurrentBar + 1, Math.Max(Pine.Line.GetY1(ref liq6.ln) - marSel * atr, Low[0]));
-                        Pine.Box.SetBgColor(ref liq6.bxz, cLIQ_S);
-                        Pine.Box.SetOpacity(ref liq6.bxz, liqSel ? 25 : 0);
-
-                        Lq_Breach[0] = -1;
-                    }
-                }
-                else
-                {
-                    if (!liq6.brZ)
-                    {
-                        continue;
-                    }
-
-                    if (Low[0] > Pine.Line.GetY1(ref liq6.ln) - marSel * atr && High[0] < Pine.Line.GetY1(ref liq6.ln) + marSel * atr)
-                    {
-                        Pine.Box.SetRightBottom(ref liq6.bxz, CurrentBar + 1, Math.Min(Low[0], Pine.Box.GetBottom(ref liq6.bxz)));
-                        if (liqSel)
-                        {
-                            Pine.Line.SetX2(ref liq6.lne, CurrentBar + 1);
-                        }
-                    }
-                    else
-                    {
-                        liq6.brZ = false;
-                    }
-                }
-            }
-
-            if (lqVoid && per)
-            {
-                bull[0] = Low[0] - High[2] > atr200 && Low[0] > High[2] && Close[1] > High[2];
-                bear[0] = Low[2] - High[0] > atr200 && High[0] < Low[2] && Close[1] < Low[2];
-                if (bull[0])
-                {
-                    int num15 = 13;
-                    if (bull[1])
-                    {
-                        double num16 = Math.Abs(Low[0] - Low[1]) / (double)num15;
-                        for (int m = 0; m < num15; m++)
-                        {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, Low[1] + (double)m * num16, CurrentBar, Low[1] + (double)(m + 1) * num16, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
-
-                            Fvg[0] = 1;
-                        }
-                    }
-                    else
-                    {
-                        double num17 = Math.Abs(Low[0] - High[2]) / (double)num15;
-                        for (int n = 0; n < num15; n++)
-                        {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[2] + (double)n * num17, CurrentBar, High[2] + (double)(n + 1) * num17, null, 1, DashStyleHelper.Solid, cLQV_B, 10));
-
-                            Fvg[0] = 1;
-                        }
-                    }
-                }
-
-                if (bear[0])
-                {
-                    int num18 = 13;
-                    if (bear[1])
-                    {
-                        double num19 = Math.Abs(High[1] - High[0]) / (double)num18;
-                        for (int num20 = 0; num20 < num18; num20++)
-                        {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[0] + (double)num20 * num19, CurrentBar, High[0] + (double)(num20 + 1) * num19, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
-
-                            Fvg[0] = -1;
-                        }
-                    }
-                    else
-                    {
-                        double num21 = Math.Abs(Low[2] - High[0]) / (double)num18;
-                        for (int num22 = 0; num22 < num18; num22++)
-                        {
-                            Pine.Array.PushElement(ref b_liq_V, Pine.Box.New(CurrentBar - 2, High[0] + (double)num22 * num21, CurrentBar, High[0] + (double)(num22 + 1) * num21, null, 1, DashStyleHelper.Solid, cLQV_S, 10));
-
-                            Fvg[0] = -1;
-                        }
-                    }
-                }
-            }
-
-            if (b_liq_V.Length <= 0)
-            {
-                return;
-            }
-
-            int num23 = b_liq_V.Length;
-            for (int num24 = num23 - 1; num24 >= 0; num24--)
-            {
-                if (num24 < b_liq_V.Length)
-                {
-                    Rectangle box = b_liq_V[num24];
-                    double num25 = (Pine.Box.GetBottom(ref box) + Pine.Box.GetTop(ref box)) / 2.0;
-                    if (Math.Sign(Close[1] - num25) != Math.Sign(Close[0] - num25) || Math.Sign(Close[1] - num25) != Math.Sign(Low[0] - num25) || Math.Sign(Close[1] - num25) != Math.Sign(High[0] - num25))
-                    {
-                        Pine.Array.RemoveElement(ref b_liq_V, num24);
-                    }
-                    else
-                    {
-                        Pine.Box.SetRight(ref box, CurrentBar + 1);
-                        _ = CurrentBar - Pine.Box.GetLeft(ref box);
-                        _ = 21;
-                    }
-                }
+                Print("Exception caught: " + e.Message);
+                Print("Stack Trace: " + e.StackTrace);
             }
         }
 
