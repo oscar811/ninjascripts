@@ -116,8 +116,8 @@
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
-    <Reference Include="LuxAlgo - LiquiditySwings">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - LiquiditySwings.dll</HintPath>
+    <Reference Include="LuxAlgo - SuperTrendAIClustering">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
@@ -213,6 +213,7 @@
     <Compile Include="Indicators\LuxAlgo2\LuxLSFilterType.cs" />
     <Compile Include="Indicators\LuxAlgo2\LUXLVFVGMode.cs" />
     <Compile Include="Indicators\LuxAlgo2\PineLib.cs" />
+    <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering.cs" />
     <Compile Include="Indicators\RajIndicators\PriceSeriesExtensions.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
@@ -556,7 +557,8 @@
     <Compile Include="SuperDomColumns\%40Recent.cs" />
     <Compile Include="obj\x64\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="Indicators\LuxAlgo2\CrossEnum.cs" />
-    <Compile Include="Strategies\RajAlgos\%40%40CameronStrategy.cs" />
+    <Compile Include="LuxAlgo - SuperTrendAIClustering.cs" />
+    <Compile Include="Strategies\RajAlgos\SuperTrendAIStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
@@ -612,10 +614,12 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent></PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

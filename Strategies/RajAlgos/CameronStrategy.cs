@@ -132,11 +132,15 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //    longBias[0] = false;
                 //}
 
-                if (longBias[0] == false && lq.Fvg[0] == -1)
+                if (lq.Lq_Breach[0] == 1)
                 {
-                    Print("CurrentBar: " + CurrentBar);
-                    Print("Go Short");
+                    Print("Lq breach at: "  + CurrentBar);
                 }
+                //if (longBias[0] == false && lq.Fvg[0] == -1)
+                //{
+                //    Print("CurrentBar: " + CurrentBar);
+                //    Print("Go Short");
+                //}
 
                 //Lq_BslBreach[0] = Lq_BslBreach[1];
                 //Lq_SslBreach[0] = Lq_SslBreach[1];

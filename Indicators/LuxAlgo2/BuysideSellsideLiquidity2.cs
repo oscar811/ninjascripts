@@ -56,7 +56,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         protected static PineLib Pine;
 
-        public override string DisplayName => "Lux - BSL-SSL - 2";
+        public override string DisplayName => "BSL-SSL-2";
 
         #region Properties
 
@@ -205,8 +205,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
         {
             if (State == State.SetDefaults)
             {
-                Description = "BSL SSL";
-                Name = "Buyside & Sellside Liquidity";
+                Description = "BSL-SSL-2";
+                Name = "BSL-SSL-2";
                 Calculate = Calculate.OnBarClose;
                 IsOverlay = true;
                 DisplayInDataBox = true;
@@ -263,11 +263,9 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
         {
             try
             {
+                if (CurrentBar < liqLen) return;                
 
-                if (CurrentBar < liqLen)
-                {
-                    return;
-                }
+                Lq_Breach[0] = Lq_Breach[1];
 
                 x2[0] = CurrentBar - 1;
                 x1[0] = x1[1];
@@ -340,6 +338,10 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                             {
                                 Pine.Array.UnshiftElement(ref b_liq_B, new liq(Pine.Box.New(num5, Pine.Math.Avg<double>(num6, num7) + atr / liqMar, CurrentBar + 10, Pine.Math.Avg<double>(num6, num7) - atr / liqMar), Pine.Box.New(), Pine.Label.New(num5, num4, "Buyside liquidity", null, null, 0, 1, cLIQ_B, font, TextAlignment.Left, 10), brZ: false, brL: false, Pine.Line.New(num5, num4, CurrentBar - 1, num4, cLIQ_B), Pine.Line.New(CurrentBar - 1, num4, 0, num4, cLIQ_B, DashStyleHelper.Dot)));
                                 Pine.Alerts.DoAlert("buyside liquidity level detected/updated for " + Instrument.FullName);
+
+                                Print("BSL");
+                                Print("CurrentBar: " + CurrentBar);
+                                Print("Time[0]: " + Time[0]);                                
                             }
 
                             if (b_liq_B.Length > visLiq)
@@ -459,6 +461,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                             Pine.Box.SetOpacity(ref liq5.bxz, liqBuy ? 25 : 0);
 
                             Lq_Breach[0] = 1;
+                            //Print("Time[0]: " + Time[0]);
+                            //Print("Lq_Breach[0]: " + Lq_Breach[0]);
                         }
                     }
                     else
@@ -501,6 +505,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                             Pine.Box.SetOpacity(ref liq6.bxz, liqSel ? 25 : 0);
 
                             Lq_Breach[0] = -1;
+                            //Print("Time[0]: " + Time[0]);
+                            //Print("Lq_Breach[0]: " + Lq_Breach[0]);                            
                         }
                     }
                     else
