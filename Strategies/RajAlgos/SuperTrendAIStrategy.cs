@@ -53,16 +53,42 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 				// Disable this property for performance gains in Strategy Analyzer optimizations
 				// See the Help Guide for additional information
 				IsInstantiatedOnEachOptimizationIteration	= true;
+
 			}
 			else if (State == State.Configure)
 			{
+				supertrend = SuperTrendAIClustering2(10, 2, 5, 0.5, 10, LuxSTAIFromCluster.Best, 1000, 10000, Brushes.Crimson, Brushes.Teal, Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
+
+				AddChartIndicator(supertrend);
+            }
+            else if (State == State.DataLoaded)
+			{
 
 			}
-		}
+
+        }
 
 		protected override void OnBarUpdate()
 		{
-			//Add your custom strategy logic here.
-		}
+            try
+            {
+                if (CurrentBar < BarsRequiredToTrade)
+                    return;
+
+                if (BarsInProgress != 0 || CurrentBars[0] < 1)
+                    return;
+
+                // Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                // Print("Time[0]: " + Time[0].ToString());
+                // Print("CurrentBar: " + CurrentBar);
+
+                // write your logic here
+            }
+            catch (Exception e)
+            {
+                Print("Exception caught: " + e.Message);
+                Print("Stack Trace: " + e.StackTrace);
+            }
+        }
 	}
 }

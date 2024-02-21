@@ -1,8 +1,3 @@
-#region Assembly LuxAlgo Indicator, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null
-// C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll
-// Decompiled with ICSharpCode.Decompiler 8.1.1.7464
-#endregion
-
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -11,10 +6,10 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Xml.Serialization;
+using NinjaTrader.Custom.Indicators.LuxAlgo2;
 using NinjaTrader.Gui;
 using NinjaTrader.Gui.Chart;
 using NinjaTrader.Gui.Tools;
-using NinjaTrader.NinjaScript.Indicators.LuxAlgo;
 
 namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 {

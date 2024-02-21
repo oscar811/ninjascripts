@@ -113,11 +113,11 @@
       <HintPath>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll</HintPath>
     </Reference>
     <Reference Include="System.Xaml" />
-    <Reference Include="LuxAlgo - SuperTrendAIClustering">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll</HintPath>
-    </Reference>
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
+    </Reference>
+    <Reference Include="LuxAlgo - SuperTrendAIClustering">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
@@ -176,7 +176,6 @@
     <Compile Include="DrawingTools\%40TimeCycles.cs" />
     <Compile Include="DrawingTools\%40TrendChannel.cs" />
     <Compile Include="ImportTypes\%40TickDataImportType.cs" />
-    <Compile Include="Indicators\%40BarTimer.cs" />
     <Compile Include="Indicators\%40Correlation.cs" />
     <Compile Include="Indicators\%40BlockVolume.cs" />
     <Compile Include="Indicators\%40BuySellVolume.cs" />
@@ -193,7 +192,6 @@
     <Compile Include="Indicators\%40MovingAverageRibbon.cs" />
     <Compile Include="Indicators\%40NetChangeDisplay.cs" />
     <Compile Include="Indicators\%40Pivots.cs" />
-    <Compile Include="Indicators\%40PriceLine.cs" />
     <Compile Include="Indicators\%40PsychologicalLine.cs" />
     <Compile Include="Indicators\%40RangeCounter.cs" />
     <Compile Include="Indicators\%40RelativeVigorIndex.cs" />
@@ -205,16 +203,15 @@
     <Compile Include="Indicators\%40VolumeUpDown.cs" />
     <Compile Include="Indicators\%40VolumeZones.cs" />
     <Compile Include="Indicators\%40Vortex.cs" />
-    <Compile Include="Indicators\LuxAlgo2\BuysideSellsideLiquidity2.cs" />
     <Compile Include="Indicators\LuxAlgo2\LiquiditySwings2.cs" />
     <Compile Include="Indicators\LuxAlgo2\LiquidityVoidsFVG2.cs" />
     <Compile Include="Indicators\LuxAlgo2\LuxBSLMode.cs" />
     <Compile Include="Indicators\LuxAlgo2\LuxLSAreaType.cs" />
     <Compile Include="Indicators\LuxAlgo2\LuxLSFilterType.cs" />
     <Compile Include="Indicators\LuxAlgo2\LUXLVFVGMode.cs" />
+    <Compile Include="Indicators\LuxAlgo2\LuxTablePosition.cs" />
     <Compile Include="Indicators\LuxAlgo2\PineLib.cs" />
     <Compile Include="Indicators\LuxAlgo2\PineTable.cs" />
-    <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering2.cs" />
     <Compile Include="Indicators\RajIndicators\PriceSeriesExtensions.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />
@@ -486,15 +483,11 @@
     <Compile Include="Strategies\AMDwickV1.cs" />
     <Compile Include="Indicators\TradeSaber\MultiSeriesHL.cs" />
     <Compile Include="Strategies\AMDwickV1EditedOct28.cs" />
-    <Compile Include="Indicators\%40CurrentDayOHL.cs" />
     <Compile Include="Indicators\ICTFVG.cs" />
-    <Compile Include="Indicators\%40MAX.cs" />
-    <Compile Include="Indicators\%40MIN.cs" />
     <Compile Include="Indicators\RajIndicators\RMA.cs" />
     <Compile Include="Strategies\RajAlgos\PeaceBringer.cs" />
     <Compile Include="Strategies\RajAlgos\SimpleOrderBlock.cs" />
     <Compile Include="Indicators\RajIndicators\LiquidityLevels.cs" />
-    <Compile Include="Indicators\%40Swing.cs" />
     <Compile Include="Indicators\Infinity\SupDemZones.cs" />
     <Compile Include="Indicators\SwingRays2b.cs" />
     <Compile Include="Indicators\AuADXVMA.cs" />
@@ -556,10 +549,17 @@
     <Compile Include="Strategies\SupplySystem.cs" />
     <Compile Include="SuperDomColumns\%40PullingStacking.cs" />
     <Compile Include="SuperDomColumns\%40Recent.cs" />
-    <Compile Include="obj\x64\Debug\.NETFramework,Version=v4.8.AssemblyAttributes.cs" />
     <Compile Include="Indicators\LuxAlgo2\CrossEnum.cs" />
-    <Compile Include="LuxAlgo - SuperTrendAIClustering.cs" />
-    <Compile Include="Strategies\RajAlgos\SuperTrendAIStrategy.cs" />
+    <Compile Include="Strategies\RajAlgos\%40%40SuperTrendAIStrategy.cs" />
+    <Compile Include="Indicators\LuxAlgo2\BuysideSellsideLiquidity2.cs" />
+    <Compile Include="Indicators\%40BarTimer.cs" />
+    <Compile Include="Indicators\%40CurrentDayOHL.cs" />
+    <Compile Include="Indicators\%40MAX.cs" />
+    <Compile Include="Indicators\%40MIN.cs" />
+    <Compile Include="Indicators\%40PriceLine.cs" />
+    <Compile Include="Indicators\%40Swing.cs" />
+    <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering2.cs" />
+    <Compile Include="Indicators\LuxAlgo2\LuxSTAIFromCluster.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
