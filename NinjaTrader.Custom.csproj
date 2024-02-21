@@ -113,11 +113,11 @@
       <HintPath>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorlib.dll</HintPath>
     </Reference>
     <Reference Include="System.Xaml" />
-    <Reference Include="NinjaTrader.Vendor">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
-    </Reference>
     <Reference Include="LuxAlgo - SuperTrendAIClustering">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll</HintPath>
+    </Reference>
+    <Reference Include="NinjaTrader.Vendor">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
@@ -213,7 +213,8 @@
     <Compile Include="Indicators\LuxAlgo2\LuxLSFilterType.cs" />
     <Compile Include="Indicators\LuxAlgo2\LUXLVFVGMode.cs" />
     <Compile Include="Indicators\LuxAlgo2\PineLib.cs" />
-    <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering.cs" />
+    <Compile Include="Indicators\LuxAlgo2\PineTable.cs" />
+    <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering2.cs" />
     <Compile Include="Indicators\RajIndicators\PriceSeriesExtensions.cs" />
     <Compile Include="Indicators\RajIndicators\SwingRays2c.cs" />
     <Compile Include="MarketAnalyzerColumns\%40ChartMini.cs" />

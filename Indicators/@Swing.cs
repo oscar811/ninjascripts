@@ -51,16 +51,16 @@ namespace NinjaTrader.NinjaScript.Indicators
 		{
 			if (State == State.SetDefaults)
 			{
-				Description					= NinjaTrader.Custom.Resource.NinjaScriptIndicatorDescriptionSwing;
-				Name						= NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameSwing;
+				Description					= Custom.Resource.NinjaScriptIndicatorDescriptionSwing;
+				Name						= Custom.Resource.NinjaScriptIndicatorNameSwing;
 				DisplayInDataBox			= false;
 				PaintPriceMarkers			= false;
 				IsSuspendedWhileInactive	= true;
 				IsOverlay					= true;
 				Strength					= 5;
 
-				AddPlot(new Stroke(Brushes.DarkCyan,	2), PlotStyle.Dot, NinjaTrader.Custom.Resource.SwingHigh);
-				AddPlot(new Stroke(Brushes.Goldenrod,	2), PlotStyle.Dot, NinjaTrader.Custom.Resource.SwingLow);
+				AddPlot(new Stroke(Brushes.DarkCyan,	2), PlotStyle.Dot, Custom.Resource.SwingHigh);
+				AddPlot(new Stroke(Brushes.Goldenrod,	2), PlotStyle.Dot, Custom.Resource.SwingLow);
 			}
 
 			else if (State == State.Configure)
@@ -70,7 +70,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				lastSwingHighValue	= 0;
 				lastSwingLowValue	= 0;
 				saveCurrentBar		= -1;
-				constant			= (2 * Strength) + 1;
+				constant			= 2 * Strength + 1;
+				Calculate			= Calculate.OnBarClose;
 			}
 			else if (State == State.DataLoaded)
 			{
@@ -127,13 +128,13 @@ namespace NinjaTrader.NinjaScript.Indicators
 
 				if (lastHighCache.Count == constant)
 				{
-					bool isSwingHigh = true;
-					double swingHighCandidateValue = (double) lastHighCache[Strength];
-					for (int i=0; i < Strength; i++)
+					bool	isSwingHigh					= true;
+					double	swingHighCandidateValue		= (double) lastHighCache[Strength];
+					for (int i = 0; i < Strength; i++)
 						if (((double) lastHighCache[i]).ApproxCompare(swingHighCandidateValue) >= 0)
 							isSwingHigh = false;
 
-					for (int i=Strength+1; i < lastHighCache.Count; i++)
+					for (int i = Strength+1; i < lastHighCache.Count; i++)
 						if (((double) lastHighCache[i]).ApproxCompare(swingHighCandidateValue) > 0)
 							isSwingHigh = false;
 
@@ -144,7 +145,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					if (isSwingHigh)
 					{
 						currentSwingHigh = swingHighCandidateValue;
-						for (int i=0; i <= Strength; i++)
+						for (int i = 0; i <= Strength; i++)
 							SwingHighPlot[i] = currentSwingHigh;
 					}
 					else if (high0 > currentSwingHigh || currentSwingHigh.ApproxCompare(0.0) == 0)
@@ -157,21 +158,17 @@ namespace NinjaTrader.NinjaScript.Indicators
 						SwingHighPlot[0] = currentSwingHigh;
 
 					if (isSwingHigh)
-					{
-						for (int i=0; i<=Strength; i++)
+						for (int i = 0; i <= Strength; i++)
 							swingHighSeries[i] = lastSwingHighValue;
-					}
 					else
-					{
 						swingHighSeries[0] = lastSwingHighValue;
-					}
 				}
 
 				if (lastLowCache.Count == constant)
 				{
-					bool isSwingLow = true;
-					double swingLowCandidateValue = (double) lastLowCache[Strength];
-					for (int i=0; i < Strength; i++)
+					bool	isSwingLow				= true;
+					double	swingLowCandidateValue	= (double) lastLowCache[Strength];
+					for (int i = 0; i < Strength; i++)
 						if (((double) lastLowCache[i]).ApproxCompare(swingLowCandidateValue) <= 0)
 							isSwingLow = false;
 
@@ -186,7 +183,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 					if (isSwingLow)
 					{
 						currentSwingLow = swingLowCandidateValue;
-						for (int i=0; i <= Strength; i++)
+						for (int i = 0; i <= Strength; i++)
 							SwingLowPlot[i] = currentSwingLow;
 					}
 					else if (low0 < currentSwingLow || currentSwingLow.ApproxCompare(0.0) == 0)
@@ -199,14 +196,10 @@ namespace NinjaTrader.NinjaScript.Indicators
 						SwingLowPlot[0] = currentSwingLow;
 
 					if (isSwingLow)
-					{
-						for (int i=0; i<=Strength; i++)
+						for (int i = 0; i <= Strength; i++)
 							swingLowSeries[i] = lastSwingLowValue;
-					}
 					else
-					{
 						swingLowSeries[0] = lastSwingLowValue;
-					}
 				}
 
 				saveCurrentBar = CurrentBar;
@@ -268,11 +261,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public int SwingLowBar(int barsAgo, int instance, int lookBackPeriod)
 		{
 			if (instance < 1)
-				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingLowBarInstanceGreaterEqual, GetType().Name, instance));
+				throw new Exception(string.Format(Custom.Resource.SwingSwingLowBarInstanceGreaterEqual, GetType().Name, instance));
 			if (barsAgo < 0)
-				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingLowBarBarsAgoGreaterEqual, GetType().Name, barsAgo));
+				throw new Exception(string.Format(Custom.Resource.SwingSwingLowBarBarsAgoGreaterEqual, GetType().Name, barsAgo));
 			if (barsAgo >= Count)
-				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingLowBarBarsAgoOutOfRange, GetType().Name, (Count - 1), barsAgo));
+				throw new Exception(string.Format(Custom.Resource.SwingSwingLowBarBarsAgoOutOfRange, GetType().Name, (Count - 1), barsAgo));
 
 			Update();
 
@@ -305,11 +298,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 		public int SwingHighBar(int barsAgo, int instance, int lookBackPeriod)
 		{
 			if (instance < 1)
-				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingHighBarInstanceGreaterEqual, GetType().Name, instance));
+				throw new Exception(string.Format(Custom.Resource.SwingSwingHighBarInstanceGreaterEqual, GetType().Name, instance));
 			if (barsAgo < 0)
-				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingHighBarBarsAgoGreaterEqual, GetType().Name, barsAgo));
+				throw new Exception(string.Format(Custom.Resource.SwingSwingHighBarBarsAgoGreaterEqual, GetType().Name, barsAgo));
 			if (barsAgo >= Count)
-				throw new Exception(string.Format(NinjaTrader.Custom.Resource.SwingSwingHighBarBarsAgoOutOfRange, GetType().Name, (Count - 1), barsAgo));
+				throw new Exception(string.Format(Custom.Resource.SwingSwingHighBarBarsAgoOutOfRange, GetType().Name, (Count - 1), barsAgo));
 
 			Update();
 

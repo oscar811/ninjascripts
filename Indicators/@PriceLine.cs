@@ -84,7 +84,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 		
 		protected override void OnMarketData(MarketDataEventArgs e)
 		{
-			if (e.MarketDataType != MarketDataType.Last)
+			if (e.MarketDataType != MarketDataType.Last || CurrentBar < 0)
 				return;
 			
 			Values[0][0] = e.Ask;

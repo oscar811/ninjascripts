@@ -1,5 +1,5 @@
-// 
-// Copyright (C) 2015, NinjaTrader LLC <www.ninjatrader.com>.
+//
+// Copyright (C) 2023, NinjaTrader LLC <www.ninjatrader.com>.
 // NinjaTrader reserves the right to modify or overwrite this NinjaScript component with each release.
 //
 #region Using declarations
@@ -47,7 +47,8 @@ namespace NinjaTrader.NinjaScript.Indicators
 				IsOverlay					= true;
 				IsSuspendedWhileInactive	= true;
 				Period						= 14;
-				AddPlot(Brushes.Green, "MAX");
+
+				AddPlot(Brushes.DarkCyan, NinjaTrader.Custom.Resource.NinjaScriptIndicatorNameMAX);
 			}
 			else if (State == State.Configure)
 			{
@@ -72,7 +73,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 				return;
 			}
 
-			if (CurrentBar - runningBar >= Period)
+			if (CurrentBar - runningBar >= Period || CurrentBar < thisBar)
 			{
 				runningMax = double.MinValue;
 				for (int barsBack = Math.Min(CurrentBar, Period - 1); barsBack > 0; barsBack--)

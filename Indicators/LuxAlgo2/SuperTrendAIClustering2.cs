@@ -1,4 +1,4 @@
-﻿#region Assembly LuxAlgo Indicator, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null
+#region Assembly LuxAlgo Indicator, Version=1.0.0.1, Culture=neutral, PublicKeyToken=null
 // C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll
 // Decompiled with ICSharpCode.Decompiler 8.1.1.7464
 #endregion
@@ -14,10 +14,11 @@ using System.Xml.Serialization;
 using NinjaTrader.Gui;
 using NinjaTrader.Gui.Chart;
 using NinjaTrader.Gui.Tools;
+using NinjaTrader.NinjaScript.Indicators.LuxAlgo;
 
 namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 {
-    public class SuperTrendAIClustering : Indicator
+    public class SuperTrendAIClustering2 : Indicator
     {
         private class supertrend
         {
@@ -503,3 +504,60 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
         }
     }
 }
+
+#region NinjaScript generated code. Neither change nor remove.
+
+namespace NinjaTrader.NinjaScript.Indicators
+{
+	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
+	{
+		private LuxAlgo2.SuperTrendAIClustering2[] cacheSuperTrendAIClustering2;
+		public LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		{
+			return SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+		}
+
+		public LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input, int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		{
+			if (cacheSuperTrendAIClustering2 != null)
+				for (int idx = 0; idx < cacheSuperTrendAIClustering2.Length; idx++)
+					if (cacheSuperTrendAIClustering2[idx] != null && cacheSuperTrendAIClustering2[idx].length == length && cacheSuperTrendAIClustering2[idx].minMult == minMult && cacheSuperTrendAIClustering2[idx].maxMult == maxMult && cacheSuperTrendAIClustering2[idx].step == step && cacheSuperTrendAIClustering2[idx].perfAlpha == perfAlpha && cacheSuperTrendAIClustering2[idx].fromCluster == fromCluster && cacheSuperTrendAIClustering2[idx].maxIter == maxIter && cacheSuperTrendAIClustering2[idx].maxData == maxData && cacheSuperTrendAIClustering2[idx].bearCss == bearCss && cacheSuperTrendAIClustering2[idx].bullCss == bullCss && cacheSuperTrendAIClustering2[idx].amaBearCss == amaBearCss && cacheSuperTrendAIClustering2[idx].amaBullCss == amaBullCss && cacheSuperTrendAIClustering2[idx].showSignals == showSignals && cacheSuperTrendAIClustering2[idx].showDash == showDash && cacheSuperTrendAIClustering2[idx].dashLoc == dashLoc && cacheSuperTrendAIClustering2[idx].textSize == textSize && cacheSuperTrendAIClustering2[idx].EqualsInput(input))
+						return cacheSuperTrendAIClustering2[idx];
+			return CacheIndicator<LuxAlgo2.SuperTrendAIClustering2>(new LuxAlgo2.SuperTrendAIClustering2(){ length = length, minMult = minMult, maxMult = maxMult, step = step, perfAlpha = perfAlpha, fromCluster = fromCluster, maxIter = maxIter, maxData = maxData, bearCss = bearCss, bullCss = bullCss, amaBearCss = amaBearCss, amaBullCss = amaBullCss, showSignals = showSignals, showDash = showDash, dashLoc = dashLoc, textSize = textSize }, input, ref cacheSuperTrendAIClustering2);
+		}
+	}
+}
+
+namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
+{
+	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
+	{
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		{
+			return indicator.SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+		}
+
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input , int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		{
+			return indicator.SuperTrendAIClustering2(input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+		}
+	}
+}
+
+namespace NinjaTrader.NinjaScript.Strategies
+{
+	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
+	{
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		{
+			return indicator.SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+		}
+
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input , int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		{
+			return indicator.SuperTrendAIClustering2(input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+		}
+	}
+}
+
+#endregion

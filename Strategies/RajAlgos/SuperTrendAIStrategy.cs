@@ -20,7 +20,7 @@ using NinjaTrader.NinjaScript;
 using NinjaTrader.Core.FloatingPoint;
 using NinjaTrader.NinjaScript.Indicators;
 using NinjaTrader.NinjaScript.DrawingTools;
-using NinjaTrader.NinjaScript.Indicators.LuxAlgo;
+using NinjaTrader.NinjaScript.Indicators.LuxAlgo2;
 #endregion
 
 //This namespace holds Strategies in this folder and is required. Do not change it. 
@@ -28,7 +28,7 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
 	public class SuperTrendAIStrategy : Strategy
 	{
-		private SuperTrendAIClustering supertrend;
+		private SuperTrendAIClustering2 supertrend;
 		protected override void OnStateChange()
 		{
 			if (State == State.SetDefaults)
