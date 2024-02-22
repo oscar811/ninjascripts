@@ -116,9 +116,6 @@
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
-    <Reference Include="LuxAlgo - SuperTrendAIClustering">
-      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\LuxAlgo - SuperTrendAIClustering.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
     </Reference>
@@ -417,6 +414,7 @@
     <Compile Include="Strategies\RajAlgos\CameronStrategy.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleAgain.cs" />
     <Compile Include="Strategies\RajAlgos\PossibleStrat.cs" />
+    <Compile Include="Strategies\RajAlgos\SuperTrendAIStrategy.cs" />
     <Compile Include="Strategies\RajAlgos\Time400am.cs" />
     <Compile Include="Strategies\RajAlgos\SwingLevel.cs" />
     <Compile Include="Strategies\RajAlgos\TimePeriod.cs" />
@@ -550,7 +548,6 @@
     <Compile Include="SuperDomColumns\%40PullingStacking.cs" />
     <Compile Include="SuperDomColumns\%40Recent.cs" />
     <Compile Include="Indicators\LuxAlgo2\CrossEnum.cs" />
-    <Compile Include="Strategies\RajAlgos\%40%40SuperTrendAIStrategy.cs" />
     <Compile Include="Indicators\LuxAlgo2\BuysideSellsideLiquidity2.cs" />
     <Compile Include="Indicators\%40BarTimer.cs" />
     <Compile Include="Indicators\%40CurrentDayOHL.cs" />
@@ -560,6 +557,7 @@
     <Compile Include="Indicators\%40Swing.cs" />
     <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering2.cs" />
     <Compile Include="Indicators\LuxAlgo2\LuxSTAIFromCluster.cs" />
+    <Compile Include="Strategies\MyCustomStrategy.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
@@ -615,12 +613,10 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent></PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent></PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

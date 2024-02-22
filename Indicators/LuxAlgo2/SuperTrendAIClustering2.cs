@@ -88,7 +88,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         private static PineLib Pine;
 
-        public override string DisplayName => "LuxAlgo - SuperTrend AI (Clustering)";
+        public override string DisplayName => "SuperTrendAI2";
 
         [NinjaScriptProperty]
         [Range(1, int.MaxValue)]
@@ -221,23 +221,26 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
         [XmlIgnore]
         public Series<double> ts => base.Values[0];
 
+        public Series<int?> BullSignalValue;
+        public Series<int?> BearSignalValue;
+
         protected override void OnStateChange()
         {
-            if (base.State == State.SetDefaults)
+            if (State == State.SetDefaults)
             {
-                base.Description = "Enter the description for your new custom Indicator here.";
-                base.Name = "SuperTrend AI Clustering";
-                base.Calculate = Calculate.OnBarClose;
-                base.IsOverlay = true;
-                base.DisplayInDataBox = true;
-                base.DrawOnPricePanel = true;
-                base.DrawHorizontalGridLines = true;
-                base.DrawVerticalGridLines = true;
-                base.PaintPriceMarkers = true;
-                base.ScaleJustification = ScaleJustification.Right;
-                base.IsSuspendedWhileInactive = true;
+                Description = "SuperTrendAI2";
+                Name = "SuperTrendAI2";
+                Calculate = Calculate.OnBarClose;
+                IsOverlay = true;
+                DisplayInDataBox = true;
+                DrawOnPricePanel = true;
+                DrawHorizontalGridLines = true;
+                DrawVerticalGridLines = true;
+                PaintPriceMarkers = true;
+                ScaleJustification = ScaleJustification.Right;
+                IsSuspendedWhileInactive = true;
                 length = 10;
-                minMult = 1;
+                minMult = 2;
                 maxMult = 5;
                 step = 0.5;
                 perfAlpha = 10.0;
@@ -249,13 +252,14 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 amaBearCss = Brushes.Crimson;
                 amaBullCss = Brushes.Teal;
                 showSignals = true;
-                showDash = true;
+                showDash = false;
                 dashLoc = LuxTablePosition.TopRight;
                 textSize = 12;
+                BarsRequiredToPlot = 20;
                 AddPlot(Brushes.DodgerBlue, "Trailing Stop");
                 AddPlot(Brushes.DodgerBlue, "Trailing Stop AMA");
             }
-            else if (base.State != State.Configure && base.State == State.DataLoaded)
+            else if (State != State.Configure && base.State == State.DataLoaded)
             {
                 Pine = new PineLib(this, this, base.DrawObjects);
                 holder = new supertrend[0];
@@ -312,12 +316,15 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 }
 
                 FontMe = new SimpleFont("Arial", textSize);
+
+                BullSignalValue = new Series<int?>(this);
+                BearSignalValue = new Series<int?>(this);
             }
         }
 
         protected override void OnBarUpdate()
         {
-            if (base.CurrentBar < 1)
+            if (CurrentBar < BarsRequiredToPlot)
             {
                 upper[0] = hl2;
                 lower[0] = hl2;
@@ -435,10 +442,12 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
             {
                 if (os[0] == 1)
                 {
+                    BullSignalValue[0] = (int)(perf_idx * 10.0);
                     Pine.Label.New(base.CurrentBar, ts[0], ((int)(perf_idx * 10.0)).ToString(), bullCss, null, 100, -1, Brushes.White, FontMe, TextAlignment.Center, textSize);
                 }
                 else
                 {
+                    BearSignalValue[0] = (int)(perf_idx * 10.0);
                     Pine.Label.New(base.CurrentBar, ts[0], ((int)(perf_idx * 10.0)).ToString(), bearCss, null, 100, 1, Brushes.White, FontMe, TextAlignment.Center, textSize);
                 }
             }

@@ -54,17 +54,25 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 				// See the Help Guide for additional information
 				IsInstantiatedOnEachOptimizationIteration	= true;
 
-			}
+                length = 10;
+                minMult = 1;
+                maxMult = 5;
+                step = 0.5;
+                perfAlpha = 10.0;
+                maxIter = 1000;
+                maxData = 10000;
+
+            }
 			else if (State == State.Configure)
 			{
-				supertrend = SuperTrendAIClustering2(10, 2, 5, 0.5, 10, LuxSTAIFromCluster.Best, 1000, 10000, Brushes.Crimson, Brushes.Teal, Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
-
-				AddChartIndicator(supertrend);
+                ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
 			{
+                supertrend = SuperTrendAIClustering2(length, minMult, maxMult, step, perfAlpha, LuxSTAIFromCluster.Best, maxIter, maxData, Brushes.Crimson, Brushes.Teal, Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
 
-			}
+                AddChartIndicator(supertrend);
+            }
 
         }
 
@@ -78,11 +86,21 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
-                // Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
-                // Print("Time[0]: " + Time[0].ToString());
-                // Print("CurrentBar: " + CurrentBar);
+				//Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+				
+				if (supertrend.BullSignalValue[0] > 1)
+				{
+                    Print("Time[0]: " + Time[0].ToString());
+                    Print("CurrentBar: " + CurrentBar);
+                    Print("BullSignalValue[0]:" + supertrend.BullSignalValue[0]);
+                }
 
-                // write your logic here
+                if (supertrend.BullSignalValue[0] > 1)
+                {
+                    Print("Time[0]: " + Time[0].ToString());
+                    Print("CurrentBar: " + CurrentBar);
+                    Print("BearSignalValue[0]:" + supertrend.BearSignalValue[0]);
+                }
             }
             catch (Exception e)
             {
@@ -90,5 +108,48 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 Print("Stack Trace: " + e.StackTrace);
             }
         }
-	}
+
+        #region Properties
+
+        [NinjaScriptProperty]
+        [Range(1, int.MaxValue)]
+        [Display(Name = "ATR Length", Order = 1, GroupName = "1. Parameters")]
+        public int length { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, int.MaxValue)]
+        [Display(Name = "Factor Range Min", Order = 2, GroupName = "1. Parameters")]
+        public int minMult { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, int.MaxValue)]
+        [Display(Name = "Factor Range Max", Order = 3, GroupName = "1. Parameters")]
+        public int maxMult { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0.0, double.MaxValue)]
+        [Display(Name = "Step", Order = 4, GroupName = "1. Parameters")]
+        public double step { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(2.0, double.MaxValue)]
+        [Display(Name = "Performance Memory", Order = 5, GroupName = "1. Parameters")]
+        public double perfAlpha { get; set; }
+
+        //[NinjaScriptProperty]
+        //[Display(Name = "From Cluster", Order = 6, GroupName = "1. Parameters")]
+        //public LuxSTAIFromCluster fromCluster { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, int.MaxValue)]
+        [Display(Name = "Maximum Iteration Steps", Order = 7, GroupName = "2. Optimization")]
+        public int maxIter { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, int.MaxValue)]
+        [Display(Name = "Historical Bars Calculation", Order = 8, GroupName = "2. Optimization")]
+        public int maxData { get; set; }
+
+        #endregion
+    }
 }
