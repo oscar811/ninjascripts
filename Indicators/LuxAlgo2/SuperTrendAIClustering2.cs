@@ -240,7 +240,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 ScaleJustification = ScaleJustification.Right;
                 IsSuspendedWhileInactive = true;
                 length = 10;
-                minMult = 2;
+                minMult = 1;
                 maxMult = 5;
                 step = 0.5;
                 perfAlpha = 10.0;
@@ -435,19 +435,23 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 perf_ama += perf_idx * (ts[0] - perf_ama);
             }
 
-            base.Values[1][0] = perf_ama;
-            base.PlotBrushes[0][0] = ((os[0] != os[1]) ? Brushes.Transparent : ((os[0] == 1) ? bullCss : bearCss));
-            base.PlotBrushes[1][0] = (Pine.TA.Cross(base.Close, base.Values[1]) ? Brushes.Transparent : ((base.Close[0] > perf_ama) ? amaBullCss_ : amaBearCss_));
+            Values[1][0] = perf_ama;
+            PlotBrushes[0][0] = ((os[0] != os[1]) ? Brushes.Transparent : ((os[0] == 1) ? bullCss : bearCss));
+            PlotBrushes[1][0] = (Pine.TA.Cross(Close, Values[1]) ? Brushes.Transparent : ((Close[0] > perf_ama) ? amaBullCss_ : amaBearCss_));
             if (showSignals && os[0] != os[1])
             {
                 if (os[0] == 1)
                 {
                     BullSignalValue[0] = (int)(perf_idx * 10.0);
+                    Print("Time[0]: " + Time[0].ToString());
+                    Print("BullSignalValue[0]: " + BullSignalValue[0]);
                     Pine.Label.New(base.CurrentBar, ts[0], ((int)(perf_idx * 10.0)).ToString(), bullCss, null, 100, -1, Brushes.White, FontMe, TextAlignment.Center, textSize);
                 }
                 else
                 {
                     BearSignalValue[0] = (int)(perf_idx * 10.0);
+                    Print("Time[0]: " + Time[0].ToString());
+                    Print("BearSignalValue[0]: " + BearSignalValue[0]);
                     Pine.Label.New(base.CurrentBar, ts[0], ((int)(perf_idx * 10.0)).ToString(), bearCss, null, 100, 1, Brushes.White, FontMe, TextAlignment.Center, textSize);
                 }
             }

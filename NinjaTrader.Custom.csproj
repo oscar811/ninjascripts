@@ -558,6 +558,7 @@
     <Compile Include="Indicators\LuxAlgo2\SuperTrendAIClustering2.cs" />
     <Compile Include="Indicators\LuxAlgo2\LuxSTAIFromCluster.cs" />
     <Compile Include="Strategies\MyCustomStrategy.cs" />
+    <Compile Include="Strategies\ImpossibleWithMACDv3.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">

@@ -26,33 +26,33 @@ using NinjaTrader.NinjaScript.Indicators.LuxAlgo2;
 //This namespace holds Strategies in this folder and is required. Do not change it. 
 namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 {
-	public class SuperTrendAIStrategy : Strategy
-	{
-		private SuperTrendAIClustering2 supertrend;
-		protected override void OnStateChange()
-		{
-			if (State == State.SetDefaults)
-			{
-				Description									= @"Lux SuperTrendAIStrategy";
-				Name										= "SuperTrendAIStrategy";
-				Calculate									= Calculate.OnBarClose;
-				EntriesPerDirection							= 1;
-				EntryHandling								= EntryHandling.AllEntries;
-				IsExitOnSessionCloseStrategy				= true;
-				ExitOnSessionCloseSeconds					= 30;
-				IsFillLimitOnTouch							= false;
-				MaximumBarsLookBack							= MaximumBarsLookBack.TwoHundredFiftySix;
-				OrderFillResolution							= OrderFillResolution.Standard;
-				Slippage									= 0;
-				StartBehavior								= StartBehavior.WaitUntilFlat;
-				TimeInForce									= TimeInForce.Gtc;
-				TraceOrders									= false;
-				RealtimeErrorHandling						= RealtimeErrorHandling.StopCancelClose;
-				StopTargetHandling							= StopTargetHandling.PerEntryExecution;
-				BarsRequiredToTrade							= 20;
-				// Disable this property for performance gains in Strategy Analyzer optimizations
-				// See the Help Guide for additional information
-				IsInstantiatedOnEachOptimizationIteration	= true;
+    public class SuperTrendAIStrategy : Strategy
+    {
+        private SuperTrendAIClustering2 supertrend;
+        protected override void OnStateChange()
+        {
+            if (State == State.SetDefaults)
+            {
+                Description = @"Lux SuperTrendAIStrategy";
+                Name = "SuperTrendAIStrategy";
+                Calculate = Calculate.OnBarClose;
+                EntriesPerDirection = 1;
+                EntryHandling = EntryHandling.AllEntries;
+                IsExitOnSessionCloseStrategy = true;
+                ExitOnSessionCloseSeconds = 30;
+                IsFillLimitOnTouch = false;
+                MaximumBarsLookBack = MaximumBarsLookBack.TwoHundredFiftySix;
+                OrderFillResolution = OrderFillResolution.Standard;
+                Slippage = 0;
+                StartBehavior = StartBehavior.WaitUntilFlat;
+                TimeInForce = TimeInForce.Gtc;
+                TraceOrders = false;
+                RealtimeErrorHandling = RealtimeErrorHandling.StopCancelClose;
+                StopTargetHandling = StopTargetHandling.PerEntryExecution;
+                BarsRequiredToTrade = 20;
+                // Disable this property for performance gains in Strategy Analyzer optimizations
+                // See the Help Guide for additional information
+                IsInstantiatedOnEachOptimizationIteration = true;
 
                 length = 10;
                 minMult = 1;
@@ -61,14 +61,13 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 perfAlpha = 10.0;
                 maxIter = 1000;
                 maxData = 10000;
-
             }
-			else if (State == State.Configure)
-			{
+            else if (State == State.Configure)
+            {
                 ClearOutputWindow();
             }
             else if (State == State.DataLoaded)
-			{
+            {
                 supertrend = SuperTrendAIClustering2(length, minMult, maxMult, step, perfAlpha, LuxSTAIFromCluster.Best, maxIter, maxData, Brushes.Crimson, Brushes.Teal, Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
 
                 AddChartIndicator(supertrend);
@@ -76,8 +75,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         }
 
-		protected override void OnBarUpdate()
-		{
+        protected override void OnBarUpdate()
+        {
             try
             {
                 if (CurrentBar < BarsRequiredToTrade)
@@ -86,21 +85,21 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
-				//Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
-				
-				if (supertrend.BullSignalValue[0] > 1)
-				{
+                //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+
+                if (supertrend.BullSignalValue[0].HasValue && supertrend.BullSignalValue[0].Value > 1)
+                {
                     Print("Time[0]: " + Time[0].ToString());
                     Print("CurrentBar: " + CurrentBar);
                     Print("BullSignalValue[0]:" + supertrend.BullSignalValue[0]);
                 }
 
-                if (supertrend.BullSignalValue[0] > 1)
-                {
-                    Print("Time[0]: " + Time[0].ToString());
-                    Print("CurrentBar: " + CurrentBar);
-                    Print("BearSignalValue[0]:" + supertrend.BearSignalValue[0]);
-                }
+                //    if (supertrend.BullSignalValue[0] > 1)
+                //    {
+                //        Print("Time[0]: " + Time[0].ToString());
+                //        Print("CurrentBar: " + CurrentBar);
+                //        Print("BearSignalValue[0]:" + supertrend.BearSignalValue[0]);
+                //    }
             }
             catch (Exception e)
             {
