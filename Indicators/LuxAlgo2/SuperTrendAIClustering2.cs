@@ -331,6 +331,8 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 os[0] = 0;
                 return;
             }
+            BullSignalValue[0] = BullSignalValue[1];
+            BearSignalValue[0] = BearSignalValue[1];
 
             double num = ATR(length)[0];
             int num2 = 0;

@@ -33,52 +33,60 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
 
         protected override void OnStateChange()
         {
-            if (State == State.SetDefaults)
+            try
             {
-                Description = @"Lux SuperTrendAIStrategy";
-                Name = "SuperTrendAIStrategy";
-                Calculate = Calculate.OnPriceChange;
-                EntriesPerDirection = 1;
-                EntryHandling = EntryHandling.AllEntries;
-                IsExitOnSessionCloseStrategy = true;
-                ExitOnSessionCloseSeconds = 30;
-                IsFillLimitOnTouch = false;
-                MaximumBarsLookBack = MaximumBarsLookBack.TwoHundredFiftySix;
-                OrderFillResolution = OrderFillResolution.Standard;
-                Slippage = 0;
-                StartBehavior = StartBehavior.WaitUntilFlat;
-                TimeInForce = TimeInForce.Gtc;
-                TraceOrders = false;
-                RealtimeErrorHandling = RealtimeErrorHandling.StopCancelClose;
-                StopTargetHandling = StopTargetHandling.PerEntryExecution;
-                BarsRequiredToTrade = 20;
-                // Disable this property for performance gains in Strategy Analyzer optimizations
-                // See the Help Guide for additional information
-                IsInstantiatedOnEachOptimizationIteration = true;
+                if (State == State.SetDefaults)
+                {
+                    Description = @"Lux SuperTrendAIStrategy";
+                    Name = "SuperTrendAIStrategy";
+                    Calculate = Calculate.OnPriceChange;
+                    EntriesPerDirection = 1;
+                    EntryHandling = EntryHandling.AllEntries;
+                    IsExitOnSessionCloseStrategy = true;
+                    ExitOnSessionCloseSeconds = 30;
+                    IsFillLimitOnTouch = false;
+                    MaximumBarsLookBack = MaximumBarsLookBack.TwoHundredFiftySix;
+                    OrderFillResolution = OrderFillResolution.Standard;
+                    Slippage = 0;
+                    StartBehavior = StartBehavior.WaitUntilFlat;
+                    TimeInForce = TimeInForce.Gtc;
+                    TraceOrders = false;
+                    RealtimeErrorHandling = RealtimeErrorHandling.StopCancelClose;
+                    StopTargetHandling = StopTargetHandling.PerEntryExecution;
+                    BarsRequiredToTrade = 20;
+                    // Disable this property for performance gains in Strategy Analyzer optimizations
+                    // See the Help Guide for additional information
+                    IsInstantiatedOnEachOptimizationIteration = true;
 
-                length = 10;
-                minMult = 1;
-                maxMult = 5;
-                step = 0.5;
-                minThreshold = 1;
-                maxThreshold = 5;
-                perfAlpha = 10.0;
-                maxIter = 10000;
-                maxData = 10000;
-                takeProfit = 100;
+                    length = 10;
+                    minMult = 1;
+                    maxMult = 10;
+                    step = 1.0;
+                    minThreshold = 0;
+                    maxThreshold = 10;
+                    perfAlpha = 10.0;
+                    maxIter = 10000;
+                    maxData = 10000;
+                    takeProfit = 100;
+                }
+                else if (State == State.Configure)
+                {
+                    //ClearOutputWindow();
+                }
+                else if (State == State.DataLoaded)
+                {
+                    SetProfitTarget(CalculationMode.Ticks, takeProfit / TickSize);
+
+                    supertrend = SuperTrendAIClustering2(length, minMult, maxMult, step, perfAlpha, LuxSTAIFromCluster.Best, maxIter, maxData,
+                        Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
+
+                    AddChartIndicator(supertrend);
+                }
             }
-            else if (State == State.Configure)
+            catch (Exception e)
             {
-                ClearOutputWindow();
-
-                SetProfitTarget(CalculationMode.Ticks, takeProfit / TickSize);
-            }
-            else if (State == State.DataLoaded)
-            {
-                supertrend = SuperTrendAIClustering2(length, minMult, maxMult, step, perfAlpha, LuxSTAIFromCluster.Best, maxIter, maxData, 
-                    Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
-
-                AddChartIndicator(supertrend);
+                Print("Exception caught: " + e.Message);
+                Print("Stack Trace: " + e.StackTrace);
             }
         }
 
@@ -92,45 +100,38 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
-                Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);                
                 //Print("Time[0]: " + Time[0].ToString());
-                Print("CurrentBar: " + CurrentBar);
-                if (supertrend.BullSignalValue[0].HasValue)
-                    Print("supertrend.BullSignalValue[0].Value: " + supertrend.BullSignalValue[0].Value);
-                
-                if (supertrend.BearSignalValue[0].HasValue)
-                    Print("supertrend.BearSignalValue[0].Value: " + supertrend.BearSignalValue[0].Value);
+                //Print("CurrentBar: " + CurrentBar);
+                //Print("supertrend.BullSignalValue[0].Value: " + supertrend.BullSignalValue[0].Value);
 
-                //if (Position.MarketPosition == MarketPosition.Long)
-                //{
-                //    if (Close[0] < supertrend[0])
-                //    {
-                //        ExitLong();
-                //    }
-                //}
+                if (Position.MarketPosition == MarketPosition.Long)
+                {
+                    if (Close[0] < supertrend[0])
+                    {
+                        ExitLong();
+                    }
+                }
 
-                //if (Position.MarketPosition == MarketPosition.Short)
-                //{
-                //    if (Close[0] > supertrend[0])
-                //    {
-                //        ExitShort();
-                //    }
-                //}
+                if (Position.MarketPosition == MarketPosition.Short)
+                {
+                    if (Close[0] > supertrend[0])
+                    {
+                        ExitShort();
+                    }
+                }
 
-                //if (Close[0] > supertrend[0] && supertrend.BullSignalValue[0].HasValue
-                //    && supertrend.BullSignalValue[0].Value >= minThreshold && supertrend.BullSignalValue[0].Value <= maxThreshold)
-                //{
-                //    Print("CurrentBar: " + CurrentBar);
-                //    //Print("Time[0]: " + Time[0].ToString());
-                //    Print("supertrend.BullSignalValue[0].Value: " + supertrend.BullSignalValue[0].Value);
-                //    EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
-                //}
+                if (Close[0] > supertrend[0] && supertrend.BullSignalValue[0].HasValue
+                    && supertrend.BullSignalValue[0].Value >= minThreshold && supertrend.BullSignalValue[0].Value <= maxThreshold)
+                {
+                    EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
+                }
 
-                //if (Close[0] < supertrend[0] && supertrend.BearSignalValue[0].HasValue
-                //    && supertrend.BearSignalValue[0].Value >= minThreshold && supertrend.BearSignalValue[0].Value >= maxThreshold)
-                //{
-                //    EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
-                //}
+                if (Close[0] < supertrend[0] && supertrend.BearSignalValue[0].HasValue
+                    && supertrend.BearSignalValue[0].Value >= minThreshold && supertrend.BearSignalValue[0].Value <= maxThreshold)
+                {
+                    EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
+                }
             }
             catch (Exception e)
             {
