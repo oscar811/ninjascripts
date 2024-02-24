@@ -29,13 +29,15 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
     public class SuperTrendAIStrategy : Strategy
     {
         private SuperTrendAIClustering2 supertrend;
+        private ATR atrIndicator;
+
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
             {
                 Description = @"Lux SuperTrendAIStrategy";
                 Name = "SuperTrendAIStrategy";
-                Calculate = Calculate.OnBarClose;
+                Calculate = Calculate.OnPriceChange;
                 EntriesPerDirection = 1;
                 EntryHandling = EntryHandling.AllEntries;
                 IsExitOnSessionCloseStrategy = true;
@@ -58,21 +60,26 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 minMult = 1;
                 maxMult = 5;
                 step = 0.5;
+                minThreshold = 1;
+                maxThreshold = 5;
                 perfAlpha = 10.0;
-                maxIter = 1000;
+                maxIter = 10000;
                 maxData = 10000;
+                takeProfit = 100;
             }
             else if (State == State.Configure)
             {
                 ClearOutputWindow();
+
+                SetProfitTarget(CalculationMode.Ticks, takeProfit / TickSize);
             }
             else if (State == State.DataLoaded)
             {
-                supertrend = SuperTrendAIClustering2(length, minMult, maxMult, step, perfAlpha, LuxSTAIFromCluster.Best, maxIter, maxData, Brushes.Crimson, Brushes.Teal, Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
+                supertrend = SuperTrendAIClustering2(length, minMult, maxMult, step, perfAlpha, LuxSTAIFromCluster.Best, maxIter, maxData, 
+                    Brushes.Crimson, Brushes.Teal, showSignals: true, showDash: false, dashLoc: LuxTablePosition.TopRight, textSize: 12);
 
                 AddChartIndicator(supertrend);
             }
-
         }
 
         protected override void OnBarUpdate()
@@ -85,21 +92,45 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
-                //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);
+                //Print("Time[0]: " + Time[0].ToString());
+                Print("CurrentBar: " + CurrentBar);
+                if (supertrend.BullSignalValue[0].HasValue)
+                    Print("supertrend.BullSignalValue[0].Value: " + supertrend.BullSignalValue[0].Value);
+                
+                if (supertrend.BearSignalValue[0].HasValue)
+                    Print("supertrend.BearSignalValue[0].Value: " + supertrend.BearSignalValue[0].Value);
 
-                if (supertrend.BullSignalValue[0].HasValue && supertrend.BullSignalValue[0].Value > 1)
-                {
-                    Print("Time[0]: " + Time[0].ToString());
-                    Print("CurrentBar: " + CurrentBar);
-                    Print("BullSignalValue[0]:" + supertrend.BullSignalValue[0]);
-                }
-
-                //    if (supertrend.BullSignalValue[0] > 1)
+                //if (Position.MarketPosition == MarketPosition.Long)
+                //{
+                //    if (Close[0] < supertrend[0])
                 //    {
-                //        Print("Time[0]: " + Time[0].ToString());
-                //        Print("CurrentBar: " + CurrentBar);
-                //        Print("BearSignalValue[0]:" + supertrend.BearSignalValue[0]);
+                //        ExitLong();
                 //    }
+                //}
+
+                //if (Position.MarketPosition == MarketPosition.Short)
+                //{
+                //    if (Close[0] > supertrend[0])
+                //    {
+                //        ExitShort();
+                //    }
+                //}
+
+                //if (Close[0] > supertrend[0] && supertrend.BullSignalValue[0].HasValue
+                //    && supertrend.BullSignalValue[0].Value >= minThreshold && supertrend.BullSignalValue[0].Value <= maxThreshold)
+                //{
+                //    Print("CurrentBar: " + CurrentBar);
+                //    //Print("Time[0]: " + Time[0].ToString());
+                //    Print("supertrend.BullSignalValue[0].Value: " + supertrend.BullSignalValue[0].Value);
+                //    EnterLong(DefaultQuantity, Convert.ToString(CurrentBar) + " Long");
+                //}
+
+                //if (Close[0] < supertrend[0] && supertrend.BearSignalValue[0].HasValue
+                //    && supertrend.BearSignalValue[0].Value >= minThreshold && supertrend.BearSignalValue[0].Value >= maxThreshold)
+                //{
+                //    EnterShort(DefaultQuantity, Convert.ToString(CurrentBar) + " Short");
+                //}
             }
             catch (Exception e)
             {
@@ -131,6 +162,16 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         public double step { get; set; }
 
         [NinjaScriptProperty]
+        [Range(0, 10)]
+        [Display(Name = "Min. Threshold for entry", Order = 5, GroupName = "1. Parameters")]
+        public int minThreshold { get; set; }
+
+        [NinjaScriptProperty]
+        [Range(0, 10)]
+        [Display(Name = "Max. Threshold for entry", Order = 5, GroupName = "1. Parameters")]
+        public int maxThreshold { get; set; }
+
+        [NinjaScriptProperty]
         [Range(2.0, double.MaxValue)]
         [Display(Name = "Performance Memory", Order = 5, GroupName = "1. Parameters")]
         public double perfAlpha { get; set; }
@@ -149,6 +190,10 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         [Display(Name = "Historical Bars Calculation", Order = 8, GroupName = "2. Optimization")]
         public int maxData { get; set; }
 
+
+        [NinjaScriptProperty]
+        [Display(Name = "Take Profit (points)", Order = 3, GroupName = "3. Risk")]
+        public double takeProfit { get; set; }
         #endregion
     }
 }

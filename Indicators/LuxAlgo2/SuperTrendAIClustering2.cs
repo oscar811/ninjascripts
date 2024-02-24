@@ -78,9 +78,9 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
 
         private Series<int> os;
 
-        private Brush amaBullCss_;
+        //private Brush amaBullCss_;
 
-        private Brush amaBearCss_;
+        //private Brush amaBearCss_;
 
         private SimpleFont FontMe;
 
@@ -163,39 +163,39 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
             }
         }
 
-        [NinjaScriptProperty]
-        [Display(Name = "AMA Bear", Order = 11, GroupName = "3. Style")]
-        public Brush amaBearCss { get; set; }
+        //[NinjaScriptProperty]
+        //[Display(Name = "AMA Bear", Order = 11, GroupName = "3. Style")]
+        //public Brush amaBearCss { get; set; }
 
-        [Browsable(false)]
-        public string amaBearCssSerializable
-        {
-            get
-            {
-                return Serialize.BrushToString(amaBearCss);
-            }
-            set
-            {
-                amaBearCss = Serialize.StringToBrush(value);
-            }
-        }
+        //[Browsable(false)]
+        //public string amaBearCssSerializable
+        //{
+        //    get
+        //    {
+        //        return Serialize.BrushToString(amaBearCss);
+        //    }
+        //    set
+        //    {
+        //        amaBearCss = Serialize.StringToBrush(value);
+        //    }
+        //}
 
-        [NinjaScriptProperty]
-        [Display(Name = "AMA Bull", Order = 12, GroupName = "3. Style")]
-        public Brush amaBullCss { get; set; }
+        //[NinjaScriptProperty]
+        //[Display(Name = "AMA Bull", Order = 12, GroupName = "3. Style")]
+        //public Brush amaBullCss { get; set; }
 
-        [Browsable(false)]
-        public string amaBullCssSerializable
-        {
-            get
-            {
-                return Serialize.BrushToString(amaBullCss);
-            }
-            set
-            {
-                amaBullCss = Serialize.StringToBrush(value);
-            }
-        }
+        //[Browsable(false)]
+        //public string amaBullCssSerializable
+        //{
+        //    get
+        //    {
+        //        return Serialize.BrushToString(amaBullCss);
+        //    }
+        //    set
+        //    {
+        //        amaBullCss = Serialize.StringToBrush(value);
+        //    }
+        //}
 
         [NinjaScriptProperty]
         [Display(Name = "Show Signals", Order = 14, GroupName = "3. Style")]
@@ -230,7 +230,7 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
             {
                 Description = "SuperTrendAI2";
                 Name = "SuperTrendAI2";
-                Calculate = Calculate.OnBarClose;
+                Calculate = Calculate.OnPriceChange;
                 IsOverlay = true;
                 DisplayInDataBox = true;
                 DrawOnPricePanel = true;
@@ -249,15 +249,15 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 maxData = 10000;
                 bearCss = Brushes.Crimson;
                 bullCss = Brushes.Teal;
-                amaBearCss = Brushes.Crimson;
-                amaBullCss = Brushes.Teal;
+                //amaBearCss = Brushes.Crimson;
+                //amaBullCss = Brushes.Teal;
                 showSignals = true;
                 showDash = false;
                 dashLoc = LuxTablePosition.TopRight;
                 textSize = 12;
                 BarsRequiredToPlot = 20;
                 AddPlot(Brushes.DodgerBlue, "Trailing Stop");
-                AddPlot(Brushes.DodgerBlue, "Trailing Stop AMA");
+                //AddPlot(Brushes.DodgerBlue, "Trailing Stop AMA");
             }
             else if (State != State.Configure && base.State == State.DataLoaded)
             {
@@ -273,12 +273,12 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 upper = new Series<double>(this, MaximumBarsLookBack.Infinite);
                 lower = new Series<double>(this, MaximumBarsLookBack.Infinite);
                 os = new Series<int>(this, MaximumBarsLookBack.Infinite);
-                amaBearCss_ = amaBearCss.CloneCurrentValue();
-                amaBearCss_.Opacity = 0.5;
-                amaBearCss_.Freeze();
-                amaBullCss_ = amaBullCss.CloneCurrentValue();
-                amaBullCss_.Opacity = 0.5;
-                amaBullCss_.Freeze();
+                //amaBearCss_ = amaBearCss.CloneCurrentValue();
+                //amaBearCss_.Opacity = 0.5;
+                //amaBearCss_.Freeze();
+                //amaBullCss_ = amaBullCss.CloneCurrentValue();
+                //amaBullCss_.Opacity = 0.5;
+                //amaBullCss_.Freeze();
                 for (int i = 0; i <= (int)((double)(maxMult - minMult) / step); i++)
                 {
                     Pine.Array.PushElement(ref factors, (double)minMult + (double)i * step);
@@ -435,23 +435,19 @@ namespace NinjaTrader.NinjaScript.Indicators.LuxAlgo2
                 perf_ama += perf_idx * (ts[0] - perf_ama);
             }
 
-            Values[1][0] = perf_ama;
+            //Values[1][0] = perf_ama;
             PlotBrushes[0][0] = ((os[0] != os[1]) ? Brushes.Transparent : ((os[0] == 1) ? bullCss : bearCss));
-            PlotBrushes[1][0] = (Pine.TA.Cross(Close, Values[1]) ? Brushes.Transparent : ((Close[0] > perf_ama) ? amaBullCss_ : amaBearCss_));
+            //PlotBrushes[1][0] = (Pine.TA.Cross(Close, Values[1]) ? Brushes.Transparent : ((Close[0] > perf_ama) ? amaBullCss_ : amaBearCss_));
             if (showSignals && os[0] != os[1])
             {
                 if (os[0] == 1)
                 {
                     BullSignalValue[0] = (int)(perf_idx * 10.0);
-                    Print("Time[0]: " + Time[0].ToString());
-                    Print("BullSignalValue[0]: " + BullSignalValue[0]);
                     Pine.Label.New(base.CurrentBar, ts[0], ((int)(perf_idx * 10.0)).ToString(), bullCss, null, 100, -1, Brushes.White, FontMe, TextAlignment.Center, textSize);
                 }
                 else
                 {
                     BearSignalValue[0] = (int)(perf_idx * 10.0);
-                    Print("Time[0]: " + Time[0].ToString());
-                    Print("BearSignalValue[0]: " + BearSignalValue[0]);
                     Pine.Label.New(base.CurrentBar, ts[0], ((int)(perf_idx * 10.0)).ToString(), bearCss, null, 100, 1, Brushes.White, FontMe, TextAlignment.Center, textSize);
                 }
             }
@@ -520,18 +516,18 @@ namespace NinjaTrader.NinjaScript.Indicators
 	public partial class Indicator : NinjaTrader.Gui.NinjaScript.IndicatorRenderBase
 	{
 		private LuxAlgo2.SuperTrendAIClustering2[] cacheSuperTrendAIClustering2;
-		public LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		public LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
 		{
-			return SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+			return SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, showSignals, showDash, dashLoc, textSize);
 		}
 
-		public LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input, int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		public LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input, int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
 		{
 			if (cacheSuperTrendAIClustering2 != null)
 				for (int idx = 0; idx < cacheSuperTrendAIClustering2.Length; idx++)
-					if (cacheSuperTrendAIClustering2[idx] != null && cacheSuperTrendAIClustering2[idx].length == length && cacheSuperTrendAIClustering2[idx].minMult == minMult && cacheSuperTrendAIClustering2[idx].maxMult == maxMult && cacheSuperTrendAIClustering2[idx].step == step && cacheSuperTrendAIClustering2[idx].perfAlpha == perfAlpha && cacheSuperTrendAIClustering2[idx].fromCluster == fromCluster && cacheSuperTrendAIClustering2[idx].maxIter == maxIter && cacheSuperTrendAIClustering2[idx].maxData == maxData && cacheSuperTrendAIClustering2[idx].bearCss == bearCss && cacheSuperTrendAIClustering2[idx].bullCss == bullCss && cacheSuperTrendAIClustering2[idx].amaBearCss == amaBearCss && cacheSuperTrendAIClustering2[idx].amaBullCss == amaBullCss && cacheSuperTrendAIClustering2[idx].showSignals == showSignals && cacheSuperTrendAIClustering2[idx].showDash == showDash && cacheSuperTrendAIClustering2[idx].dashLoc == dashLoc && cacheSuperTrendAIClustering2[idx].textSize == textSize && cacheSuperTrendAIClustering2[idx].EqualsInput(input))
+					if (cacheSuperTrendAIClustering2[idx] != null && cacheSuperTrendAIClustering2[idx].length == length && cacheSuperTrendAIClustering2[idx].minMult == minMult && cacheSuperTrendAIClustering2[idx].maxMult == maxMult && cacheSuperTrendAIClustering2[idx].step == step && cacheSuperTrendAIClustering2[idx].perfAlpha == perfAlpha && cacheSuperTrendAIClustering2[idx].fromCluster == fromCluster && cacheSuperTrendAIClustering2[idx].maxIter == maxIter && cacheSuperTrendAIClustering2[idx].maxData == maxData && cacheSuperTrendAIClustering2[idx].bearCss == bearCss && cacheSuperTrendAIClustering2[idx].bullCss == bullCss && cacheSuperTrendAIClustering2[idx].showSignals == showSignals && cacheSuperTrendAIClustering2[idx].showDash == showDash && cacheSuperTrendAIClustering2[idx].dashLoc == dashLoc && cacheSuperTrendAIClustering2[idx].textSize == textSize && cacheSuperTrendAIClustering2[idx].EqualsInput(input))
 						return cacheSuperTrendAIClustering2[idx];
-			return CacheIndicator<LuxAlgo2.SuperTrendAIClustering2>(new LuxAlgo2.SuperTrendAIClustering2(){ length = length, minMult = minMult, maxMult = maxMult, step = step, perfAlpha = perfAlpha, fromCluster = fromCluster, maxIter = maxIter, maxData = maxData, bearCss = bearCss, bullCss = bullCss, amaBearCss = amaBearCss, amaBullCss = amaBullCss, showSignals = showSignals, showDash = showDash, dashLoc = dashLoc, textSize = textSize }, input, ref cacheSuperTrendAIClustering2);
+			return CacheIndicator<LuxAlgo2.SuperTrendAIClustering2>(new LuxAlgo2.SuperTrendAIClustering2(){ length = length, minMult = minMult, maxMult = maxMult, step = step, perfAlpha = perfAlpha, fromCluster = fromCluster, maxIter = maxIter, maxData = maxData, bearCss = bearCss, bullCss = bullCss, showSignals = showSignals, showDash = showDash, dashLoc = dashLoc, textSize = textSize }, input, ref cacheSuperTrendAIClustering2);
 		}
 	}
 }
@@ -540,14 +536,14 @@ namespace NinjaTrader.NinjaScript.MarketAnalyzerColumns
 {
 	public partial class MarketAnalyzerColumn : MarketAnalyzerColumnBase
 	{
-		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
 		{
-			return indicator.SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+			return indicator.SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, showSignals, showDash, dashLoc, textSize);
 		}
 
-		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input , int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input , int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
 		{
-			return indicator.SuperTrendAIClustering2(input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+			return indicator.SuperTrendAIClustering2(input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, showSignals, showDash, dashLoc, textSize);
 		}
 	}
 }
@@ -556,14 +552,14 @@ namespace NinjaTrader.NinjaScript.Strategies
 {
 	public partial class Strategy : NinjaTrader.Gui.NinjaScript.StrategyRenderBase
 	{
-		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
 		{
-			return indicator.SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+			return indicator.SuperTrendAIClustering2(Input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, showSignals, showDash, dashLoc, textSize);
 		}
 
-		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input , int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, Brush amaBearCss, Brush amaBullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
+		public Indicators.LuxAlgo2.SuperTrendAIClustering2 SuperTrendAIClustering2(ISeries<double> input , int length, int minMult, int maxMult, double step, double perfAlpha, LuxSTAIFromCluster fromCluster, int maxIter, int maxData, Brush bearCss, Brush bullCss, bool showSignals, bool showDash, LuxTablePosition dashLoc, int textSize)
 		{
-			return indicator.SuperTrendAIClustering2(input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, amaBearCss, amaBullCss, showSignals, showDash, dashLoc, textSize);
+			return indicator.SuperTrendAIClustering2(input, length, minMult, maxMult, step, perfAlpha, fromCluster, maxIter, maxData, bearCss, bullCss, showSignals, showDash, dashLoc, textSize);
 		}
 	}
 }
