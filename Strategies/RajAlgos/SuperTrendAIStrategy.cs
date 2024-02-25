@@ -29,7 +29,6 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
     public class SuperTrendAIStrategy : Strategy
     {
         private SuperTrendAIClustering2 supertrend;
-        private ATR atrIndicator;
 
         protected override void OnStateChange()
         {
@@ -94,14 +93,14 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
         {
             try
             {
-                if (CurrentBar < BarsRequiredToTrade)
+                if (CurrentBar < BarsRequiredToTrade + 1)
                     return;
 
                 if (BarsInProgress != 0 || CurrentBars[0] < 1)
                     return;
 
                 //Draw.Text(this, "Tag_" + CurrentBar.ToString(), CurrentBar.ToString(), 0, Low[0] - TickSize * 10, Brushes.Red);                
-                //Print("Time[0]: " + Time[0].ToString());
+                Print("Time[0]: " + Time[0].ToString());
                 //Print("CurrentBar: " + CurrentBar);
                 //Print("supertrend.BullSignalValue[0].Value: " + supertrend.BullSignalValue[0].Value);
 

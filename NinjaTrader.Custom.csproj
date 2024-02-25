@@ -560,6 +560,7 @@
     <Compile Include="Strategies\MyCustomStrategy.cs" />
     <Compile Include="Strategies\ImpossibleWithMACDv3.cs" />
     <Compile Include="Strategies\MyCustomStrategy1.cs" />
+    <Compile Include="Strategies\IncredibleImpossibleV4.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">
