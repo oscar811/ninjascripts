@@ -116,6 +116,9 @@
     <Reference Include="NinjaTrader.Vendor">
       <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\NinjaTrader.Vendor.dll</HintPath>
     </Reference>
+    <Reference Include="ImpossibleBotwithMacdv1">
+      <HintPath>C:\Users\sshrestha\Documents\NinjaTrader 8\bin\Custom\ImpossibleBotwithMacdv1.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase">
       <HintPath>C:\Windows\Microsoft.NET\Framework\v4.0.30319\WPF\WindowsBase.dll</HintPath>
     </Reference>
@@ -561,6 +564,9 @@
     <Compile Include="Strategies\ImpossibleWithMACDv3.cs" />
     <Compile Include="Strategies\MyCustomStrategy1.cs" />
     <Compile Include="Strategies\IncredibleImpossibleV4.cs" />
+    <Compile Include="Strategies\ShortTest.cs" />
+    <Compile Include="Strategies\JenBots\IncredibleBot.cs" />
+    <Compile Include="ImpossibleBotwithMacdv1.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resource.resx">

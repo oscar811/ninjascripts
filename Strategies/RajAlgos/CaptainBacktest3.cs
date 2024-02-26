@@ -89,8 +89,8 @@ namespace NinjaTrader.NinjaScript.Strategies.RajAlgos
                 //reward = 75;
 
                 atrPeriod = 14;
-                atrMultiplierForStopLoss = 0.5;
-                atrMultiplierForTakeProfit = 2;
+                atrMultiplierForStopLoss = 1.5;
+                atrMultiplierForTakeProfit = 4.5;
             }
             else if (State == State.Configure)
             {
